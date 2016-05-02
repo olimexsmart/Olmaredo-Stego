@@ -140,7 +140,7 @@ public class StartActivity extends AppCompatActivity {
                 r = Color.red(pixel);
                 g = Color.green(pixel);
                 b = Color.blue(pixel);
-                // take conversion up to one single value
+                // Y = 0.2126 R + 0.7152 G + 0.0722 B Rec 709
                 r = g = b = (int)(0.299 * r + 0.587 * g + 0.114 * b);
                 // set new pixel color to output bitmap
                 bmpGrayscale.setPixel(x, y, Color.argb(a, r, g, b));
