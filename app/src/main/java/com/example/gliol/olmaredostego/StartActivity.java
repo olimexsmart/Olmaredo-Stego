@@ -149,5 +149,22 @@ public class StartActivity extends AppCompatActivity {
         return bmpGrayscale;
     }
 
+    private byte[][] autocorrelation (int N, int P, byte[][]x)
+    {
+        byte[][] buffer = new byte[N][N];
+
+        for (int p=0; p<P; p++)
+        {
+            for (int j=0; j<N; j++)
+            {
+                for (int k=0; k<N; k++ )
+                {
+                    buffer[j][k] += x[p][k]*x[p][j];
+                }
+            }
+        }
+
+        return buffer;
+    }
 }
 
