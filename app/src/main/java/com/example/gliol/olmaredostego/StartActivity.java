@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import Jama.Matrix;
+import Jama.EigenvalueDecomposition;
 
 import com.example.gliol.olmaredostego.R;
 
@@ -77,8 +79,7 @@ public class StartActivity extends AppCompatActivity {
             File image = new File(path);
 
             Bitmap im = ReadImage(path);
-            color.setImageBitmap(toGrayscale2(im));
-            blackWhite.setImageBitmap(toGrayscale1(im));
+            color.setImageBitmap(toGrayscale(im));
 
 
             //Further elaborations
@@ -99,7 +100,7 @@ public class StartActivity extends AppCompatActivity {
     /*
     Found at:
     http://stackoverflow.com/questions/3373860/convert-a-bitmap-to-grayscale-in-android
-     */
+
     private Bitmap toGrayscale1(Bitmap bmpOriginal)
     {   //Creating a new bitmap image
         Bitmap bmpGrayscale = Bitmap.createBitmap(bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
@@ -119,13 +120,13 @@ public class StartActivity extends AppCompatActivity {
 
         return bmpGrayscale;
     }
-
+ */
 
     /*
     Found at:
     http://stackoverflow.com/questions/8381514/android-converting-color-image-to-grayscale
      */
-    private Bitmap toGrayscale2(Bitmap bmpOriginal){
+    private Bitmap toGrayscale(Bitmap bmpOriginal){
         Bitmap bmpGrayscale = Bitmap.createBitmap(bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
         int pixel;
         int r, g, b;
@@ -140,8 +141,8 @@ public class StartActivity extends AppCompatActivity {
                 r = Color.red(pixel);
                 g = Color.green(pixel);
                 b = Color.blue(pixel);
-                // Y = 0.2126 R + 0.7152 G + 0.0722 B Rec 709
-                r = g = b = (int)(0.299 * r + 0.587 * g + 0.114 * b);
+                // Y = 0.2126 R + 0.7152 G + 0.0722 B  as in Rec 709 (Wiki)
+                r = g = b = (int)(0.2126 * r + 0.7152 * g + 0.0722 * b);
                 // set new pixel color to output bitmap
                 bmpGrayscale.setPixel(x, y, Color.argb(a, r, g, b));
             }
@@ -149,9 +150,11 @@ public class StartActivity extends AppCompatActivity {
         return bmpGrayscale;
     }
 
-    private byte[][] autocorrelation (int N, int P, byte[][]x)
+
+    //Sadly Java doesn't support unsigned data types
+    private double[][] Autocorrelation (int N, int P, byte[][]x)
     {
-        byte[][] buffer = new byte[N][N];
+        double[][] buffer = new double[N][N];
 
         for (int p=0; p<P; p++)
         {
@@ -165,6 +168,24 @@ public class StartActivity extends AppCompatActivity {
         }
 
         return buffer;
+    }
+
+
+    //Reference http://math.nist.gov/javanumerics/jama/
+    private double[] GetSignatureVector(double[][] matrix)
+    {
+
+        Matrix A = new Matrix(matrix);
+        A = A.transpose().times(A);
+
+        // compute the spectral decomposition
+        EigenvalueDecomposition e = A.eig();
+        Matrix V = e.getV();    //<-- Eigenvalues
+        Matrix D = e.getD();    //<-- Eigenvectors
+
+        //Select the smallest eigenvalue and return the corresponding eigenvector
+        //Wait for martino to document how data is stored
+        return TODO;
     }
 }
 
