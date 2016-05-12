@@ -1,5 +1,6 @@
 package com.example.gliol.olmaredostego;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,25 +14,25 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import Jama.Matrix;
-import Jama.EigenvalueDecomposition;
-
-import com.example.gliol.olmaredostego.R;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
 public class StartActivity extends AppCompatActivity {
+    private static final String TAG = "StartActivity";
 
     Button b;
     Intent camera;
     String fileName = "bomber.jpg";
     ImageView color;
     ImageView blackWhite;
+    MessageEmbedding messageEmbedding;
+    Context context;
 
     int camReqCode = 4444;
 
@@ -43,6 +44,9 @@ public class StartActivity extends AppCompatActivity {
         b = (Button) findViewById(R.id.button);
         color = (ImageView) findViewById(R.id.imageView1);
         blackWhite = (ImageView) findViewById(R.id.imageView2);
+        context = this;
+        messageEmbedding = new MessageEmbedding(context, "null", 8);
+        Log.v(TAG, "Created instances");
 
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -76,13 +80,12 @@ public class StartActivity extends AppCompatActivity {
                 Here the image could be modified or converted into something else
              */
             String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName;
-            File image = new File(path);
+            //File image = new File(path);
 
             Bitmap im = ReadImage(path);
-            color.setImageBitmap(toGrayscale(im));
+            Log.v(TAG, "Taken photo and launched task.");
+            messageEmbedding.execute(im);
 
-
-            //Further elaborations
         }
     }
 
@@ -126,66 +129,6 @@ public class StartActivity extends AppCompatActivity {
     Found at:
     http://stackoverflow.com/questions/8381514/android-converting-color-image-to-grayscale
      */
-    private Bitmap toGrayscale(Bitmap bmpOriginal){
-        Bitmap bmpGrayscale = Bitmap.createBitmap(bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
-        int pixel;
-        int r, g, b;
-        int a;
 
-        for(int x = 0; x < bmpOriginal.getWidth(); ++x) {
-            for(int y = 0; y < bmpOriginal.getHeight(); ++y) {
-                // get one pixel color
-                pixel = bmpOriginal.getPixel(x, y);
-                // retrieve color of all channels
-                a = Color.alpha(pixel);
-                r = Color.red(pixel);
-                g = Color.green(pixel);
-                b = Color.blue(pixel);
-                // Y = 0.2126 R + 0.7152 G + 0.0722 B  as in Rec 709 (Wiki)
-                r = g = b = (int)(0.2126 * r + 0.7152 * g + 0.0722 * b);
-                // set new pixel color to output bitmap
-                bmpGrayscale.setPixel(x, y, Color.argb(a, r, g, b));
-            }
-        }
-        return bmpGrayscale;
-    }
-
-
-    //Sadly Java doesn't support unsigned data types
-    private double[][] Autocorrelation (int N, int P, byte[][]x)
-    {
-        double[][] buffer = new double[N][N];
-
-        for (int p=0; p<P; p++)
-        {
-            for (int j=0; j<N; j++)
-            {
-                for (int k=0; k<N; k++ )
-                {
-                    buffer[j][k] += x[p][k]*x[p][j];
-                }
-            }
-        }
-
-        return buffer;
-    }
-
-
-    //Reference http://math.nist.gov/javanumerics/jama/
-    private double[] GetSignatureVector(double[][] matrix)
-    {
-
-        Matrix A = new Matrix(matrix);
-        A = A.transpose().times(A);
-
-        // compute the spectral decomposition
-        EigenvalueDecomposition e = A.eig();
-        Matrix V = e.getV();    //<-- Eigenvalues
-        Matrix D = e.getD();    //<-- Eigenvectors
-
-        //Select the smallest eigenvalue and return the corresponding eigenvector
-        //Wait for martino to document how data is stored
-        return TODO;
-    }
 }
 
