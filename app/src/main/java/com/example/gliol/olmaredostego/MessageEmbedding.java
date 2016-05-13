@@ -20,6 +20,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     Context cx;
     String message;
     int blockSize = 8;
+    int finHeight = 480;
 
     //We don't wont this to be called without a message specified.
     private MessageEmbedding(){}
@@ -58,8 +59,8 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected Bitmap doInBackground(Bitmap... params) {
 
-        Bitmap buffer = ResizeToNMultiples(params[0], blockSize);
-        Log.v(TAG, "Image resized.");
+        Bitmap buffer = ResizeNCrop(params[0], blockSize, finHeight);
+        Log.v(TAG, "Image resized: " + buffer.getHeight() + " " + buffer.getWidth());
 
         //pd.setMessage("Gray scaling...");
         publishProgress(10);
@@ -103,8 +104,14 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Returns the image cropped in a way that every dimension
         is a multiple of the block size.
      */
-    private Bitmap ResizeToNMultiples(Bitmap original, int N){
-        return Bitmap.createBitmap(original, 0, 0, original.getWidth() - (original.getWidth() % N), original.getHeight() - (original.getHeight() % N));
+    private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight){
+
+        double ratio = (double) original.getHeight() / finalHeight;
+        int finalWidth = original.getWidth() / (int)ratio;
+
+        Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
+
+        return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
     }
 
     /*
