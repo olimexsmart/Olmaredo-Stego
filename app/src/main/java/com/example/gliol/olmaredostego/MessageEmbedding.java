@@ -194,7 +194,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private double[][] GetAutocorrelation (byte[][] x)
     {
         int P = x[0].length;
-        int Nsqr = x.length * x.length;
+        int Nsqr = x.length;
         double[][] buffer = new double[Nsqr][Nsqr];
 
         for (int p = 0; p < P; p++)
