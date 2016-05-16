@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
 
 import Jama.EigenvalueDecomposition;
@@ -16,8 +17,8 @@ import Jama.Matrix;
 public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private static final String TAG = "MessageEmbedding";
 
-    ProgressDialog pd;
-    Context cx;
+    ProgressDialog progressDialog;
+    Context context;
     String message;
     int blockSize = 8;
     int finHeight = 480;
@@ -27,13 +28,13 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     public MessageEmbedding(Context c, String message)
     {
-        cx = c;
+        context = c;
         this.message = message;
     }
 
     public MessageEmbedding(Context c, String message, int blockSize)
     {
-        cx = c;
+        context = c;
         this.message = message;
         this.blockSize = blockSize;
     }
@@ -43,15 +44,15 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        pd = new ProgressDialog(cx);
-        pd.setTitle("Embedding message.");
-        pd.setMessage("Resizing...");
-        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        pd.setMax(100);
-        pd.setCancelable(true);
-        pd.setIndeterminate(false);
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setTitle("Embedding message.");
+        progressDialog.setMessage("Resizing...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMax(100);
+        progressDialog.setCancelable(true);
+        progressDialog.setIndeterminate(false);
 
-        pd.show();
+        progressDialog.show();
 
         Log.v(TAG, "PreExecute terminated");
     }
@@ -62,24 +63,24 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Bitmap buffer = ResizeNCrop(params[0], blockSize, finHeight);
         Log.v(TAG, "Image resized: " + buffer.getHeight() + " " + buffer.getWidth());
 
-        //pd.setMessage("Gray scaling...");
+        //progressDialog.setMessage("Gray scaling...");
         publishProgress(10);
         buffer = ToGrayscale(buffer);
         Log.v(TAG, "Gray-scaled.");
 
-        //pd.setMessage("Creating X matrix...");
+        //progressDialog.setMessage("Creating X matrix...");
         publishProgress(25);
         byte[][] X = GetXMatrix(buffer, blockSize);
         buffer.recycle(); //Free-up memory
         Log.v(TAG, "Created X matrix.");
 
-        //pd.setMessage("Calculatig autocorrelation...");
+        //progressDialog.setMessage("Calculatig autocorrelation...");
         publishProgress(50);
         double[][] autocorrelation = GetAutocorrelation(X);
         X = null; //Hoping that the GC will act fast
-        Log.v(TAG, "Created autocorrelation matrix");
+        Log.v(TAG, "Created autocorrelation matrix.");
 
-        //pd.setMessage("Calculating signature vector...");
+        //progressDialog.setMessage("Calculating signature vector...");
         publishProgress(75);
         double[] s = GetSignatureVector(autocorrelation);
         autocorrelation = null;
@@ -94,7 +95,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         super.onProgressUpdate(values);
 
         //Setting progress percentage
-        pd.setProgress(values[0]);
+        progressDialog.setProgress(values[0]);
     }
 
     //################################ PROCESSING FUNCTIONS #############################################
@@ -197,7 +198,6 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         and P is the number of blocks.
         The return value is the autocorrelation matrix.
      */
-    //Sadly Java doesn't support unsigned data types
     private double[][] GetAutocorrelation (byte[][] x)
     {
         int P = x[0].length;
@@ -254,6 +254,57 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         double[] result = new double[N];
         for(int n = 0; n < N; n++)
             result[n] = temp[n][smallestI];
+
+        return result;
+    }
+
+    /*
+        Embedding the message into the image, combining
+        the X matrix, the signature vector and the image
+        following the formula: Y = A * b * S + X
+        Where A is a coefficient meaning the embedding power
+        and b is the corresponding bit of the image.
+     */
+    private byte[][] EmbedMessage(String message, double A, double[] sign, byte[][] X)
+    {
+        int P = X[0].length;
+        int N = (int) Math.round(Math.sqrt(X.length));
+        byte[][] Y = new byte[N][P];
+
+        for(int p = 0; p < P; p++)
+        {
+            //TODO
+        }
+
+        return Y;
+    }
+
+    /*
+        Once the message is finally embedded, the representation
+        needs to go back to a Bitmap to be then saved.
+        Comments are similar to those on getting X
+     */
+    private Bitmap GetImageFromY(byte[][] y, int finHeight)
+    {
+        int finWidht = y[0].length / finHeight;
+        int N = (int) Math.round(Math.sqrt(y.length));
+        Bitmap result = Bitmap.createBitmap(finWidht, finHeight, Bitmap.Config.ARGB_8888);
+        int rgb;
+
+        for (int h = 0; h < finHeight; h += N)
+        {
+            for (int w = 0; w < finWidht; w += N)
+            {
+                for(int a = 0; a < N; a++)
+                {
+                    for (int b = 0; b < N; b++)
+                    {
+                        rgb = y[(a * 8) + b][(h / N) + (w / N)];
+                        result.setPixel(w + b, h + a, Color.argb(255, rgb, rgb, rgb));
+                    }
+                }
+            }
+        }
 
         return result;
     }
