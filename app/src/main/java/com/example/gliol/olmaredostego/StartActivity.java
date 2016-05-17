@@ -45,7 +45,7 @@ public class StartActivity extends AppCompatActivity {
         color = (ImageView) findViewById(R.id.imageView1);
         blackWhite = (ImageView) findViewById(R.id.imageView2);
         context = this;
-        messageEmbedding = new MessageEmbedding(context, "null", 8);
+        messageEmbedding = new MessageEmbedding(context, "null", 8, 10.0);
         Log.v(TAG, "Created instances");
 
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

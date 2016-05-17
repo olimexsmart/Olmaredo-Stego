@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 
 import Jama.EigenvalueDecomposition;
@@ -13,6 +12,12 @@ import Jama.Matrix;
 
 /**
  * Created by gliol on 12/05/2016.
+ *
+ * This task gets:
+ * - Bitmap image to host the message
+ * - String containg the message (assuming is text for now)
+ * - Block size
+ * - Embedding power
  */
 public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private static final String TAG = "MessageEmbedding";
@@ -21,7 +26,8 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     Context context;
     String message;
     int blockSize = 8;
-    int finHeight = 480;
+    int finHeight = 480; //This could be useful to add in a constructor
+    double strength = 1;
 
     //We don't wont this to be called without a message specified.
     private MessageEmbedding(){}
@@ -32,11 +38,12 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         this.message = message;
     }
 
-    public MessageEmbedding(Context c, String message, int blockSize)
+    public MessageEmbedding(Context c, String message, int blockSize, double strength)
     {
         context = c;
         this.message = message;
         this.blockSize = blockSize;
+        this.strength = strength;
     }
 
 
@@ -77,7 +84,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         //progressDialog.setMessage("Calculatig autocorrelation...");
         publishProgress(50);
         double[][] autocorrelation = GetAutocorrelation(X);
-        X = null; //Hoping that the GC will act fast
+        //X = null; //Hoping that the GC will act fast // sadly there is the need of it
         Log.v(TAG, "Created autocorrelation matrix.");
 
         //progressDialog.setMessage("Calculating signature vector...");
@@ -86,8 +93,13 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         autocorrelation = null;
         Log.v(TAG, "Got signature vector.");
 
-        //Message embedding here
-        return null;
+        publishProgress(85);
+        X = EmbedMessage(message, strength, s, X);
+        Log.v(TAG, "Embedded message.");
+
+        publishProgress(100);
+        Log.v(TAG, "Recreating image and returning.");
+        return GetImageFromY(X, finHeight);
     }
 
     @Override
@@ -264,19 +276,39 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         following the formula: Y = A * b * S + X
         Where A is a coefficient meaning the embedding power
         and b is the corresponding bit of the image.
+        As for now the block dimension are fixed so there is the necessity
+        of pad the string with dummy characters in order to fill the whole image.
+        The string will be padded with '\0' chars.
      */
-    private byte[][] EmbedMessage(String message, double A, double[] sign, byte[][] X)
+    private byte[][] EmbedMessage(String message, double A, double[] signature, byte[][] X)
     {
         int P = X[0].length;
         int N = (int) Math.round(Math.sqrt(X.length));
-        byte[][] Y = new byte[N][P];
+        //byte[][] Y = new byte[N][P]; the modification can be applied to X itself
+        //Padding the message
+        char[] c = new char[P / 8]; //One bit per block: one byte every eight blocks
+        for (int k = 0; k < message.length(); k++) { c[k] = message.charAt(k); }
+        for (int k = message.length(); k < P / 8; k++) { c[k] = '\0'; }
 
+        int sign;
+        byte byteCounter = 0;
+        char b;
         for(int p = 0; p < P; p++)
         {
-            //TODO
+            b = (char) (c[P / 8] & 1 << byteCounter);
+            if(b == 0) sign = -1;
+            else sign = 1;
+
+            for(int n = 0; n < N * N; n++)
+            {
+                X[n][p] = (byte) (sign * A * signature[n] * X[n][p]);
+            }
+
+            byteCounter++;
+            if(byteCounter == 8) byteCounter = 0;
         }
 
-        return Y;
+        return X;
     }
 
     /*
