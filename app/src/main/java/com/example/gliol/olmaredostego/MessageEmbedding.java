@@ -295,7 +295,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         char b;
         for(int p = 0; p < P; p++)
         {
-            b = (char) (c[P / 8] & 1 << byteCounter);
+            b = (char) (c[p / 8] & 1 << byteCounter);
             if(b == 0) sign = -1;
             else sign = 1;
 
@@ -340,5 +340,6 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         return result;
     }
+
 
 }

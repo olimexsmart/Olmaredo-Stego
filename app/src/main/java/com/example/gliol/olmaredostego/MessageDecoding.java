@@ -49,4 +49,19 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
 
         progressDialog.setProgress(values[0]);
     }
+
+    private boolean GetSign (double[]signature, byte[]block)
+    {
+        double buffer = 0;
+        for (int i = 0; i < signature.length; i++ )
+        {
+            buffer += signature[i] * block[i];
+        }
+
+        if (buffer < 0)
+            return false;
+        else
+            return true;
+
+    }
 }
