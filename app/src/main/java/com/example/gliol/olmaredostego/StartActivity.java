@@ -4,11 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -20,17 +15,22 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class StartActivity extends AppCompatActivity {
     private static final String TAG = "StartActivity";
 
     Button b;
     Intent camera;
-    String fileName = "bomber.jpg";
-    ImageView color;
-    ImageView blackWhite;
+    String fileName;
+    ImageView original;
+    ImageView output;
     MessageEmbedding messageEmbedding;
     Context context;
 
@@ -42,10 +42,11 @@ public class StartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_start);
 
         b = (Button) findViewById(R.id.button);
-        color = (ImageView) findViewById(R.id.imageView1);
-        blackWhite = (ImageView) findViewById(R.id.imageView2);
+        original = (ImageView) findViewById(R.id.imageView1);
+        output = (ImageView) findViewById(R.id.imageView2);
         context = this;
         messageEmbedding = new MessageEmbedding(context, "null", 8, 10.0);
+        fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date()) + "-original.jpg";
         Log.v(TAG, "Created instances");
 
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -76,6 +77,7 @@ public class StartActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == camReqCode && resultCode == RESULT_OK) {
+            Log.v(TAG, "Entered activity result");
             /*
                 Here the image could be modified or converted into something else
              */
@@ -83,13 +85,42 @@ public class StartActivity extends AppCompatActivity {
             //File image = new File(path);
 
             Bitmap im = ReadImage(path);
+            original.setImageBitmap(im);
             Log.v(TAG, "Taken photo and launched task.");
-            messageEmbedding.execute(im);
 
+            Bitmap result = null;
+            try {
+                result = messageEmbedding.execute(im).get();
+                output.setImageBitmap(result);
+            } catch (InterruptedException e) {
+                Log.v(TAG, "Execution interupted.");
+            } catch (ExecutionException e) {
+                Log.v(TAG, "Execution unsuccesfull");
+            }
+
+            FileOutputStream out = null;
+            try {
+                String path2 = Environment.getExternalStorageDirectory() + "/PicturesTest/" + "tr.jpg";
+                out = new FileOutputStream(path2);
+                result.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
+                // PNG is a lossless format, the compression factor (100) is ignored
+            } catch (FileNotFoundException e) {
+                Log.v(TAG, "Invalid saving path.");
+            } catch (NullPointerException e) {
+                Log.v(TAG, "The embedding result is null.");
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    private Bitmap ReadImage(String path){
+    private Bitmap ReadImage(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -99,36 +130,4 @@ public class StartActivity extends AppCompatActivity {
         return BitmapFactory.decodeFile(path);
     }
 
-
-    /*
-    Found at:
-    http://stackoverflow.com/questions/3373860/convert-a-bitmap-to-grayscale-in-android
-
-    private Bitmap toGrayscale1(Bitmap bmpOriginal)
-    {   //Creating a new bitmap image
-        Bitmap bmpGrayscale = Bitmap.createBitmap(bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
-
-        //Canvas let you modify Bitmaps through drawBitmap that takes a Paint object as parameter
-        Canvas c = new Canvas(bmpGrayscale);
-
-        //Create a new Paint object and setColorFilter through a ColorMatrixColorFilter
-        Paint paint = new Paint();
-        ColorMatrix cm = new ColorMatrix();
-        cm.setSaturation(0);    //This is the whole point of this: we want the saturation to be zero
-        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
-        paint.setColorFilter(f);
-
-        //Apply the filter and return
-        c.drawBitmap(bmpOriginal, 0, 0, paint);
-
-        return bmpGrayscale;
-    }
- */
-
-    /*
-    Found at:
-    http://stackoverflow.com/questions/8381514/android-converting-color-image-to-grayscale
-     */
-
 }
-

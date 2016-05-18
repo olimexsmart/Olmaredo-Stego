@@ -53,7 +53,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle("Embedding message.");
-        progressDialog.setMessage("Resizing...");
+        //progressDialog.setMessage("Resizing...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(100);
         progressDialog.setCancelable(true);
@@ -139,16 +139,16 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         for(int x = 0; x < bmpOriginal.getWidth(); ++x) {
             for(int y = 0; y < bmpOriginal.getHeight(); ++y) {
-                // get one pixel color
+                // get one pixel original
                 pixel = bmpOriginal.getPixel(x, y);
-                // retrieve color of all channels
+                // retrieve original of all channels
                 a = Color.alpha(pixel);
                 r = Color.red(pixel);
                 g = Color.green(pixel);
                 b = Color.blue(pixel);
                 // Y = 0.2126 R + 0.7152 G + 0.0722 B  as in Rec 709 (Wiki)
                 r = g = b = (int)(0.2126 * r + 0.7152 * g + 0.0722 * b);
-                // set new pixel color to output bitmap
+                // set new pixel original to output bitmap
                 bmpGrayscale.setPixel(x, y, Color.argb(a, r, g, b));
             }
         }
