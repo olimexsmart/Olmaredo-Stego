@@ -28,22 +28,25 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     int blockSize = 8;
     int finHeight = 480; //This could be useful to add in a constructor
     double strength = 1;
+    GetResult returnResult;
 
     //We don't wont this to be called without a message specified.
     private MessageEmbedding(){}
 
-    public MessageEmbedding(Context c, String message)
+    public MessageEmbedding(GetResult result, Context c, String message)
     {
         context = c;
         this.message = message;
+        this.returnResult = result;
     }
 
-    public MessageEmbedding(Context c, String message, int blockSize, double strength)
+    public MessageEmbedding(GetResult result, Context c, String message, int blockSize, double strength)
     {
         context = c;
         this.message = message;
         this.blockSize = blockSize;
         this.strength = strength;
+        returnResult = result;
     }
 
 
@@ -77,7 +80,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         //progressDialog.setMessage("Creating X matrix...");
         publishProgress(25);
-        byte[][] X = GetXMatrix(buffer, blockSize);
+        char[][] X = GetXMatrix(buffer, blockSize);
         buffer.recycle(); //Free-up memory
         Log.v(TAG, "Created X matrix.");
 
@@ -108,6 +111,14 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         //Setting progress percentage
         progressDialog.setProgress(values[0]);
+    }
+
+    @Override
+    protected void onPostExecute(Bitmap bitmap) {
+        super.onPostExecute(bitmap);
+        progressDialog.hide();
+        progressDialog.dismiss();
+        this.returnResult.onResultsReady(bitmap);
     }
 
     //################################ PROCESSING FUNCTIONS #############################################
@@ -166,12 +177,12 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         blocks in the image. Let's say H is the height and W the width,
         the final P width of the result is: (H * W / N^2)
      */
-    private byte[][] GetXMatrix(Bitmap image, int N)
+    private char[][] GetXMatrix(Bitmap image, int N)
     {//Think about checking if the image is in grayscale
         int H = image.getHeight();
         int W = image.getWidth();
 
-        byte[][] X = new byte[N * N][(H * W) / N * N];
+        char[][] X = new char[N * N][(H * W) / (N * N)];
 
         for (int h = 0; h < H; h += N)  //Loop on image's rows (going down)
         {
@@ -181,7 +192,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
                 {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        X[(a * N) + b][(W / N) * (h / N) + (w / N)] = (byte)Color.green(image.getPixel(w + b, h + a));
+                        X[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char)Color.green(image.getPixel(w + b, h + a));
                     }
                 }
             }
@@ -210,7 +221,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         and P is the number of blocks.
         The return value is the autocorrelation matrix.
      */
-    private double[][] GetAutocorrelation (byte[][] x)
+    private double[][] GetAutocorrelation (char[][] x)
     {
         int P = x[0].length;
         int Nsqr = x.length;
@@ -251,18 +262,18 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         //Select the smallest eigenvalue and return the corresponding eigenvector
         int smallestI = 0;
-        double smallest = V.get(0, 0);
+        double smallest = D.get(0, 0);
         for (int k = 1; k < N; k++)
         {
-            if(V.get(k, k) < smallest)
+            if(D.get(k, k) < smallest)
             {
-                smallest = V.get(k, k);
+                smallest = D.get(k, k);
                 smallestI = k;
             }
         }
 
         //Copy into a one dimensional array
-        double[][] temp = D.getArray();
+        double[][] temp = V.getArray();
         double[] result = new double[N];
         for(int n = 0; n < N; n++)
             result[n] = temp[n][smallestI];
@@ -280,7 +291,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         of pad the string with dummy characters in order to fill the whole image.
         The string will be padded with '\0' chars.
      */
-    private byte[][] EmbedMessage(String message, double A, double[] signature, byte[][] X)
+    private char[][] EmbedMessage(String message, double A, double[] signature, char[][] X)
     {
         int P = X[0].length;
         int N = (int) Math.round(Math.sqrt(X.length));
@@ -301,7 +312,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
             for(int n = 0; n < N * N; n++)
             {
-                X[n][p] = (byte) (sign * A * signature[n] * X[n][p]);
+                X[n][p] = (char) (sign * A * signature[n] + X[n][p]);
             }
 
             byteCounter++;
@@ -316,10 +327,11 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         needs to go back to a Bitmap to be then saved.
         Comments are similar to those on getting X
      */
-    private Bitmap GetImageFromY(byte[][] y, int finHeight)
+    private Bitmap GetImageFromY(char[][] y, int finHeight)
     {
-        int finWidht = y[0].length / finHeight;
         int N = (int) Math.round(Math.sqrt(y.length));
+        int finWidht = (y[0].length / (finHeight / N)) * N;
+
         Bitmap result = Bitmap.createBitmap(finWidht, finHeight, Bitmap.Config.ARGB_8888);
         int rgb;
 
@@ -331,7 +343,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
                 {
                     for (int b = 0; b < N; b++)
                     {
-                        rgb = y[(a * 8) + b][(h / N) + (w / N)];
+                        rgb = y[(a * N) + b][(finWidht / N) * (h / N) + (w / N)];
                         result.setPixel(w + b, h + a, Color.argb(255, rgb, rgb, rgb));
                     }
                 }

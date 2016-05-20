@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class StartActivity extends AppCompatActivity {
+public class StartActivity extends AppCompatActivity implements GetResult{
     private static final String TAG = "StartActivity";
 
     Button b;
@@ -33,6 +33,7 @@ public class StartActivity extends AppCompatActivity {
     ImageView output;
     MessageEmbedding messageEmbedding;
     Context context;
+    //GetResult res;
 
     int camReqCode = 4444;
 
@@ -40,21 +41,30 @@ public class StartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-
+/*
+        res = new GetResult() {
+            @Override
+            public void onResultsReady(Bitmap bm) {
+                ManageResult(bm);
+            }
+        };
+*/
         b = (Button) findViewById(R.id.button);
         original = (ImageView) findViewById(R.id.imageView1);
         output = (ImageView) findViewById(R.id.imageView2);
         context = this;
-        messageEmbedding = new MessageEmbedding(context, "null", 8, 10.0);
-        fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date()) + "-original.jpg";
+        messageEmbedding = new MessageEmbedding(this , context, "null", 8, 10.0);
+        fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
         Log.v(TAG, "Created instances");
 
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+
+
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
-        dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName);
+        dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg");
 
         try {
             dir.createNewFile();
@@ -81,42 +91,13 @@ public class StartActivity extends AppCompatActivity {
             /*
                 Here the image could be modified or converted into something else
              */
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName;
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg";
             //File image = new File(path);
 
             Bitmap im = ReadImage(path);
             original.setImageBitmap(im);
+            messageEmbedding.execute(im);
             Log.v(TAG, "Taken photo and launched task.");
-
-            Bitmap result = null;
-            try {
-                result = messageEmbedding.execute(im).get();
-                output.setImageBitmap(result);
-            } catch (InterruptedException e) {
-                Log.v(TAG, "Execution interupted.");
-            } catch (ExecutionException e) {
-                Log.v(TAG, "Execution unsuccesfull");
-            }
-
-            FileOutputStream out = null;
-            try {
-                String path2 = Environment.getExternalStorageDirectory() + "/PicturesTest/" + "tr.jpg";
-                out = new FileOutputStream(path2);
-                result.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
-                // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (FileNotFoundException e) {
-                Log.v(TAG, "Invalid saving path.");
-            } catch (NullPointerException e) {
-                Log.v(TAG, "The embedding result is null.");
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -130,4 +111,29 @@ public class StartActivity extends AppCompatActivity {
         return BitmapFactory.decodeFile(path);
     }
 
+    @Override
+    public void onResultsReady(Bitmap result) {
+        //salvare la bitmap
+        output.setImageBitmap(result);
+
+        FileOutputStream out = null;
+        try {
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-result.jpg";
+            out = new FileOutputStream(path);
+            result.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
+            // PNG is a lossless format, the compression factor (100) is ignored
+        } catch (FileNotFoundException e) {
+            Log.v(TAG, "Invalid saving path.");
+        } catch (NullPointerException e) {
+            Log.v(TAG, "The embedding result is null.");
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
