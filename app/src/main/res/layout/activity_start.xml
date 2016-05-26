@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
-        android:id="@+id/result"
+        android:id="@+id/resultHealth"
         android:layout_centerVertical="true"
         android:layout_alignRight="@+id/imageView2"
         android:layout_alignEnd="@+id/imageView2" />
