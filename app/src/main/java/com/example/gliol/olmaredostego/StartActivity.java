@@ -13,27 +13,35 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class StartActivity extends AppCompatActivity implements GetResult{
+public class StartActivity extends AppCompatActivity implements GetResultEmbedding, GetResultDecoding{
     private static final String TAG = "StartActivity";
+    private static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
 
-    Button b;
+    Button photo;
+    Button getResult;
     Intent camera;
     String fileName;
     ImageView original;
     ImageView output;
     MessageEmbedding messageEmbedding;
+    MessageDecoding messageDecoding;
     Context context;
-    //GetResult res;
+    double[] signature;
+    TextView resultHealth;
+    Bitmap embeddedPicture;
+    StartActivity thisthis;
 
     int camReqCode = 4444;
 
@@ -41,20 +49,15 @@ public class StartActivity extends AppCompatActivity implements GetResult{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-/*
-        res = new GetResult() {
-            @Override
-            public void onResultsReady(Bitmap bm) {
-                ManageResult(bm);
-            }
-        };
-*/
-        b = (Button) findViewById(R.id.button);
+
+        photo = (Button) findViewById(R.id.button);
+        getResult = (Button) findViewById(R.id.decode);
+        resultHealth = (TextView) findViewById(R.id.resultHealth);
         original = (ImageView) findViewById(R.id.imageView1);
         output = (ImageView) findViewById(R.id.imageView2);
         context = this;
-        messageEmbedding = new MessageEmbedding(this , context, "null", 8, 10.0);
         fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+        thisthis = this;
         Log.v(TAG, "Created instances");
 
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -74,13 +77,22 @@ public class StartActivity extends AppCompatActivity implements GetResult{
 
         camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(dir));
 
-        b.setOnClickListener(new View.OnClickListener() {
+        photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivityForResult(camera, camReqCode);
             }
         });
+
+        getResult.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                messageDecoding = new MessageDecoding(context, signature, thisthis);
+                messageDecoding.execute(embeddedPicture);
+            }
+        });
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -96,7 +108,10 @@ public class StartActivity extends AppCompatActivity implements GetResult{
 
             Bitmap im = ReadImage(path);
             original.setImageBitmap(im);
+
+            messageEmbedding = new MessageEmbedding(this , context, Lorem, (byte)8, 10.0);
             messageEmbedding.execute(im);
+
             Log.v(TAG, "Taken photo and launched task.");
         }
     }
@@ -112,9 +127,12 @@ public class StartActivity extends AppCompatActivity implements GetResult{
     }
 
     @Override
-    public void onResultsReady(Bitmap result) {
+    public void onResultsReady(Bitmap result, double[] signature) {
         //salvare la bitmap
+        messageEmbedding = null;
         output.setImageBitmap(result);
+        this.signature = signature;
+        embeddedPicture = result;
 
         FileOutputStream out = null;
         try {
@@ -135,5 +153,36 @@ public class StartActivity extends AppCompatActivity implements GetResult{
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void OnResultReady(String message) {
+        messageDecoding = null;
+        //Saving result as text as debug support
+        try {
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-textresult.txt";
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
+            outputStreamWriter.write(message);
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
+        //Comparing each character trying to estimate the quality of the result
+        int lenght = message.length();
+        if(message.length() > Lorem.length()) {
+            Log.v(TAG, "Message longer than lorem ipsum sample. " + message.length() + " vs " + Lorem.length());
+            lenght = Lorem.length();
+        }
+
+        int healthIndex = 0;
+        for(int i = 0; i < lenght; i++)
+        {
+            if(Lorem.charAt(i) == message.charAt(i))
+                healthIndex++;
+        }
+
+        resultHealth.setText((healthIndex / Lorem.length()) + "%");
     }
 }

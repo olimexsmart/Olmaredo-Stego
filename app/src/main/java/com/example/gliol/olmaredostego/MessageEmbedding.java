@@ -25,22 +25,23 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     ProgressDialog progressDialog;
     Context context;
     String message;
-    int blockSize = 8;
+    byte blockSize = 8;
     int finHeight = 480; //This could be useful to add in a constructor
     double strength = 1;
-    GetResult returnResult;
+    GetResultEmbedding returnResult;
+    double[] signature;
 
     //We don't wont this to be called without a message specified.
     private MessageEmbedding(){}
 
-    public MessageEmbedding(GetResult result, Context c, String message)
+    public MessageEmbedding(GetResultEmbedding result, Context c, String message)
     {
         context = c;
         this.message = message;
         this.returnResult = result;
     }
 
-    public MessageEmbedding(GetResult result, Context c, String message, int blockSize, double strength)
+    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize, double strength)
     {
         context = c;
         this.message = message;
@@ -92,12 +93,12 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         //progressDialog.setMessage("Calculating signature vector...");
         publishProgress(75);
-        double[] s = GetSignatureVector(autocorrelation);
+        signature = GetSignatureVector(autocorrelation);
         autocorrelation = null;
         Log.v(TAG, "Got signature vector.");
 
         publishProgress(85);
-        X = EmbedMessage(message, strength, s, X);
+        X = EmbedMessage(message, strength, signature, X);
         Log.v(TAG, "Embedded message.");
 
         publishProgress(100);
@@ -118,7 +119,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         super.onPostExecute(bitmap);
         progressDialog.hide();
         progressDialog.dismiss();
-        this.returnResult.onResultsReady(bitmap);
+        this.returnResult.onResultsReady(bitmap, signature);
     }
 
     //################################ PROCESSING FUNCTIONS #############################################
@@ -177,7 +178,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         blocks in the image. Let's say H is the height and W the width,
         the final P width of the result is: (H * W / N^2)
      */
-    private char[][] GetXMatrix(Bitmap image, int N)
+    private char[][] GetXMatrix(Bitmap image, byte N)
     {//Think about checking if the image is in grayscale
         int H = image.getHeight();
         int W = image.getWidth();
@@ -294,7 +295,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private char[][] EmbedMessage(String message, double A, double[] signature, char[][] X)
     {
         int P = X[0].length;
-        int N = (int) Math.round(Math.sqrt(X.length));
+        byte N = (byte) Math.round(Math.sqrt(X.length));
         //byte[][] Y = new byte[N][P]; the modification can be applied to X itself
         //Padding the message
         char[] c = new char[P / 8]; //One bit per block: one byte every eight blocks
@@ -304,6 +305,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         int sign;
         byte byteCounter = 0;
         char b;
+        int e;
         for(int p = 0; p < P; p++)
         {
             b = (char) (c[p / 8] & 1 << byteCounter);
@@ -311,8 +313,12 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
             else sign = 1;
 
             for(int n = 0; n < N * N; n++)
-            {
-                X[n][p] = (char) (sign * A * signature[n] + X[n][p]);
+            {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                e = (char) (sign * A * signature[n] + X[n][p]);
+                if(e < 0) e = 0;
+                else if (e > 255) e = 255;
+
+                X[n][p] = (char) e;
             }
 
             byteCounter++;
