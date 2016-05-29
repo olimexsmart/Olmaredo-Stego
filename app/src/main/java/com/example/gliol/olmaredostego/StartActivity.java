@@ -56,7 +56,7 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         original = (ImageView) findViewById(R.id.imageView1);
         output = (ImageView) findViewById(R.id.imageView2);
         context = this;
-        fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+
         thisthis = this;
         Log.v(TAG, "Created instances");
 
@@ -67,19 +67,21 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
-        dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg");
 
-        try {
-            dir.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(dir));
 
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                File dir;
+                fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+                dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg");
+                try {
+                    dir.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(dir));
+
                 startActivityForResult(camera, camReqCode);
             }
         });
@@ -176,13 +178,20 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
             lenght = Lorem.length();
         }
 
+        int offset;
+        for(offset = 0; offset < lenght; offset++)
+        {
+            if(message.charAt(offset) == 'L') break;
+        }
         int healthIndex = 0;
+
         for(int i = 0; i < lenght; i++)
         {
-            if(Lorem.charAt(i) == message.charAt(i))
+            if(Lorem.charAt(i) == message.charAt(i + offset))
                 healthIndex++;
         }
+        Log.v(TAG, "Healthindex: " + healthIndex);
 
-        resultHealth.setText((healthIndex / Lorem.length()) + "%");
+        resultHealth.setText(Math.round((healthIndex / (double)Lorem.length()) * 100) + "%");
     }
 }
