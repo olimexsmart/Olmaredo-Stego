@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,12 +28,21 @@ import java.util.concurrent.ExecutionException;
 
 public class StartActivity extends AppCompatActivity implements GetResultEmbedding, GetResultDecoding{
     private static final String TAG = "StartActivity";
+    //Used as test
     private static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
+
+    //Used to retrieve data when activity is reloaded
+    private static final String bundleNameOriginal = "bNO";
+    private static final String bundleNameResult = "bNR";
+    private static final String bundleTimeStamp = "bTS";
+    private static final String bundleSignature = "bS";
 
     Button photo;
     Button getResult;
     Intent camera;
-    String fileName;
+    String fileNameOriginal;
+    String fileNameResult;
+    String timeStamp;
     ImageView original;
     ImageView output;
     MessageEmbedding messageEmbedding;
@@ -40,7 +50,6 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     Context context;
     double[] signature;
     TextView resultHealth;
-    Bitmap embeddedPicture;
     StartActivity thisthis;
 
     int camReqCode = 4444;
@@ -56,31 +65,50 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         original = (ImageView) findViewById(R.id.imageView1);
         output = (ImageView) findViewById(R.id.imageView2);
         context = this;
-
         thisthis = this;
-        Log.v(TAG, "Created instances");
-
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
-
+        //Create the app directory
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
+        if (savedInstanceState != null) {
+            fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
+            fileNameResult = savedInstanceState.getString(bundleNameResult);
+            timeStamp = savedInstanceState.getString(bundleTimeStamp);
+            if (savedInstanceState.containsKey(bundleSignature))
+                signature = savedInstanceState.getDoubleArray(bundleSignature);
+            dir = new File(fileNameOriginal);
+            if (dir.exists()) original.setImageBitmap(ReadImageThumb(fileNameOriginal));
 
+            dir = new File(fileNameResult);
+            if (dir.exists()) output.setImageBitmap(ReadImageThumb(fileNameResult));
+
+            Log.v(TAG, "Activity restored.");
+        } else {
+            fileNameOriginal = "nothing here";
+            fileNameResult = "nothing here";
+            timeStamp = "nothing here";
+            Log.v(TAG, "Activity NOT restored.");
+        }
+
+        Log.v(TAG, "Created instances");
 
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File dir;
-                fileName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-                dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg");
+                timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+                Log.v(TAG, timeStamp);
+
+                fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
+                fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.jpg";
+
+                File fileOriginal = new File(fileNameOriginal);
                 try {
-                    dir.createNewFile();
+                    fileOriginal.createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(dir));
+                camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileOriginal));
 
                 startActivityForResult(camera, camReqCode);
             }
@@ -89,12 +117,24 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         getResult.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                messageDecoding = new MessageDecoding(context, signature, thisthis);
-                messageDecoding.execute(embeddedPicture);
+                Log.v(TAG, fileNameResult);
+                if (new File(fileNameResult).exists()) {
+                    messageDecoding = new MessageDecoding(context, signature, thisthis);
+                    messageDecoding.execute(ReadImage(fileNameResult));
+                }
             }
         });
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(bundleNameOriginal, fileNameOriginal);
+        outState.putString(bundleNameResult, fileNameResult);
+        outState.putString(bundleTimeStamp, timeStamp);
+        if(signature != null) outState.putDoubleArray(bundleSignature, signature);
+
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -102,19 +142,20 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
 
         if (requestCode == camReqCode && resultCode == RESULT_OK) {
             Log.v(TAG, "Entered activity result");
-            /*
-                Here the image could be modified or converted into something else
-             */
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-original.jpg";
-            //File image = new File(path);
+            Log.v(TAG, fileNameOriginal);
 
-            Bitmap im = ReadImage(path);
-            original.setImageBitmap(im);
+            Bitmap im = ReadImage(fileNameOriginal);
+            if(im != null) {
+                original.setImageBitmap(ReadImageThumb(fileNameOriginal));
 
-            messageEmbedding = new MessageEmbedding(this , context, Lorem, (byte)8, 10.0);
-            messageEmbedding.execute(im);
+                messageEmbedding = new MessageEmbedding(this, context, Lorem, (byte) 8, 10.0);
+                messageEmbedding.execute(im);
 
-            Log.v(TAG, "Taken photo and launched task.");
+                Log.v(TAG, "Taken photo and launched task.");
+            }
+            else{
+                Log.v(TAG, "Image is null");
+            }
         }
     }
 
@@ -128,18 +169,28 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         return BitmapFactory.decodeFile(path);
     }
 
+    private Bitmap ReadImageThumb(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inSampleSize = 8; //Set as you want but bigger than one
+        options.inJustDecodeBounds = false;
+
+        return BitmapFactory.decodeFile(path);
+    }
+
+
+    //Returning data from MessageEmbedding
     @Override
     public void onResultsReady(Bitmap result, double[] signature) {
         //salvare la bitmap
         messageEmbedding = null;
         output.setImageBitmap(result);
         this.signature = signature;
-        embeddedPicture = result;
 
         FileOutputStream out = null;
         try {
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-result.jpg";
-            out = new FileOutputStream(path);
+            out = new FileOutputStream(fileNameResult);
             result.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
             // PNG is a lossless format, the compression factor (100) is ignored
         } catch (FileNotFoundException e) {
@@ -157,12 +208,14 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         }
     }
 
+
+    //Returning data from MessageDecoding
     @Override
     public void OnResultReady(String message) {
         messageDecoding = null;
         //Saving result as text as debug support
         try {
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + fileName + "-textresult.txt";
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-decoded.txt";
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
             outputStreamWriter.write(message);
             outputStreamWriter.close();
