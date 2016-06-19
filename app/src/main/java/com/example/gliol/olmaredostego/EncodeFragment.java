@@ -136,7 +136,8 @@ public class EncodeFragment extends Fragment {
         options.inJustDecodeBounds = false;
 
         Cursor cursor = null;
-        String result;
+        String result = "OLLI POI CANCELLA QUESTA INIZIALIZZAZIONE!!!";
+        /*
         Context c =
         try {
             String[] proj = { MediaStore.Images.Media.DATA };
@@ -149,7 +150,7 @@ public class EncodeFragment extends Fragment {
                 cursor.close();
             }
         }
-
+        */
         return BitmapFactory.decodeFile(result);
     }
 
