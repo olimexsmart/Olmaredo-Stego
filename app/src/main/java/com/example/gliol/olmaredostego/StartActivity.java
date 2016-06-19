@@ -1,20 +1,28 @@
 package com.example.gliol.olmaredostego;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.support.design.widget.TabLayout;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
@@ -37,33 +47,66 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     private static final String bundleTimeStamp = "bTS";
     private static final String bundleSignature = "bS";
 
-    Button photo;
+
     Button getResult;
     Intent camera;
-    String fileNameOriginal;
-    String fileNameResult;
-    String timeStamp;
-    ImageView original;
+
+
     ImageView output;
-    MessageEmbedding messageEmbedding;
+
     MessageDecoding messageDecoding;
     Context context;
     double[] signature;
     TextView resultHealth;
     StartActivity thisthis;
 
-    int camReqCode = 4444;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private ViewPagerAdapter viewPagerAdapter;
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+        getSupportActionBar().hide();
 
-        photo = (Button) findViewById(R.id.button);
+        tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        final TabLayout.Tab encode = tabLayout.newTab();
+        final TabLayout.Tab decode = tabLayout.newTab();
+        final TabLayout.Tab info = tabLayout.newTab();
+        final TabLayout.Tab settings = tabLayout.newTab();
+
+        encode.setText("Encode");
+        decode.setText("Decode");
+        info.setText("Info");
+        settings.setText("Settings");
+
+        tabLayout.addTab(encode, 0);
+        tabLayout.addTab(decode, 1);
+        tabLayout.addTab(info, 2);
+        tabLayout.addTab(settings, 3);
+
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+        viewPager.setAdapter(viewPagerAdapter);
+
+        tabLayout.setTabTextColors(ContextCompat.getColorStateList(this, R.drawable.tab_selector));
+        tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this, R.color.indicator));
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
+
+/*
+
         getResult = (Button) findViewById(R.id.decode);
         resultHealth = (TextView) findViewById(R.id.resultHealth);
         original = (ImageView) findViewById(R.id.imageView1);
         output = (ImageView) findViewById(R.id.imageView2);
+        */
         context = this;
         thisthis = this;
         camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -71,6 +114,7 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
+/*
         if (savedInstanceState != null) {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
             fileNameResult = savedInstanceState.getString(bundleNameResult);
@@ -90,29 +134,11 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
             timeStamp = "nothing here";
             Log.v(TAG, "Activity NOT restored.");
         }
-
+*/
         Log.v(TAG, "Created instances");
 
-        photo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-                Log.v(TAG, timeStamp);
+/*
 
-                fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
-                fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.jpg";
-
-                File fileOriginal = new File(fileNameOriginal);
-                try {
-                    fileOriginal.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                camera.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileOriginal));
-
-                startActivityForResult(camera, camReqCode);
-            }
-        });
 
         getResult.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,50 +150,20 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
                 }
             }
         });
+        */
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        /*
         outState.putString(bundleNameOriginal, fileNameOriginal);
         outState.putString(bundleNameResult, fileNameResult);
         outState.putString(bundleTimeStamp, timeStamp);
         if(signature != null) outState.putDoubleArray(bundleSignature, signature);
-
+*/
         super.onSaveInstanceState(outState);
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == camReqCode && resultCode == RESULT_OK) {
-            Log.v(TAG, "Entered activity result");
-            Log.v(TAG, fileNameOriginal);
-
-            Bitmap im = ReadImage(fileNameOriginal);
-            if(im != null) {
-                original.setImageBitmap(ReadImageThumb(fileNameOriginal));
-
-                messageEmbedding = new MessageEmbedding(this, context, Lorem, (byte) 8, 10.0);
-                messageEmbedding.execute(im);
-
-                Log.v(TAG, "Taken photo and launched task.");
-            }
-            else{
-                Log.v(TAG, "Image is null");
-            }
-        }
-    }
-
-    private Bitmap ReadImage(String path) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        options.inSampleSize = 1; //Set as you want but bigger than one
-        options.inJustDecodeBounds = false;
-
-        return BitmapFactory.decodeFile(path);
-    }
+/*
 
     private Bitmap ReadImageThumb(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -179,11 +175,11 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         return BitmapFactory.decodeFile(path);
     }
 
-
+*/
     //Returning data from MessageEmbedding
     @Override
     public void onResultsReady(Bitmap result, double[] signature) {
-        //salvare la bitmap
+  /*      //salvare la bitmap
         messageEmbedding = null;
         output.setImageBitmap(result);
         this.signature = signature;
@@ -205,14 +201,14 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
 
     //Returning data from MessageDecoding
     @Override
     public void OnResultReady(String message) {
-        messageDecoding = null;
+       /* messageDecoding = null;
         //Saving result as text as debug support
         try {
             String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-decoded.txt";
@@ -246,5 +242,8 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         Log.v(TAG, "Healthindex: " + healthIndex);
 
         resultHealth.setText(Math.round((healthIndex / (double)Lorem.length()) * 100) + "%");
+        */
     }
+
+
 }

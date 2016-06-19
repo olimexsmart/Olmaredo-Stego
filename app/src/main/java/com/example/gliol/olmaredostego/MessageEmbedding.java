@@ -97,6 +97,8 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         autocorrelation = null;
         Log.v(TAG, "Got signature vector.");
 
+        //X = ReduceDynamic(signature, strength, X);
+
         publishProgress(85);
         X = EmbedMessage(message, strength, signature, X);
         Log.v(TAG, "Embedded message.");
@@ -282,6 +284,40 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         return result;
     }
 
+
+    /*
+        Test on reducing image dynamics trying to avoid saturation
+        when applying the message
+     */
+    private char[][] ReduceDynamic(double[] sign, double factor, char[][] X)
+    {
+        int P = X[0].length;
+        byte N = (byte) Math.round(Math.sqrt(X.length));
+        int maxAbs = 0;
+        for (double aSign : sign) {
+            int temp = (int) Math.abs(Math.round(aSign * factor));
+            if (temp > maxAbs) maxAbs = temp;
+        }
+
+        if(maxAbs < 0) maxAbs = 0;
+        else if (maxAbs > 255) maxAbs = 255;
+
+        for(int p = 0; p < P; p++)
+        {
+            for(int n = 0; n < N; n++)
+            {
+                X[n][p] = map(X[n][p], (char)0, (char)255, (char)(maxAbs), (char)(255 - maxAbs));
+            }
+        }
+
+        return X;
+    }
+
+    private char map(char x, char in_min, char in_max, char out_min, char out_max)
+    {
+        return (char) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+    }
+
     /*
         Embedding the message into the image, combining
         the X matrix, the signature vector and the image
@@ -305,7 +341,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         int sign;
         byte byteCounter = 0;
         char b;
-        int e;
+        double e;
         for(int p = 0; p < P; p++)
         {
             b = (char) (c[p / 8] & 1 << byteCounter);
@@ -314,11 +350,11 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
             for(int n = 0; n < N * N; n++)
             {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
-                e = (char) (sign * A * signature[n] + X[n][p]);
+                e = (sign * A * signature[n] + X[n][p]);
                 if(e < 0) e = 0;
                 else if (e > 255) e = 255;
 
-                X[n][p] = (char) e;
+                X[n][p] = (char) Math.round(e);
             }
 
             byteCounter++;
