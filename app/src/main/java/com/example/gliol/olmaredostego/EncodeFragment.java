@@ -41,7 +41,7 @@ public class EncodeFragment extends Fragment {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
 
-    ImageButton photo;
+    Button photo;
     String fileNameOriginal;
     String fileNameResult;
     String timeStamp;
@@ -59,8 +59,8 @@ public class EncodeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        photo = (ImageButton) view.findViewById(R.id.chooseImage);
-        photo.setImageResource(R.drawable.ic_action_name);
+        photo = (Button) view.findViewById(R.id.btPhotoEncode);
+        //photo.setImageResource(R.drawable.ic_action_name);
 
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +115,7 @@ public class EncodeFragment extends Fragment {
 
             Bitmap im = ReadImage();
             if(im != null) {
-                photo.setImageBitmap(im);
+                //photo.setImageBitmap(im); FALLA FINIRE NELLA IMAGEVIEW
 /*
                 messageEmbedding = new MessageEmbedding(this, context, Lorem, (byte) 8, 10.0);
                 messageEmbedding.execute(im);

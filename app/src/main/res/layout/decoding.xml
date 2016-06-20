@@ -6,7 +6,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btDecode"
+        android:id="@+id/btBrowseDecode"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
@@ -15,12 +15,14 @@
         />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
         android:id="@+id/imageView"
-        android:layout_below="@+id/btDecode"
+        android:layout_below="@+id/btBrowseDecode"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -55,6 +57,26 @@
 
     </RadioGroup>
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/etCustom"
+        android:visibility="invisible"
+        android:layout_alignBottom="@+id/radioGroup"
+        android:layout_alignLeft="@+id/btDecode"
+        android:layout_alignStart="@+id/btDecode"
+        android:hint="Enter the signature"
+        android:layout_marginRight="10dp"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Decode"
+        android:id="@+id/btDecode"
+        android:layout_below="@+id/radioGroup"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp" />
 
 
 </RelativeLayout>

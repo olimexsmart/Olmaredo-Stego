@@ -83,11 +83,11 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         encode.setText("Encode");
         decode.setText("Decode");
         info.setText("Info");
-        settings.setText("Settings");
+        settings.setText("Setup");
 
-        tabLayout.addTab(encode, 0);
-        tabLayout.addTab(decode, 1);
-        tabLayout.addTab(info, 2);
+        tabLayout.addTab(info, 0);
+        tabLayout.addTab(encode, 1);
+        tabLayout.addTab(decode, 2);
         tabLayout.addTab(settings, 3);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);

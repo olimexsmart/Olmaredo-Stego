@@ -19,11 +19,11 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
         Log.v("Viewpagerblabla", position + "selected");
 
         switch (position) {
-            case 0:
-                return new EncodeFragment();
             case 1:
-                return new DecodeFragment();
+                return new EncodeFragment();
             case 2:
+                return new DecodeFragment();
+            case 0:
                 return new InfoFragment();
             case 3:
                 return new SettingsFragment();
