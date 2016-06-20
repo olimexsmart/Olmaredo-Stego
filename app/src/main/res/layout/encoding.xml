@@ -1,90 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
-    <Button
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/btPhotoEncode"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="30dp"
-        android:layout_marginTop="20dp"
-        android:drawableLeft="@drawable/browse"
-        android:text="Photo" />
-
-    <Button
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/btBrowseEncode"
-        android:layout_marginRight="30dp"
-        android:layout_alignTop="@+id/btPhotoEncode"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:drawableLeft="@drawable/browse"
-        android:text="Image" />
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="100dp"
-        android:id="@+id/imageView"
-        android:layout_below="@+id/btPhotoEncode"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp"/>
-
-    <TextView
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Enter the message you want to hide"
-        android:id="@+id/textView"
-        android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp" />
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:inputType="textMultiLine"
-        android:ems="10"
-        android:id="@+id/etMessage"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Define intensity"
-        android:id="@+id/tvIntensity"
-        android:layout_below="@+id/etMessage"
-        android:layout_marginTop="20dp"
-        android:layout_centerHorizontal="true" />
-
-    <SeekBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/seekBar"
-        android:layout_below="@+id/tvIntensity"
-        android:layout_marginTop="5dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Encode"
-        android:id="@+id/btEncode"
-        android:layout_below="@+id/seekBar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp" />
+        <Button
+            android:id="@+id/btPhotoEncode"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/imPreview"
+            android:layout_alignLeft="@+id/imPreview"
+            android:layout_alignParentTop="true"
+            android:layout_alignRight="@+id/imPreview"
+            android:layout_alignStart="@+id/imPreview"
+            android:layout_marginTop="20dp"
+            android:drawableLeft="@drawable/browse"
+            android:text="@string/select" />
 
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/imPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btPhotoEncode"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:adjustViewBounds="true" />
+
+        <EditText
+            android:id="@+id/etMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/imPreview"
+            android:layout_alignStart="@+id/imPreview"
+            android:layout_below="@+id/imPreview"
+            android:layout_marginTop="17dp"
+            android:layout_toLeftOf="@+id/btPickFile"
+            android:layout_toStartOf="@+id/btPickFile"
+            android:ems="10"
+            android:hint="@string/hint"
+            android:inputType="textMultiLine" />
+
+        <TextView
+            android:id="@+id/tvIntensity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/etMessage"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="@string/intensity" />
+
+        <SeekBar
+            android:id="@+id/sbEmbeddingPower"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvIntensity"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp" />
+
+        <Button
+            android:id="@+id/btEncode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sbEmbeddingPower"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="@string/encode" />
+
+        <Button
+            android:id="@+id/btPickFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/etMessage"
+            android:layout_alignEnd="@+id/imPreview"
+            android:layout_alignRight="@+id/imPreview"
+            android:text="@string/pickFile" />
+
+
+    </RelativeLayout>
+</ScrollView>
