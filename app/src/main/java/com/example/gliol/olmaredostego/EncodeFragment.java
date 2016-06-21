@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -68,6 +69,7 @@ public class EncodeFragment extends Fragment {
     Uri outputFileUri = null;
     Double embeddingPower;
     MessageEmbedding messageEmbedding;
+    TextView percentageText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -87,6 +89,7 @@ public class EncodeFragment extends Fragment {
         pickFile = (Button) view.findViewById(R.id.btPickFile);
         inputText = (EditText) view.findViewById(R.id.etMessage);
         seekPower = (SeekBar) view.findViewById(R.id.sbEmbeddingPower);
+        percentageText = (TextView) view.findViewById(R.id.tvSeekBar);
 
         if (savedInstanceState != null) {
 
@@ -177,6 +180,29 @@ public class EncodeFragment extends Fragment {
         });
 
         Log.v(TAG, "OnView ended");
+
+        seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
+
+            public void onStopTrackingTouch(SeekBar bar)
+            {
+                int value = bar.getProgress(); // the value of the seekBar progress
+            }
+
+            public void onStartTrackingTouch(SeekBar bar)
+            {
+
+            }
+
+            public void onProgressChanged(SeekBar bar,
+                                          int paramInt, boolean paramBoolean)
+            {
+                percentageText.setText("" + paramInt + "%"); // here in textView the percent will be shown
+            }
+        });
+
+
+
     }
 
 

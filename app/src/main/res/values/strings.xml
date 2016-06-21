@@ -4,8 +4,8 @@
     <string name="photo">Photo</string>
     <string name="encodePick">Enter the message you want to hide or </string>
     <string name="pickFile">Open File</string>
-    <string name="intensity">Set intensity of embedding</string>
+    <string name="intensity">Set intensity of embedding.\nThe higher you choose, the worse it will be.</string>
     <string name="encode">Encode</string>
-    <string name="select">Select photo</string>
+    <string name="select">Select image</string>
     <string name="hint">Input message here or -></string>
 </resources>

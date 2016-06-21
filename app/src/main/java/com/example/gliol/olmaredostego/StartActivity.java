@@ -62,6 +62,7 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
 
+    String stringBlock;
 
 
 
@@ -149,6 +150,8 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
             }
         });
         */
+
+
     }
 
     @Override

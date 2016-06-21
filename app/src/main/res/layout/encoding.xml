@@ -7,19 +7,35 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Image"
+            android:id="@+id/tvLargeSelect"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/tvSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvLargeSelect"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:text="Select the image.\nYou can choose an existing file or make a new photograph." />
+
+
         <Button
             android:id="@+id/btPhotoEncode"
-            android:layout_width="120dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/imPreview"
-            android:layout_alignLeft="@+id/imPreview"
-            android:layout_alignParentTop="true"
-            android:layout_alignRight="@+id/imPreview"
-            android:layout_alignStart="@+id/imPreview"
-            android:layout_marginTop="20dp"
+            android:layout_below="@+id/tvSelect"
+            android:layout_marginTop="5dp"
+            android:layout_centerHorizontal="true"
             android:drawableLeft="@drawable/browse"
             android:text="@string/select" />
-
 
         <ImageView
             android:id="@+id/imPreview"
@@ -27,61 +43,132 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/btPhotoEncode"
             android:layout_centerHorizontal="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
             android:layout_marginTop="5dp"
             android:adjustViewBounds="true" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/imPreview"
+            android:layout_alignLeft="@+id/imPreview"
+            android:layout_alignStart="@+id/imPreview"
+            android:layout_marginRight="20dp"
+            android:id="@+id/riga1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Message"
+            android:id="@+id/tvLargeMessage"
+            android:layout_below="@+id/riga1"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvLargeMessage"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:text="Enter the message you want to hide.\nYou can write it here..." />
 
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/imPreview"
-            android:layout_alignStart="@+id/imPreview"
-            android:layout_below="@+id/imPreview"
-            android:layout_marginTop="17dp"
-            android:layout_toLeftOf="@+id/btPickFile"
-            android:layout_toStartOf="@+id/btPickFile"
+            android:layout_height="100dp"
+            android:layout_below="@+id/tvMessage"
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:ems="10"
-            android:hint="@string/hint"
             android:inputType="textMultiLine" />
 
         <TextView
-            android:id="@+id/tvIntensity"
+            android:id="@+id/tvMessageFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/etMessage"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
-            android:text="@string/intensity" />
-
-        <SeekBar
-            android:id="@+id/sbEmbeddingPower"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvIntensity"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="5dp" />
-
-        <Button
-            android:id="@+id/btEncode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/sbEmbeddingPower"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
-            android:text="@string/encode" />
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:text="... or open a text file" />
 
         <Button
             android:id="@+id/btPickFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/etMessage"
-            android:layout_alignEnd="@+id/imPreview"
-            android:layout_alignRight="@+id/imPreview"
-            android:text="@string/pickFile" />
+            android:text="@string/pickFile"
+            android:layout_marginTop="0dp"
+            android:layout_below="@+id/tvMessageFile"
+            android:layout_alignLeft="@+id/tvMessageFile"
+            android:layout_alignStart="@+id/tvMessageFile"
+            android:layout_centerHorizontal="true"
+            android:drawableLeft="@drawable/browse" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/btPickFile"
+            android:layout_alignLeft="@+id/btPickFile"
+            android:layout_alignStart="@+id/btPickFile"
+            android:layout_marginRight="20dp"
+            android:id="@+id/riga2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Intensity"
+            android:id="@+id/tvLargeIntensity"
+            android:layout_below="@+id/riga2"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/tvIntensity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvLargeIntensity"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/intensity" />
+
+        <SeekBar
+            android:id="@+id/sbEmbeddingPower"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvIntensity"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0%"
+            android:id="@+id/tvSeekBar"
+            android:layout_alignTop="@+id/sbEmbeddingPower"
+            android:layout_toRightOf="@+id/sbEmbeddingPower"
+            android:layout_toEndOf="@+id/sbEmbeddingPower" />
+
+        <Button
+            android:id="@+id/btEncode"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sbEmbeddingPower"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/encode" />
+
+
 
 
     </RelativeLayout>

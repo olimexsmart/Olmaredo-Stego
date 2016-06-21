@@ -1,5 +1,6 @@
 package com.example.gliol.olmaredostego;
 
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -23,18 +24,29 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         Button bt = (Button)view.findViewById(R.id.btSettings);
-        EditText etBlock = (EditText) view.findViewById(R.id.etBlock);
+        final EditText etBlock = (EditText) view.findViewById(R.id.etBlock);
         EditText etCropped = (EditText) view.findViewById(R.id.etCropped);
 
         //Default values
         etBlock.setText(String.valueOf(8));
         etCropped.setText(String.valueOf(480));
 
+
+
         //Button
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //TODO
+
+                //Intent
+                Intent intentBlock = new Intent(getActivity().getBaseContext(),
+                        StartActivity.class);
+                intentBlock.putExtra("messageBlock", etBlock.getText());
+                getActivity().startActivity(intentBlock);
+
+
+
             }
         });
 
