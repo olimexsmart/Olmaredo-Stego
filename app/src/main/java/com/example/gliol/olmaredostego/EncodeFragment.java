@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,10 +46,11 @@ import java.util.Locale;
 
 /*
     TODO implement message encoding task
-    TODO manage seekbar
-    TODO get embedding setting from other fragment
+    TODO setEnabled managed correctly for the Encode button
+    TODO manage signature
+    TODO manage max input lenght, but in asynctask
  */
-public class EncodeFragment extends Fragment {
+public class EncodeFragment extends Fragment implements GetResultEmbedding {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
     private static final String bundleNameOriginal = "bNO";
@@ -65,11 +67,14 @@ public class EncodeFragment extends Fragment {
     String fileNameOriginal;
     String fileNameResult;
     String timeStamp;
-    String inputFile;
+    String inputFile = "not from file";
     Uri outputFileUri = null;
-    Double embeddingPower;
-    MessageEmbedding messageEmbedding;
+    int embeddingPower;
+    //MessageEmbedding messageEmbedding;
     TextView percentageText;
+    int blockSizeSaved;
+    int cropSizeSaved;
+    EncodeFragment thisthis;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,6 +85,7 @@ public class EncodeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        thisthis = this;
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
@@ -96,7 +102,7 @@ public class EncodeFragment extends Fragment {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
             fileNameResult = savedInstanceState.getString(bundleNameResult);
             timeStamp = savedInstanceState.getString(bundleTimeStamp);
-            if(savedInstanceState.containsKey(bundleUri)) {
+            if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
                 Bitmap im = ReadImageScaled();
                 if (im != null)
@@ -117,7 +123,7 @@ public class EncodeFragment extends Fragment {
                 Log.v(TAG, timeStamp);
 
                 fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
-                fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.jpg";
+                fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.png";
                 inputText.setEnabled(true);
                 inputText.setHint(R.string.hint);
                 pickFile.setEnabled(true);
@@ -172,39 +178,51 @@ public class EncodeFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(inputText.getText().length() > 0)
+                if (inputText.getText().length() > 0) {
                     pickFile.setEnabled(false);
+                    inputFile = "not from file";
+                }
                 else
                     pickFile.setEnabled(true);
             }
         });
 
-        Log.v(TAG, "OnView ended");
 
-        seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-        {
-
-            public void onStopTrackingTouch(SeekBar bar)
-            {
-                int value = bar.getProgress(); // the value of the seekBar progress
+        seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onStopTrackingTouch(SeekBar bar) {
+                embeddingPower = bar.getProgress(); // the value of the seekBar progress
             }
 
-            public void onStartTrackingTouch(SeekBar bar)
-            {
+            public void onStartTrackingTouch(SeekBar bar) {
 
             }
 
-            public void onProgressChanged(SeekBar bar,
-                                          int paramInt, boolean paramBoolean)
-            {
+            public void onProgressChanged(SeekBar bar, int paramInt, boolean paramBoolean) {
                 percentageText.setText("" + paramInt + "%"); // here in textView the percent will be shown
             }
         });
 
+        encode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                StartActivity activity = (StartActivity) getActivity();
+                blockSizeSaved = activity.BlockSize;
+                cropSizeSaved = activity.CropSize;
+
+                if(inputFile == "not from file")
+                    inputFile = inputText.getText().toString();
+
+                if (new File(fileNameOriginal).exists()) {
+                    Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
+                    MessageEmbedding messageEmbedding = new MessageEmbedding(thisthis, getContext(), inputFile, (byte)blockSizeSaved, cropSizeSaved, embeddingPower);
+                    messageEmbedding.execute(ReadImage());
+                }
+            }
+        });
 
 
+        Log.v(TAG, "OnView ended");
     }
-
 
 
     @Override
@@ -213,7 +231,7 @@ public class EncodeFragment extends Fragment {
         outState.putString(bundleNameOriginal, fileNameOriginal);
         outState.putString(bundleNameResult, fileNameResult);
         outState.putString(bundleTimeStamp, timeStamp);
-        if(outputFileUri != null)
+        if (outputFileUri != null)
             outState.putString(bundleUri, outputFileUri.toString());
 
         super.onSaveInstanceState(outState);
@@ -240,23 +258,23 @@ public class EncodeFragment extends Fragment {
                 }
             }
 
-            if (!isCamera)
+            if (!isCamera) { //Else the correct path is already stored in fileNameOriginal
                 outputFileUri = data.getData();
-            //At this point we have the image selected Uri
-            //Now get the absolute path into a nice String
+                //At this point we have the image selected Uri
+                //Now get the absolute path into a nice String
 
-            // SDK < API11
-            if (Build.VERSION.SDK_INT < 11)
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
+                // SDK < API11
+                if (Build.VERSION.SDK_INT < 11)
+                    fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
 
-                // SDK >= 11 && SDK < 19
-            else if (Build.VERSION.SDK_INT < 19)
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
+                    // SDK >= 11 && SDK < 19
+                else if (Build.VERSION.SDK_INT < 19)
+                    fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
 
-                // SDK > 19 (Android 4.4)
-            else
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
-
+                    // SDK > 19 (Android 4.4)
+                else
+                    fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
+            }
             Bitmap im = ReadImageScaled();
             if (im != null) {
                 preview.setImageBitmap(im);
@@ -374,5 +392,28 @@ public class EncodeFragment extends Fragment {
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[cameraIntents.size()]));
 
         startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
+    }
+
+    @Override
+    public void onResultsReady(Bitmap bm, double[] signature) {
+
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(fileNameResult);
+            bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+            // PNG is a lossless format, the compression factor (100) is ignored
+        } catch (FileNotFoundException e) {
+            Log.v(TAG, "Invalid saving path.");
+        } catch (NullPointerException e) {
+            Log.v(TAG, "The embedding result is null.");
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

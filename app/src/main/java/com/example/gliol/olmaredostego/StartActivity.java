@@ -36,14 +36,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class StartActivity extends AppCompatActivity implements GetResultEmbedding, GetResultDecoding{
+public class StartActivity extends AppCompatActivity implements GetResultDecoding, SettingsFragment.OnSettingsUpdated{
     private static final String TAG = "StartActivity";
     //Used as test
     private static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
 
     //Used to retrieve data when activity is reloaded
 
-    private static final String bundleSignature = "bS";
+    //private static final String bundleSignature = "bS";
+    private static final String bundleCropSize = "bCS";
+    private static final String bundleBlockSize = "bBS";
 
 
     Button getResult;
@@ -58,13 +60,14 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     TextView resultHealth;
     StartActivity thisthis;
 
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
-    private ViewPagerAdapter viewPagerAdapter;
+    TabLayout tabLayout;
+    ViewPager viewPager;
+    ViewPagerAdapter viewPagerAdapter;
 
     String stringBlock;
 
-
+    public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
+    public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
 
 
     @Override
@@ -113,27 +116,16 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
 
-/*
-        if (savedInstanceState != null) {
-            fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
-            fileNameResult = savedInstanceState.getString(bundleNameResult);
-            timeStamp = savedInstanceState.getString(bundleTimeStamp);
-            if (savedInstanceState.containsKey(bundleSignature))
-                signature = savedInstanceState.getDoubleArray(bundleSignature);
-            dir = new File(fileNameOriginal);
-            if (dir.exists()) original.setImageBitmap(ReadImageThumb(fileNameOriginal));
 
-            dir = new File(fileNameResult);
-            if (dir.exists()) output.setImageBitmap(ReadImageThumb(fileNameResult));
+        if (savedInstanceState != null) {
+            BlockSize = savedInstanceState.getInt(bundleBlockSize);
+            CropSize = savedInstanceState.getInt(bundleCropSize);
 
             Log.v(TAG, "Activity restored.");
         } else {
-            fileNameOriginal = "nothing here";
-            fileNameResult = "nothing here";
-            timeStamp = "nothing here";
             Log.v(TAG, "Activity NOT restored.");
         }
-*/
+
         Log.v(TAG, "Created instances");
 
 /*
@@ -143,10 +135,7 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
             @Override
             public void onClick(View v) {
                 Log.v(TAG, fileNameResult);
-                if (new File(fileNameResult).exists()) {
-                    messageDecoding = new MessageDecoding(context, signature, thisthis);
-                    messageDecoding.execute(ReadImage(fileNameResult));
-                }
+
             }
         });
         */
@@ -154,14 +143,11 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
 
     }
 
+    //Save data in case activity is killed or restarted
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        /*
-        outState.putString(bundleNameOriginal, fileNameOriginal);
-        outState.putString(bundleNameResult, fileNameResult);
-        outState.putString(bundleTimeStamp, timeStamp);
-        if(signature != null) outState.putDoubleArray(bundleSignature, signature);
-*/
+        outState.putInt(bundleBlockSize, BlockSize);
+        outState.putInt(bundleCropSize, CropSize);
         super.onSaveInstanceState(outState);
     }
 /*
@@ -177,34 +163,17 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     }
 
 */
-    //Returning data from MessageEmbedding
+  /*  //Returning data from MessageEmbedding
     @Override
     public void onResultsReady(Bitmap result, double[] signature) {
-  /*      //salvare la bitmap
+        //salvare la bitmap
         messageEmbedding = null;
         output.setImageBitmap(result);
         this.signature = signature;
 
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(fileNameResult);
-            result.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
-            // PNG is a lossless format, the compression factor (100) is ignored
-        } catch (FileNotFoundException e) {
-            Log.v(TAG, "Invalid saving path.");
-        } catch (NullPointerException e) {
-            Log.v(TAG, "The embedding result is null.");
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-    }
 
+    }
+*/
 
     //Returning data from MessageDecoding
     @Override
@@ -247,4 +216,9 @@ public class StartActivity extends AppCompatActivity implements GetResultEmbeddi
     }
 
 
+    @Override
+    public void UpdateSettings(int blockSize, int cropSize) {
+        BlockSize = blockSize;
+        CropSize = cropSize;
+    }
 }

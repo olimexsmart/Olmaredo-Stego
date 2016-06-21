@@ -145,9 +145,11 @@
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvIntensity"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="5dp" />
+            android:layout_marginTop="5dp"
+            android:layout_alignLeft="@+id/tvIntensity"
+            android:layout_alignStart="@+id/tvIntensity"
+            android:layout_alignRight="@+id/tvIntensity"
+            android:layout_alignEnd="@+id/tvIntensity" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -155,8 +157,8 @@
             android:text="0%"
             android:id="@+id/tvSeekBar"
             android:layout_alignTop="@+id/sbEmbeddingPower"
-            android:layout_toRightOf="@+id/sbEmbeddingPower"
-            android:layout_toEndOf="@+id/sbEmbeddingPower" />
+            android:layout_alignRight="@+id/riga2"
+            android:layout_alignEnd="@+id/riga2" />
 
         <Button
             android:id="@+id/btEncode"

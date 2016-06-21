@@ -27,7 +27,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     String message;
     byte blockSize = 8;
     int finHeight = 480; //This could be useful to add in a constructor
-    double strength = 1;
+    int strength = 1;
     GetResultEmbedding returnResult;
     double[] signature;
 
@@ -41,13 +41,14 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         this.returnResult = result;
     }
 
-    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize, double strength)
+    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize,  int cropSize, int strength)
     {
         context = c;
         this.message = message;
         this.blockSize = blockSize;
         this.strength = strength;
         returnResult = result;
+        finHeight = cropSize;
     }
 
 
