@@ -8,4 +8,13 @@
     <string name="encode">Encode</string>
     <string name="select">Select image</string>
     <string name="hint">Input message here or -></string>
+    <string name="info">This app permits you to hide a message in an image in order to communicate secretly.\n
+        It is based on the spread-spectrum steganography, more specifically on the optimal version defined by
+        Gkizeli, Pados and Medley that maximizes the signal-to-interference-plus-noise ratio.\n
+        The image that you upload is divided in square blocks with custom side dimension (default value is 8 pixels).
+        Each bloc carry one hidden information bit and you have to define the intensity of embedding.
+        The steganographic process needs a signature derived from an autocorrelation matrix
+        derived from the image itself and you can enter a custom one (the default value is for generic image).\n
+
+    </string>
 </resources>

@@ -75,6 +75,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     int blockSizeSaved;
     int cropSizeSaved;
     EncodeFragment thisthis;
+    int check;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -106,7 +107,10 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
                 Bitmap im = ReadImageScaled();
                 if (im != null)
+                {
                     preview.setImageBitmap(im);
+                }
+
             }
             Log.v(TAG, "Activity restored.");
         } else {
@@ -115,6 +119,8 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
             timeStamp = "nothing here";
             Log.v(TAG, "Activity NOT restored.");
         }
+
+
 
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,11 +131,12 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
                 fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.png";
                 inputText.setEnabled(true);
-                inputText.setHint(R.string.hint);
                 pickFile.setEnabled(true);
                 openImageIntent();
             }
         });
+
+
 
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +171,8 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
             }
         });
 
+
+
         //This makes sure that is impossible to choose a file once a single character is written in the field
         inputText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -181,9 +190,14 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 if (inputText.getText().length() > 0) {
                     pickFile.setEnabled(false);
                     inputFile = "not from file";
+                    encode.setEnabled(true);
                 }
                 else
+                {
                     pickFile.setEnabled(true);
+                    encode.setEnabled(false);
+                }
+
             }
         });
 
@@ -191,6 +205,8 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
         seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onStopTrackingTouch(SeekBar bar) {
                 embeddingPower = bar.getProgress(); // the value of the seekBar progress
+
+
             }
 
             public void onStartTrackingTouch(SeekBar bar) {
