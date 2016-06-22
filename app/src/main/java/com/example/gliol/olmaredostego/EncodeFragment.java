@@ -45,10 +45,8 @@ import java.util.List;
 import java.util.Locale;
 
 /*
-    TODO implement message encoding task
-    TODO setEnabled managed correctly for the Encode button
     TODO manage signature
-    TODO manage max input lenght, but in asynctask
+    TODO manage max input lenght, but in asynctask use: http://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
  */
 public class EncodeFragment extends Fragment implements GetResultEmbedding {
     private final String TAG = "EncodeFragment";
@@ -162,6 +160,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                             inputFile = text.toString();
                             inputText.setEnabled(false);
                             inputText.setHint("File correctly opened.");
+                            encode.setEnabled(true);
                         } catch (IOException e) {
                             Toast.makeText(getContext(), "File not found", Toast.LENGTH_SHORT).show();
                         }
@@ -225,13 +224,17 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 blockSizeSaved = activity.BlockSize;
                 cropSizeSaved = activity.CropSize;
 
-                if(inputFile == "not from file")
+                if(inputFile.equalsIgnoreCase("not from file"))
                     inputFile = inputText.getText().toString();
 
                 if (new File(fileNameOriginal).exists()) {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     MessageEmbedding messageEmbedding = new MessageEmbedding(thisthis, getContext(), inputFile, (byte)blockSizeSaved, cropSizeSaved, embeddingPower);
                     messageEmbedding.execute(ReadImage());
+                }
+                else
+                {
+                    Toast.makeText(getContext(), "Open an image!", Toast.LENGTH_LONG).show();
                 }
             }
         });

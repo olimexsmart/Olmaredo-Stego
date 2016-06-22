@@ -1,132 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
-    <TextView
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Image"
-        android:id="@+id/tvLargeSelectDec"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvSelectDec"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvLargeSelectDec"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="5dp"
-        android:text="Select the image that hide the message." />
-
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/btBrowseDecode"
-        android:layout_below="@+id/tvSelectDec"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="0dp"
-        android:text="Select image"
-        android:drawableLeft="@drawable/browse"
-        />
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:layout_below="@+id/btBrowseDecode"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/imageView"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
-        android:id="@+id/riga1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Signature"
-        android:id="@+id/tvLargeSignature"
-        android:layout_below="@+id/riga1"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Enter the signature you want ot use.\nThe default signature is generic and suitable for all kind of natural image, but you can use a more specific one."
-        android:id="@+id/tvSignature"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_below="@+id/tvLargeSignature" />
-
-    <RadioGroup
-        android:id="@+id/radioGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvSignature"
-        android:layout_marginTop="0dp"
-        android:layout_marginLeft="20dp">
-
-        <RadioButton
-            android:id="@+id/rbDefault"
+        <TextView
+            android:id="@+id/tvLargeSelectDec"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Default"
-            android:checked="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:text="Image"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <RadioButton
-            android:id="@+id/rbCustom"
+        <TextView
+            android:id="@+id/tvSelectDec"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Custom" />
-
-    </RadioGroup>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/etCustom"
-        android:visibility="invisible"
-        android:layout_alignBottom="@+id/radioGroup"
-        android:layout_alignLeft="@+id/btDecode"
-        android:layout_alignStart="@+id/btDecode"
-        android:hint="Enter the signature"
-        android:layout_marginRight="10dp"
-        />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/radioGroup"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
-        android:id="@+id/riga2" />
-
-    <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="Decode"
-        android:id="@+id/btDecode"
-        android:layout_below="@+id/riga2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp" />
+            android:layout_below="@+id/tvLargeSelectDec"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/selectimagehides" />
 
 
-</RelativeLayout>
+        <Button
+            android:id="@+id/btBrowseDecode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvSelectDec"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="0dp"
+            android:drawableLeft="@drawable/browse"
+            android:text="Select image" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btBrowseDecode"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp" />
+
+        <View
+            android:id="@+id/riga1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/imageView"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/tvLargeSignature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/riga1"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:text="Signature"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/tvSignature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvLargeSignature"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/selectwichsignature"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvSignature"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="0dp">
+
+            <RadioButton
+                android:id="@+id/rbDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Default" />
+
+            <RadioButton
+                android:id="@+id/rbCustom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Custom" />
+
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/etCustom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/radioGroup"
+            android:layout_marginRight="10dp"
+            android:layout_toEndOf="@+id/tvSelectDec"
+            android:layout_toRightOf="@+id/tvSelectDec"
+            android:hint="Enter the signature"
+            android:visibility="invisible" />
+
+        <View
+            android:id="@+id/riga2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/radioGroup"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:color/darker_gray" />
+
+        <Button
+            android:id="@+id/btDecode"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/riga2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="Decode" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/riga2"
+            android:layout_alignStart="@+id/riga2"
+            android:layout_below="@+id/btDecode"
+            android:layout_marginTop="24dp"
+            android:text="Result"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/textView"
+            android:layout_alignStart="@+id/textView"
+            android:layout_below="@+id/textView" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/textView2"
+            android:layout_alignStart="@+id/textView2"
+            android:layout_below="@+id/textView2"
+            android:text="New Button" />
+
+    </RelativeLayout>
+</ScrollView>

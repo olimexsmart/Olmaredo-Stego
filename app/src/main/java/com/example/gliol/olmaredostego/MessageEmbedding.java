@@ -5,14 +5,22 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 /**
  * Created by gliol on 12/05/2016.
- *
+ * <p/>
  * This task gets:
  * - Bitmap image to host the message
  * - String containg the message (assuming is text for now)
@@ -32,17 +40,16 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     double[] signature;
 
     //We don't wont this to be called without a message specified.
-    private MessageEmbedding(){}
+    private MessageEmbedding() {
+    }
 
-    public MessageEmbedding(GetResultEmbedding result, Context c, String message)
-    {
+    public MessageEmbedding(GetResultEmbedding result, Context c, String message) {
         context = c;
         this.message = message;
         this.returnResult = result;
     }
 
-    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize,  int cropSize, int strength)
-    {
+    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
         this.blockSize = blockSize;
@@ -97,7 +104,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         signature = GetSignatureVector(autocorrelation);
         autocorrelation = null;
         Log.v(TAG, "Got signature vector.");
-
+        SaveSignature(signature); //Saving signature to get a general one
         //X = ReduceDynamic(signature, strength, X);
 
         publishProgress(85);
@@ -121,6 +128,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPostExecute(Bitmap bitmap) {
         super.onPostExecute(bitmap);
         progressDialog.hide();
+        //if (progressDialog.isShowing())
         progressDialog.dismiss();
         this.returnResult.onResultsReady(bitmap, signature);
     }
@@ -132,10 +140,11 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Returns the image cropped in a way that every dimension
         is a multiple of the block size.
      */
-    private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight){
+
+    private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight) {
 
         double ratio = (double) original.getHeight() / finalHeight;
-        int finalWidth = original.getWidth() / (int)ratio;
+        int finalWidth = original.getWidth() / (int) ratio;
 
         Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
 
@@ -146,14 +155,14 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Gets a Bitmap
         Returns the same Bitmap in gray scale, setting all RGB components to the same value
      */
-    private Bitmap ToGrayscale(Bitmap bmpOriginal){
+    private Bitmap ToGrayscale(Bitmap bmpOriginal) {
         Bitmap bmpGrayscale = Bitmap.createBitmap(bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
         int pixel;
         int r, g, b;
         int a;
 
-        for(int x = 0; x < bmpOriginal.getWidth(); ++x) {
-            for(int y = 0; y < bmpOriginal.getHeight(); ++y) {
+        for (int x = 0; x < bmpOriginal.getWidth(); ++x) {
+            for (int y = 0; y < bmpOriginal.getHeight(); ++y) {
                 // get one pixel original
                 pixel = bmpOriginal.getPixel(x, y);
                 // retrieve original of all channels
@@ -162,7 +171,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
                 g = Color.green(pixel);
                 b = Color.blue(pixel);
                 // Y = 0.2126 R + 0.7152 G + 0.0722 B  as in Rec 709 (Wiki)
-                r = g = b = (int)(0.2126 * r + 0.7152 * g + 0.0722 * b);
+                r = g = b = (int) (0.2126 * r + 0.7152 * g + 0.0722 * b);
                 // set new pixel original to output bitmap
                 bmpGrayscale.setPixel(x, y, Color.argb(a, r, g, b));
             }
@@ -181,8 +190,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         blocks in the image. Let's say H is the height and W the width,
         the final P width of the result is: (H * W / N^2)
      */
-    private char[][] GetXMatrix(Bitmap image, byte N)
-    {//Think about checking if the image is in grayscale
+    private char[][] GetXMatrix(Bitmap image, byte N) {//Think about checking if the image is in grayscale
         int H = image.getHeight();
         int W = image.getWidth();
 
@@ -196,7 +204,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
                 {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        X[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char)Color.green(image.getPixel(w + b, h + a));
+                        X[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.green(image.getPixel(w + b, h + a));
                     }
                 }
             }
@@ -225,18 +233,14 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         and P is the number of blocks.
         The return value is the autocorrelation matrix.
      */
-    private double[][] GetAutocorrelation (char[][] x)
-    {
+    private double[][] GetAutocorrelation(char[][] x) {
         int P = x[0].length;
         int Nsqr = x.length;
         double[][] buffer = new double[Nsqr][Nsqr];
 
-        for (int p = 0; p < P; p++)
-        {
-            for (int j = 0; j < Nsqr; j++)
-            {
-                for (int k = 0; k < Nsqr; k++ )
-                {
+        for (int p = 0; p < P; p++) {
+            for (int j = 0; j < Nsqr; j++) {
+                for (int k = 0; k < Nsqr; k++) {
                     buffer[j][k] += x[k][p] * x[j][p];
                 }
             }
@@ -252,8 +256,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         and eigenvectors, selects the smallest eigenvalue
         and returns the corresponding eigenvector.
      */
-    private double[] GetSignatureVector(double[][] matrix)
-    {   //It's a N x N matrix
+    private double[] GetSignatureVector(double[][] matrix) {   //It's a N x N matrix
         int N = matrix.length;
 
         Matrix A = new Matrix(matrix);
@@ -267,10 +270,8 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         //Select the smallest eigenvalue and return the corresponding eigenvector
         int smallestI = 0;
         double smallest = D.get(0, 0);
-        for (int k = 1; k < N; k++)
-        {
-            if(D.get(k, k) < smallest)
-            {
+        for (int k = 1; k < N; k++) {
+            if (D.get(k, k) < smallest) {
                 smallest = D.get(k, k);
                 smallestI = k;
             }
@@ -279,7 +280,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         //Copy into a one dimensional array
         double[][] temp = V.getArray();
         double[] result = new double[N];
-        for(int n = 0; n < N; n++)
+        for (int n = 0; n < N; n++)
             result[n] = temp[n][smallestI];
 
         return result;
@@ -290,8 +291,7 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Test on reducing image dynamics trying to avoid saturation
         when applying the message
      */
-    private char[][] ReduceDynamic(double[] sign, double factor, char[][] X)
-    {
+    private char[][] ReduceDynamic(double[] sign, double factor, char[][] X) {
         int P = X[0].length;
         byte N = (byte) Math.round(Math.sqrt(X.length));
         int maxAbs = 0;
@@ -300,22 +300,19 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
             if (temp > maxAbs) maxAbs = temp;
         }
 
-        if(maxAbs < 0) maxAbs = 0;
+        if (maxAbs < 0) maxAbs = 0;
         else if (maxAbs > 255) maxAbs = 255;
 
-        for(int p = 0; p < P; p++)
-        {
-            for(int n = 0; n < N; n++)
-            {
-                X[n][p] = map(X[n][p], (char)0, (char)255, (char)(maxAbs), (char)(255 - maxAbs));
+        for (int p = 0; p < P; p++) {
+            for (int n = 0; n < N; n++) {
+                X[n][p] = map(X[n][p], (char) 0, (char) 255, (char) (maxAbs), (char) (255 - maxAbs));
             }
         }
 
         return X;
     }
 
-    private char map(char x, char in_min, char in_max, char out_min, char out_max)
-    {
+    private char map(char x, char in_min, char in_max, char out_min, char out_max) {
         return (char) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
     }
 
@@ -329,37 +326,38 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         of pad the string with dummy characters in order to fill the whole image.
         The string will be padded with '\0' chars.
      */
-    private char[][] EmbedMessage(String message, double A, double[] signature, char[][] X)
-    {
+    private char[][] EmbedMessage(String message, double A, double[] signature, char[][] X) {
         int P = X[0].length;
         byte N = (byte) Math.round(Math.sqrt(X.length));
         //byte[][] Y = new byte[N][P]; the modification can be applied to X itself
         //Padding the message
-        char[] c = new char[P / 8]; //One bit per block: one byte every eight blocks
-        for (int k = 0; k < message.length(); k++) { c[k] = message.charAt(k); }
-        for (int k = message.length(); k < P / 8; k++) { c[k] = '\0'; }
+        char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks, adding one for non perfect division
+        for (int k = 0; k < message.length(); k++) {
+            c[k] = message.charAt(k);
+        }
+        for (int k = message.length(); k < P / 8; k++) {
+            c[k] = '\0';
+        }
 
         int sign;
         byte byteCounter = 0;
         char b;
         double e;
-        for(int p = 0; p < P; p++)
-        {
+        for (int p = 0; p < P; p++) {
             b = (char) (c[p / 8] & 1 << byteCounter);
-            if(b == 0) sign = -1;
+            if (b == 0) sign = -1;
             else sign = 1;
 
-            for(int n = 0; n < N * N; n++)
-            {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+            for (int n = 0; n < N * N; n++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                 e = (sign * A * signature[n] + X[n][p]);
-                if(e < 0) e = 0;
+                if (e < 0) e = 0;
                 else if (e > 255) e = 255;
 
                 X[n][p] = (char) Math.round(e);
             }
 
             byteCounter++;
-            if(byteCounter == 8) byteCounter = 0;
+            if (byteCounter == 8) byteCounter = 0;
         }
 
         return X;
@@ -370,22 +368,17 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         needs to go back to a Bitmap to be then saved.
         Comments are similar to those on getting X
      */
-    private Bitmap GetImageFromY(char[][] y, int finHeight)
-    {
+    private Bitmap GetImageFromY(char[][] y, int finHeight) {
         int N = (int) Math.round(Math.sqrt(y.length));
         int finWidht = (y[0].length / (finHeight / N)) * N;
 
         Bitmap result = Bitmap.createBitmap(finWidht, finHeight, Bitmap.Config.ARGB_8888);
         int rgb;
 
-        for (int h = 0; h < finHeight; h += N)
-        {
-            for (int w = 0; w < finWidht; w += N)
-            {
-                for(int a = 0; a < N; a++)
-                {
-                    for (int b = 0; b < N; b++)
-                    {
+        for (int h = 0; h < finHeight; h += N) {
+            for (int w = 0; w < finWidht; w += N) {
+                for (int a = 0; a < N; a++) {
+                    for (int b = 0; b < N; b++) {
                         rgb = y[(a * N) + b][(finWidht / N) * (h / N) + (w / N)];
                         result.setPixel(w + b, h + a, Color.argb(255, rgb, rgb, rgb));
                     }
@@ -396,5 +389,22 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
         return result;
     }
 
+
+    private void SaveSignature(double [] signature)
+    {
+
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-decoded.txt";
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
+            for (double aSignature : signature) {
+                outputStreamWriter.write(aSignature + "\n");
+            }
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
+    }
 
 }

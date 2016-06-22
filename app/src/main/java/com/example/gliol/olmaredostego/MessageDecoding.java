@@ -7,9 +7,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 
-/**
- * Created by gliol on 16/05/2016.
- */
+
 public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecoding";
 

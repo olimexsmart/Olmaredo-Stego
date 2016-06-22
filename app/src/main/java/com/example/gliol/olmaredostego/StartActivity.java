@@ -36,7 +36,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class StartActivity extends AppCompatActivity implements GetResultDecoding, SettingsFragment.OnSettingsUpdated{
+/*
+    TODO WHEN EVERYTHING IS COMPLETED: clean up this file from useless code
+ */
+
+public class StartActivity extends AppCompatActivity implements SettingsFragment.OnSettingsUpdated{
     private static final String TAG = "StartActivity";
     //Used as test
     private static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
@@ -175,10 +179,11 @@ public class StartActivity extends AppCompatActivity implements GetResultDecodin
     }
 */
 
+    /*
     //Returning data from MessageDecoding
     @Override
     public void OnResultReady(String message) {
-       /* messageDecoding = null;
+        messageDecoding = null;
         //Saving result as text as debug support
         try {
             String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-decoded.txt";
@@ -212,9 +217,9 @@ public class StartActivity extends AppCompatActivity implements GetResultDecodin
         Log.v(TAG, "Healthindex: " + healthIndex);
 
         resultHealth.setText(Math.round((healthIndex / (double)Lorem.length()) * 100) + "%");
-        */
-    }
 
+    }
+*/
 
     @Override
     public void UpdateSettings(int blockSize, int cropSize) {

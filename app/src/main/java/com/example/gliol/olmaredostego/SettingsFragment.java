@@ -13,9 +13,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-/**
- * Created by gliol on 18/06/2016.
+/*
+    TODO manage fragment restore
+    TODO add more options, like colour or black white, no radio buttons, just a simple trigger
+    TODO empty editext when selected, so isn't necessary to erase the content every time
+
  */
+
 public class SettingsFragment extends Fragment {
     private final String TAG = "SettingFragment";
     static int DEFAULT_BLOCK_SIZE = 8;

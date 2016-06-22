@@ -17,4 +17,8 @@
         derived from the image itself and you can enter a custom one (the default value is for generic image).\n
 
     </string>
+
+    <string name="selectimagehides">Select the image that hide the message.</string>
+    <string name="selectwichsignature">Enter the signature you want ot use.\nThe default signature is generic and suitable for all kind of natural image, but you can use a more specific one.</string>
+
 </resources>
