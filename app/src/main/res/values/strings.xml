@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Olmaredo Stego</string>
-    <string name="decode">Decode</string>
+    <string name="decodebt">Decode</string>
     <string name="photo">Photo</string>
     <string name="encodePick">Enter the message you want to hide or </string>
     <string name="pickFile">Open File</string>
@@ -21,4 +21,8 @@
     <string name="selectimagehides">Select the image that hide the message.</string>
     <string name="selectwichsignature">Enter the signature you want ot use.\nThe default signature is generic and suitable for all kind of natural image, but you can use a more specific one.</string>
 
+    <string name="clipboard">Copy Signature</string>
+    <string name="clipboardText">Copy Message</string>
+
+    <string name="result">Result</string>
 </resources>

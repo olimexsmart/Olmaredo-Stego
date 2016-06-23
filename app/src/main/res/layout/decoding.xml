@@ -38,7 +38,7 @@
             android:text="Select image" />
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/ivPreview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/btBrowseDecode"
@@ -51,7 +51,7 @@
             android:id="@+id/riga1"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@+id/imageView"
+            android:layout_below="@+id/ivPreview"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
@@ -106,10 +106,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/radioGroup"
-            android:layout_marginRight="10dp"
-            android:layout_toEndOf="@+id/tvSelectDec"
-            android:layout_toRightOf="@+id/tvSelectDec"
+            android:layout_alignEnd="@+id/riga2"
+            android:layout_alignRight="@+id/riga2"
+            android:layout_toRightOf="@+id/btClipboardText"
             android:hint="Enter the signature"
+            android:singleLine="true"
             android:visibility="invisible" />
 
         <View
@@ -129,7 +130,7 @@
             android:layout_below="@+id/riga2"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:text="Decode" />
+            android:text="@string/decodebt" />
 
         <TextView
             android:id="@+id/textView"
@@ -139,11 +140,11 @@
             android:layout_alignStart="@+id/riga2"
             android:layout_below="@+id/btDecode"
             android:layout_marginTop="24dp"
-            android:text="Result"
+            android:text="@string/result"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/twShowResult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView"
@@ -151,13 +152,13 @@
             android:layout_below="@+id/textView" />
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/btClipboardText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/textView2"
-            android:layout_alignStart="@+id/textView2"
-            android:layout_below="@+id/textView2"
-            android:text="New Button" />
+            android:layout_alignLeft="@+id/twShowResult"
+            android:layout_alignStart="@+id/twShowResult"
+            android:layout_below="@+id/twShowResult"
+            android:text="@string/clipboardText" />
 
     </RelativeLayout>
 </ScrollView>

@@ -8,14 +8,14 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:id="@+id/tvLargeSelect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Image"
-            android:id="@+id/tvLargeSelect"
             android:layout_alignParentTop="true"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="20dp"
+            android:text="Image"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/tvSelect"
@@ -32,8 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvSelect"
-            android:layout_marginTop="5dp"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="5dp"
             android:drawableLeft="@drawable/browse"
             android:text="@string/select" />
 
@@ -49,25 +49,25 @@
             android:adjustViewBounds="true" />
 
         <View
+            android:id="@+id/riga1"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="20dp"
-            android:layout_below="@+id/imPreview"
             android:layout_alignLeft="@+id/imPreview"
             android:layout_alignStart="@+id/imPreview"
+            android:layout_below="@+id/imPreview"
             android:layout_marginRight="20dp"
-            android:id="@+id/riga1" />
+            android:layout_marginTop="20dp"
+            android:background="@android:color/darker_gray" />
 
         <TextView
+            android:id="@+id/tvLargeMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Message"
-            android:id="@+id/tvLargeMessage"
             android:layout_below="@+id/riga1"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="20dp"
+            android:text="Message"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/tvMessage"
@@ -81,13 +81,13 @@
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/tvMessage"
-            android:layout_marginTop="0dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+            android:layout_marginTop="0dp"
             android:ems="10"
-            android:inputType="textMultiLine" />
+            android:singleLine="true" />
 
         <TextView
             android:id="@+id/tvMessageFile"
@@ -102,34 +102,34 @@
             android:id="@+id/btPickFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pickFile"
-            android:layout_marginTop="0dp"
-            android:layout_below="@+id/tvMessageFile"
             android:layout_alignLeft="@+id/tvMessageFile"
             android:layout_alignStart="@+id/tvMessageFile"
+            android:layout_below="@+id/tvMessageFile"
             android:layout_centerHorizontal="true"
-            android:drawableLeft="@drawable/browse" />
+            android:layout_marginTop="0dp"
+            android:drawableLeft="@drawable/browse"
+            android:text="@string/pickFile" />
 
         <View
+            android:id="@+id/riga2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="20dp"
-            android:layout_below="@+id/btPickFile"
             android:layout_alignLeft="@+id/btPickFile"
             android:layout_alignStart="@+id/btPickFile"
+            android:layout_below="@+id/btPickFile"
             android:layout_marginRight="20dp"
-            android:id="@+id/riga2" />
+            android:layout_marginTop="20dp"
+            android:background="@android:color/darker_gray" />
 
         <TextView
+            android:id="@+id/tvLargeIntensity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Intensity"
-            android:id="@+id/tvLargeIntensity"
             android:layout_below="@+id/riga2"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="20dp"
+            android:text="Intensity"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/tvIntensity"
@@ -144,34 +144,43 @@
             android:id="@+id/sbEmbeddingPower"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tvIntensity"
-            android:layout_marginTop="5dp"
+            android:layout_alignEnd="@+id/tvIntensity"
             android:layout_alignLeft="@+id/tvIntensity"
-            android:layout_alignStart="@+id/tvIntensity"
             android:layout_alignRight="@+id/tvIntensity"
-            android:layout_alignEnd="@+id/tvIntensity" />
+            android:layout_alignStart="@+id/tvIntensity"
+            android:layout_below="@+id/tvIntensity"
+            android:layout_marginTop="5dp" />
 
         <TextView
+            android:id="@+id/tvSeekBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0%"
-            android:id="@+id/tvSeekBar"
-            android:layout_alignTop="@+id/sbEmbeddingPower"
+            android:layout_alignEnd="@+id/riga2"
             android:layout_alignRight="@+id/riga2"
-            android:layout_alignEnd="@+id/riga2" />
+            android:layout_alignTop="@+id/sbEmbeddingPower"
+            android:text="0%" />
 
         <Button
             android:id="@+id/btEncode"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/sbEmbeddingPower"
+            android:layout_alignStart="@+id/sbEmbeddingPower"
             android:layout_below="@+id/sbEmbeddingPower"
-            android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:text="@string/encode"
-            android:enabled="false"/>
+            android:enabled="false"
+            android:text="@string/encode" />
 
-
+        <Button
+            android:id="@+id/copySignature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/tvSeekBar"
+            android:layout_alignParentBottom="true"
+            android:layout_alignRight="@+id/tvSeekBar"
+            android:layout_toEndOf="@+id/btEncode"
+            android:layout_toRightOf="@+id/btEncode"
+            android:text="@string/clipboard" />
 
 
     </RelativeLayout>

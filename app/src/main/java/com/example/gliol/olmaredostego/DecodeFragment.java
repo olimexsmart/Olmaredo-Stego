@@ -1,13 +1,13 @@
 package com.example.gliol.olmaredostego;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -17,14 +17,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
+
+import static java.lang.Character.isLetter;
 
 /*
     TODO manage fragment restore
@@ -34,16 +37,18 @@ import java.io.InputStream;
 public class DecodeFragment extends Fragment implements GetResultDecoding {
     private final int REQ_CODE = 2222;
     private final String TAG = "DecodeFragment";
+    private static final String bundleNameOriginal = "bNO";
+    private static final String bundleUri = "bU";
 
 
     Button photo;
-    ImageView imageView;
+    ImageView preview;
     RadioGroup groupRadio;
     EditText etCustom;
     Button decode;
     TextView result;
     Button toClipboard;
-
+    DecodeFragment thisthis;
     String fileNameOriginal;
     Uri outputFileUri = null;
 
@@ -55,15 +60,31 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        thisthis = this;
 
         //Radio button e altre amenità
         photo = (Button) view.findViewById(R.id.btBrowseDecode);
-        imageView = (ImageView) view.findViewById(R.id.imageView);
+        preview = (ImageView) view.findViewById(R.id.ivPreview);
         groupRadio = (RadioGroup) view.findViewById(R.id.radioGroup);
         etCustom = (EditText) view.findViewById(R.id.etCustom);
         decode = (Button) view.findViewById(R.id.btDecode);
-        result = (TextView) view.findViewById(R.id.textView2);
-        toClipboard = (Button) view.findViewById(R.id.button);
+        result = (TextView) view.findViewById(R.id.twShowResult);
+        toClipboard = (Button) view.findViewById(R.id.btClipboardText);
+
+        if (savedInstanceState != null) {
+            fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
+            if (savedInstanceState.containsKey(bundleUri)) {
+                outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
+                Bitmap im = ReadImageScaled();
+                if (im != null) {
+                    preview.setImageBitmap(im);
+                }
+            }
+            Log.v(TAG, "Activity restored.");
+        } else {
+            fileNameOriginal = "nothing here";
+            Log.v(TAG, "Activity NOT restored.");
+        }
 
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +106,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                     etCustom.setVisibility(View.VISIBLE);
                 } else {
                     etCustom.setVisibility(View.INVISIBLE);
+                    etCustom.setText("");
                 }
             }
         });
@@ -92,18 +114,55 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
         decode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                StartActivity activity = (StartActivity) getActivity();
+                double[] signature = new double[activity.BlockSize * activity.BlockSize];
 
+                //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
+                if (etCustom.getText().toString().length() == activity.BlockSize * activity.BlockSize * 5) {
+                    Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
+                    char[] key = etCustom.getText().toString().toCharArray();
+                    for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
+                        signature[i] = (key[i * 5 + 1] - 48) / 10000.0 + (key[i * 5 + 2] - 48) / 1000.0 + (key[i * 5 + 3] - 48) / 100.0 + (key[i * 5 + 4] - 48) / 10.0;
+                        //Change sign if the incipit is a letter
+                        if (isLetter(key[i * 5]))
+                            signature[i] *= -1;
+                    }
 
+                } else { //Get the default one
+                    Random caos = new Random();
+                    for (int i = 0; i < signature.length; i++) {   //Consider implementing a function of i that better mimics the pdf of the vector
+                        signature[i] = caos.nextInt(2500) / 10000.0;
+                        if (caos.nextBoolean())
+                            signature[i] *= -1;
+                    }
+                    Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
+                }
+
+                MessageDecoding messageDecoding = new MessageDecoding(getContext(), signature, thisthis);
+                messageDecoding.execute(ReadImage());
             }
         });
 
         toClipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Get string from result textview and copy it to clipboard
+                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("nothing", result.getText().toString());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getContext(), "Signature copied in the clipboard", Toast.LENGTH_LONG).show();
             }
         });
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putString(bundleNameOriginal, fileNameOriginal);
+        if (outputFileUri != null)
+            outState.putString(bundleUri, outputFileUri.toString());
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -129,7 +188,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
 
             Bitmap im = ReadImageScaled();
             if (im != null) {
-                imageView.setImageBitmap(im);
+                preview.setImageBitmap(im);
                 Log.v(TAG, "Choosen photo.");
             } else {
                 Log.v(TAG, "Image is null");

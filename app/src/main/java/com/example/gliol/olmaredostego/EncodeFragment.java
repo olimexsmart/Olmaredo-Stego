@@ -1,6 +1,8 @@
 package com.example.gliol.olmaredostego;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -43,6 +45,7 @@ import java.util.Date;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /*
     TODO manage signature
@@ -59,6 +62,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     Button photo;
     Button encode;
     Button pickFile;
+    Button copySignature;
     ImageView preview;
     EditText inputText;
     SeekBar seekPower;
@@ -73,6 +77,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     int blockSizeSaved;
     int cropSizeSaved;
     EncodeFragment thisthis;
+    double[] sign;
     int check;
 
     @Override
@@ -95,20 +100,18 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
         inputText = (EditText) view.findViewById(R.id.etMessage);
         seekPower = (SeekBar) view.findViewById(R.id.sbEmbeddingPower);
         percentageText = (TextView) view.findViewById(R.id.tvSeekBar);
+        copySignature = (Button) view.findViewById(R.id.copySignature);
 
         if (savedInstanceState != null) {
-
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
             fileNameResult = savedInstanceState.getString(bundleNameResult);
             timeStamp = savedInstanceState.getString(bundleTimeStamp);
             if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
                 Bitmap im = ReadImageScaled();
-                if (im != null)
-                {
+                if (im != null) {
                     preview.setImageBitmap(im);
                 }
-
             }
             Log.v(TAG, "Activity restored.");
         } else {
@@ -117,7 +120,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
             timeStamp = "nothing here";
             Log.v(TAG, "Activity NOT restored.");
         }
-
 
 
         photo.setOnClickListener(new View.OnClickListener() {
@@ -133,7 +135,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 openImageIntent();
             }
         });
-
 
 
         //Opens a dialog that selects a txt file and loads it
@@ -171,7 +172,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
         });
 
 
-
         //This makes sure that is impossible to choose a file once a single character is written in the field
         inputText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -190,9 +190,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                     pickFile.setEnabled(false);
                     inputFile = "not from file";
                     encode.setEnabled(true);
-                }
-                else
-                {
+                } else {
                     pickFile.setEnabled(true);
                     encode.setEnabled(false);
                 }
@@ -217,6 +215,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
             }
         });
 
+        //Starts the Async task that encodes the message
         encode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,21 +223,47 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 blockSizeSaved = activity.BlockSize;
                 cropSizeSaved = activity.CropSize;
 
-                if(inputFile.equalsIgnoreCase("not from file"))
+                if (inputFile.equalsIgnoreCase("not from file"))
                     inputFile = inputText.getText().toString();
 
                 if (new File(fileNameOriginal).exists()) {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
-                    MessageEmbedding messageEmbedding = new MessageEmbedding(thisthis, getContext(), inputFile, (byte)blockSizeSaved, cropSizeSaved, embeddingPower);
+                    MessageEmbedding messageEmbedding = new MessageEmbedding(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
                     messageEmbedding.execute(ReadImage());
-                }
-                else
-                {
+                } else {
                     Toast.makeText(getContext(), "Open an image!", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
+        //Transform the signature into a string and copy it to the clipboard
+        copySignature.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                double z;
+                String key = "";
+                Random caos = new Random();
+                for (double ev : sign) {
+                    z = Math.floor(ev * 10000); //Save only first 4 digits
+                    if (z > 0) //If positive, insert a number
+                        key += caos.nextInt(10);
+                    else //Else negative, insert an Uppercase letter
+                        key += (char) (caos.nextInt(91 - 65) + 65); //Produces only numbers between 65 and 90, ASCII for uppercase letters
+
+                    z = Math.abs(z);
+                    //This is a positional encoding
+                    key += (int)z % 10;
+                    key += ((int)z / 10) % 10;
+                    key += ((int)z / 100) % 10;
+                    key += ((int)z / 1000) % 10;
+                }
+
+                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("nothing", key);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getContext(), "Signature copied in the clipboard", Toast.LENGTH_LONG).show();
+            }
+        });
 
         Log.v(TAG, "OnView ended");
     }
@@ -294,6 +319,9 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 else
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
             }
+            else //Force media update if we added a new photo
+                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, outputFileUri));
+
             Bitmap im = ReadImageScaled();
             if (im != null) {
                 preview.setImageBitmap(im);
@@ -416,6 +444,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     @Override
     public void onResultsReady(Bitmap bm, double[] signature) {
 
+        sign = signature;
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(fileNameResult);
