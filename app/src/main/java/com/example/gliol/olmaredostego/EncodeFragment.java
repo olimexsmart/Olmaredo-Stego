@@ -48,7 +48,6 @@ import java.util.Locale;
 import java.util.Random;
 
 /*
-    TODO manage signature
     TODO manage max input lenght, but in asynctask use: http://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
  */
 public class EncodeFragment extends Fragment implements GetResultEmbedding {
@@ -449,6 +448,8 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
         try {
             out = new FileOutputStream(fileNameResult);
             bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+            File f = new File(fileNameResult);
+            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
             // PNG is a lossless format, the compression factor (100) is ignored
         } catch (FileNotFoundException e) {
             Log.v(TAG, "Invalid saving path.");

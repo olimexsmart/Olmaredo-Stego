@@ -30,9 +30,7 @@ import java.util.Random;
 import static java.lang.Character.isLetter;
 
 /*
-    TODO manage fragment restore
-    TODO implement click to copy to clipboard
-    TODO find a generic signature and a way to convey the original one easily. Then implement the decode async task
+    TODO find a generic signature that works
  */
 public class DecodeFragment extends Fragment implements GetResultDecoding {
     private final int REQ_CODE = 2222;
