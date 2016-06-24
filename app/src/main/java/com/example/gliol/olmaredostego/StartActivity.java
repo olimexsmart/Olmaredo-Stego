@@ -72,6 +72,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
+    public boolean inColor = false;
 
 
     @Override
@@ -167,7 +168,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     }
 
 */
-  /*  //Returning data from MessageEmbedding
+  /*  //Returning data from MessageEncoding
     @Override
     public void onResultsReady(Bitmap result, double[] signature) {
         //salvare la bitmap
@@ -222,8 +223,9 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 */
 
     @Override
-    public void UpdateSettings(int blockSize, int cropSize) {
+    public void UpdateSettings(int blockSize, int cropSize, boolean color) {
         BlockSize = blockSize;
         CropSize = cropSize;
+        inColor = color;
     }
 }

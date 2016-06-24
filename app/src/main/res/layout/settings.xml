@@ -1,95 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/tvBlockDimension"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Block dimension"
-        android:id="@+id/tvBlockDimension"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="30dp" />
+        android:layout_marginTop="30dp"
+        android:text="Block dimension"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
+        android:id="@+id/tvBlockDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Define the dimension in pixel of the block used in the steganographic method."
-        android:id="@+id/tvBlockDescription"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="80dp"
-        android:layout_below="@+id/tvBlockDimension"
         android:layout_alignLeft="@+id/tvBlockDimension"
-        android:layout_alignStart="@+id/tvBlockDimension" />
+        android:layout_alignStart="@+id/tvBlockDimension"
+        android:layout_below="@+id/tvBlockDimension"
+        android:layout_marginRight="80dp"
+        android:layout_marginTop="5dp"
+        android:text="Define the dimension in pixel of the block used in the steganographic method."
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_alignLeft="@+id/tvBlockDescription"
+        android:layout_alignStart="@+id/tvBlockDescription"
+        android:layout_below="@+id/tvBlockDescription"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/tvCropped"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvBlockDescription"
+        android:layout_alignStart="@+id/tvBlockDescription"
+        android:layout_below="@+id/tvBlockDescription"
+        android:layout_marginTop="40dp"
+        android:text="Image height"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/tvCroppedDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvCropped"
+        android:layout_alignStart="@+id/tvCropped"
+        android:layout_below="@+id/tvCropped"
+        android:layout_marginRight="80dp"
+        android:layout_marginTop="5dp"
+        android:text="Define the height of the image once it has been cropped."
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <EditText
+        android:id="@+id/etBlock"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/view"
+        android:layout_alignRight="@+id/view"
+        android:layout_alignTop="@+id/tvBlockDimension"
+        android:ems="10"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/etCropped"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/view"
+        android:layout_alignRight="@+id/view"
+        android:layout_alignTop="@+id/tvCropped"
+        android:ems="10"
+        android:inputType="number" />
+
+    <Button
+        android:id="@+id/btSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView4"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:text="Save settings" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/tvBlockDescription"
         android:layout_alignLeft="@+id/tvBlockDescription"
-        android:layout_alignStart="@+id/tvBlockDescription"
+        android:layout_below="@+id/tvCroppedDescription"
         android:layout_marginRight="20dp"
-        android:id="@+id/view" />
+        android:layout_marginTop="20dp"
+        android:background="@android:color/darker_gray"
+        android:id="@+id/view2" />
 
-    <TextView
+    <Switch
+        android:id="@+id/sColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text=""
+        android:layout_centerVertical="true"
+        android:layout_alignRight="@+id/view2"
+        android:layout_alignEnd="@+id/view2" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/calorOnOff"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Image height"
-        android:id="@+id/tvCropped"
-        android:layout_marginTop="40dp"
-        android:layout_below="@+id/tvBlockDescription"
-        android:layout_alignLeft="@+id/tvBlockDescription"
-        android:layout_alignStart="@+id/tvBlockDescription" />
+        android:layout_alignTop="@+id/sColor"
+        android:layout_alignLeft="@+id/view2"
+        android:layout_alignStart="@+id/view2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Define the height of the image once it has been cropped."
-        android:id="@+id/tvCroppedDescription"
-        android:layout_marginTop="5dp"
-        android:layout_below="@+id/tvCropped"
-        android:layout_alignLeft="@+id/tvCropped"
-        android:layout_alignStart="@+id/tvCropped"
-        android:layout_marginRight="80dp"/>
-
-    <EditText
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/etBlock"
-        android:layout_alignTop="@+id/tvBlockDimension"
-        android:layout_alignRight="@+id/view"
-        android:layout_alignEnd="@+id/view"
-         />
-
-    <EditText
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/etCropped"
-        android:layout_alignTop="@+id/tvCropped"
-        android:layout_alignRight="@+id/view"
-        android:layout_alignEnd="@+id/view"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save settings"
-        android:id="@+id/btSettings"
-        android:layout_below="@+id/tvCroppedDescription"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp" />
+        android:text="@string/colorDescription"
+        android:id="@+id/textView4"
+        android:layout_below="@+id/textView2"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignStart="@+id/textView2" />
 
 </RelativeLayout>

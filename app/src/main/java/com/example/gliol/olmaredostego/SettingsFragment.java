@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 /*
@@ -27,9 +29,10 @@ public class SettingsFragment extends Fragment {
     EditText etBlock;
     EditText etCropped;
     OnSettingsUpdated callback;
+    Switch onColor;
 
     public interface OnSettingsUpdated{
-        void UpdateSettings(int blockSize, int cropSize);
+        void UpdateSettings(int blockSize, int cropSize, boolean color);
     }
 
     @Override
@@ -43,21 +46,30 @@ public class SettingsFragment extends Fragment {
 
         etBlock = (EditText) view.findViewById(R.id.etBlock);
         etCropped = (EditText) view.findViewById(R.id.etCropped);
+        onColor = (Switch) view.findViewById(R.id.sColor);
 
         //Default values
         etBlock.setText(String.valueOf(DEFAULT_BLOCK_SIZE));
         etCropped.setText(String.valueOf(DEFAULT_CROP_SIZE));
+        onColor.setChecked(false);
 
 
         //Button
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callback.UpdateSettings(Integer.parseInt(etBlock.getText().toString()), Integer.parseInt(etCropped.getText().toString()));
+                callback.UpdateSettings(Integer.parseInt(etBlock.getText().toString()), Integer.parseInt(etCropped.getText().toString()), onColor.isChecked());
                 Toast.makeText(getContext(), "Settings updated!", Toast.LENGTH_SHORT).show();
             }
         });
-
+/*
+        onColor.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //Maybe in the future when eliminating that awful save setting button
+            }
+        });
+*/
     }
 
     @Override
@@ -72,6 +84,7 @@ public class SettingsFragment extends Fragment {
             throw new ClassCastException(activity.toString() + " must implement OnSettingsUpdated");
         }
     }
+
 
 
 }

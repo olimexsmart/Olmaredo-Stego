@@ -25,4 +25,6 @@
     <string name="clipboardText">Copy Message</string>
 
     <string name="result">Result</string>
+    <string name="calorOnOff">Color</string>
+    <string name="colorDescription">Choose whenever or not encode images in color</string>
 </resources>

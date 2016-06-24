@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -21,7 +20,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,8 +47,9 @@ import java.util.Random;
 
 /*
     TODO manage max input lenght, but in asynctask use: http://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
+    TODO restore signature
  */
-public class EncodeFragment extends Fragment implements GetResultEmbedding {
+public class EncodeFragment extends Fragment implements GetResultEmbedding, GetResultEncodingColor {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
     private static final String bundleNameOriginal = "bNO";
@@ -71,12 +70,15 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     String inputFile = "not from file";
     Uri outputFileUri = null;
     int embeddingPower;
-    //MessageEmbedding messageEmbedding;
+    //MessageEncoding messageEmbedding;
     TextView percentageText;
     int blockSizeSaved;
     int cropSizeSaved;
     EncodeFragment thisthis;
-    double[] sign;
+    double[] signBlackWhite;
+    double[] signR;
+    double[] signG;
+    double[] signB;
     int check;
 
     @Override
@@ -227,10 +229,16 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
 
                 if (new File(fileNameOriginal).exists()) {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
-                    MessageEmbedding messageEmbedding = new MessageEmbedding(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                    messageEmbedding.execute(ReadImage());
+                    if(activity.inColor){
+                        MessageEmbeddingColor messageEmbeddingColor = new MessageEmbeddingColor(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
+                        messageEmbeddingColor.execute(ReadImage());
+                    }
+                    else {
+                        MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
+                        messageEncoding.execute(ReadImage());
+                    }
                 } else {
-                    Toast.makeText(getContext(), "Open an image!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -242,7 +250,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
                 double z;
                 String key = "";
                 Random caos = new Random();
-                for (double ev : sign) {
+                for (double ev : signBlackWhite) {
                     z = Math.floor(ev * 10000); //Save only first 4 digits
                     if (z > 0) //If positive, insert a number
                         key += caos.nextInt(10);
@@ -443,7 +451,36 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding {
     @Override
     public void onResultsReady(Bitmap bm, double[] signature) {
 
-        sign = signature;
+        signBlackWhite = signature;
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(fileNameResult);
+            bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+            File f = new File(fileNameResult);
+            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+            // PNG is a lossless format, the compression factor (100) is ignored
+        } catch (FileNotFoundException e) {
+            Log.v(TAG, "Invalid saving path.");
+        } catch (NullPointerException e) {
+            Log.v(TAG, "The embedding result is null.");
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onResultsReady(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+
+        signR = signatureR;
+        signG = signatureG;
+        signB = signatureB;
+
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(fileNameResult);

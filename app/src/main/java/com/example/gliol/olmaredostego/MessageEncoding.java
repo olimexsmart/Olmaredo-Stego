@@ -27,8 +27,8 @@ import Jama.Matrix;
  * - Block size
  * - Embedding power
  */
-public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
-    private static final String TAG = "MessageEmbedding";
+public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
+    private static final String TAG = "MessageEncoding";
 
     ProgressDialog progressDialog;
     Context context;
@@ -40,16 +40,16 @@ public class MessageEmbedding extends AsyncTask<Bitmap, Integer, Bitmap> {
     double[] signature;
 
     //We don't wont this to be called without a message specified.
-    private MessageEmbedding() {
+    private MessageEncoding() {
     }
 
-    public MessageEmbedding(GetResultEmbedding result, Context c, String message) {
+    public MessageEncoding(GetResultEmbedding result, Context c, String message) {
         context = c;
         this.message = message;
         this.returnResult = result;
     }
 
-    public MessageEmbedding(GetResultEmbedding result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncoding(GetResultEmbedding result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
         this.blockSize = blockSize;

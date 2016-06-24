@@ -121,7 +121,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                     char[] key = etCustom.getText().toString().toCharArray();
                     for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
                         signature[i] = (key[i * 5 + 1] - 48) / 10000.0 + (key[i * 5 + 2] - 48) / 1000.0 + (key[i * 5 + 3] - 48) / 100.0 + (key[i * 5 + 4] - 48) / 10.0;
-                        //Change sign if the incipit is a letter
+                        //Change signBlackWhite if the incipit is a letter
                         if (isLetter(key[i * 5]))
                             signature[i] *= -1;
                     }

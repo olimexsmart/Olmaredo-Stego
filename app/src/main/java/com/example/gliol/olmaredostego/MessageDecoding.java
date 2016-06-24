@@ -56,15 +56,15 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
         {   //This should be avoided creating Y transposed
             for(int k = 0; k < Y.length; k++)
                 buffer[k] = Y[k][i];
-            //Every N cycles save the char in the result
-            if(i % N == 0)
+            //Every eight cycles save the char in the result
+            if(i % 8 == 0)
             {
                 result += c;
                 c = 0;
             }
             //Here assembly each char, bit by bit
             if(GetSign(signature, buffer)) //If true set the bit to one
-                c |= (1 << (i % N));
+                c |= (1 << (i % 8));
         }
 
         publishProgress(100);
