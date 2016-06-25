@@ -158,10 +158,9 @@
             android:id="@+id/btClipboardText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/twShowResult"
-            android:layout_alignStart="@+id/twShowResult"
             android:layout_below="@+id/twShowResult"
             android:enabled="false"
+            android:layout_centerHorizontal="true"
             android:text="@string/clipboardText" />
 
     </RelativeLayout>

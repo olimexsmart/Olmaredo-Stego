@@ -134,6 +134,8 @@
             android:layout_alignStart="@+id/textView2"
             android:layout_below="@+id/textView2"
             android:text="@string/colorDescription"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="80dp"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
     </RelativeLayout>
