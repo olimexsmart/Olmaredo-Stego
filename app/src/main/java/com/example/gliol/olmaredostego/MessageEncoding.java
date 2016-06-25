@@ -39,7 +39,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     ProgressDialog progressDialog;
     Context context;
     String message;
-    byte blockSize = 8;
+    byte N = 8;
     int finHeight = 480; //This could be useful to add in a constructor
     int strength = 1;
     GetResultEmbedding returnResult;
@@ -58,7 +58,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     public MessageEncoding(GetResultEmbedding result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
-        this.blockSize = blockSize;
+        this.N = blockSize;
         this.strength = strength;
         returnResult = result;
         finHeight = cropSize;
@@ -85,40 +85,29 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected Bitmap doInBackground(Bitmap... params) {
 
-        Bitmap buffer = ResizeNCrop(params[0], blockSize, finHeight);
-        Log.v(TAG, "Image resized: " + buffer.getHeight() + " " + buffer.getWidth());
+        params[0] = ResizeNCrop(params[0], N, finHeight);
+        Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
 
-        int maxLenght = (params[0].getHeight() * params[0].getWidth()) / (blockSize * blockSize * 8);
+        int maxLenght = (params[0].getHeight() * params[0].getWidth()) / (N * N * 8);
         if(message.length() >= maxLenght)
         {
             message = message.substring(0, maxLenght - 1);
             publishProgress(maxLenght + 1000); //To be sure is greater than 100
         }
 
-        //progressDialog.setMessage("Gray scaling...");
-        publishProgress(10);
-        buffer = ToGrayscale(buffer);
-        Log.v(TAG, "Gray-scaled.");
 
-        //progressDialog.setMessage("Creating X matrix...");
+        params[0] = ToGrayscale(params[0]);
+        Log.v(TAG, "Gray-scaled.");
+        publishProgress(10);
+/*
         publishProgress(25);
-        char[][] X = GetXMatrix(buffer, blockSize);
-        buffer.recycle(); //Free-up memory
+        char[][] X = GetXMatrix(params[0], N);
         Log.v(TAG, "Created X matrix.");
 
-        //progressDialog.setMessage("Calculatig autocorrelation...");
-        publishProgress(50);
-        double[][] autocorrelation = GetAutocorrelation(X);
-        //X = null; //Hoping that the GC will act fast // sadly there is the need of it
-        Log.v(TAG, "Created autocorrelation matrix.");
-
-        //progressDialog.setMessage("Calculating signature vector...");
         publishProgress(75);
-        signature = GetSignatureVector(autocorrelation);
-        autocorrelation = null;
+        signature = GetSignatureVector(GetAutocorrelation(X));
         Log.v(TAG, "Got signature vector.");
         SaveSignature(signature); //Saving signature to get a general one
-        //X = ReduceDynamic(signature, strength, X);
 
         publishProgress(85);
         X = EmbedMessage(message, strength, signature, X);
@@ -126,7 +115,86 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         publishProgress(100);
         Log.v(TAG, "Recreating image and returning.");
-        return GetImageFromY(X, finHeight);
+        return GetImageFromY(params[0], X, finHeight);
+        */
+
+        int H = params[0].getHeight();
+        int W = params[0].getWidth();
+
+        //char[][] X = new char[N * N][(H * W) / (N * N)];
+        int Nsqr = N * N;
+        byte[] x = new byte[Nsqr];
+        double[][] autocorrelation = new double[Nsqr][Nsqr];
+
+        for (int h = 0; h < H; h += N)  //Loop on image's rows (going down)
+        {
+            for (int w = 0; w < W; w += N)  //Loop on image's columns (from left to right for each row)
+            {
+                for (int a = 0; a < N; a++) //Loop on block's rows
+                {
+                    for (int b = 0; b < N; b++) //Loop on block's columns
+                    {
+                        x[a * N + b] = (byte) Color.green(params[0].getPixel(w + b, h + a));
+                    }
+                }
+                for (int j = 0; j < Nsqr; j++) {
+                    for (int k = 0; k < Nsqr; k++) {
+                        autocorrelation[j][k] += x[k] * x[j];
+                    }
+                }
+            }
+            publishProgress((int)((h / (double)H) * 50) + 10);
+        }
+
+        signature = GetSignatureVector(autocorrelation);
+        publishProgress(70);
+
+        int P = (H * W) / Nsqr;
+        char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks, adding one for non perfect division
+        for (int k = 0; k < message.length(); k++) {
+            c[k] = message.charAt(k);
+        }
+        for (int k = message.length(); k < c.length; k++) {
+            c[k] = '\0';
+        }
+
+        int sign;
+        byte byteCounter = 0;
+        double e;
+        int Wmax = W / N; //Number of blocks per row
+        int w = 0;
+        int h = 0;
+        for (int p = 0; p < P; p++) {
+            if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
+            else sign = 1;
+
+            //Applying the bit to the block
+            for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                for (int b = 0; b < N; b++) //Loop on block's columns
+                {
+                    e = (sign * strength * signature[(a * N) + b] + Color.green(params[0].getPixel((w * N) + b, (h * N) + a)));
+                    if (e < 0) e = 0;
+                    else if (e > 255) e = 255;
+
+                    int rgb = (int) Math.round(e);
+                    params[0].setPixel((w * N) + b, (h * N) + a, Color.argb(255, rgb, rgb, rgb));
+                }
+            }
+
+            w++; //Move one block left
+            if(w == Wmax)
+            {
+                w = 0;
+                h++; //Move on row down
+            }
+            byteCounter++;
+            if (byteCounter == 8) byteCounter = 0;
+
+            publishProgress((int)((p / (double)P) * 30) + 70);
+        }
+
+
+        return params[0];
     }
 
     @Override
@@ -390,11 +458,10 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         needs to go back to a Bitmap to be then saved.
         Comments are similar to those on getting X
      */
-    private Bitmap GetImageFromY(char[][] y, int finHeight) {
+    private Bitmap GetImageFromY(Bitmap result, char[][] y, int finHeight) {
         int N = (int) Math.round(Math.sqrt(y.length));
         int finWidht = (y[0].length / (finHeight / N)) * N;
 
-        Bitmap result = Bitmap.createBitmap(finWidht, finHeight, Bitmap.Config.ARGB_8888);
         int rgb;
 
         for (int h = 0; h < finHeight; h += N) {

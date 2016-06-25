@@ -74,20 +74,23 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         //Checking how much information can contain the image
 
         int maxLenght = (params[0].getHeight() * params[0].getWidth() * 3) / (N * N * 8);
-        if(message.length() >= maxLenght)
-        {
+        if (message.length() >= maxLenght) {
             message = message.substring(0, maxLenght - 1);
             publishProgress(maxLenght + 1000); //To be sure is greater than 100
         }
 
 
-
         //Getting X matrices
         int H = params[0].getHeight();
         int W = params[0].getWidth();
-        char[][] Xr = new char[N * N][(H * W) / (N * N)];
-        char[][] Xg = new char[N * N][(H * W) / (N * N)];
-        char[][] Xb = new char[N * N][(H * W) / (N * N)];
+
+        int Nsqr = N * N;
+        byte[] xr = new byte[Nsqr];
+        byte[] xg = new byte[Nsqr];
+        byte[] xb = new byte[Nsqr];
+        double[][] autocorrelationR = new double[Nsqr][Nsqr];
+        double[][] autocorrelationG = new double[Nsqr][Nsqr];
+        double[][] autocorrelationB = new double[Nsqr][Nsqr];
 
         for (int h = 0; h < H; h += N)  //Loop on image's rows (going down)
         {
@@ -97,21 +100,27 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        Xr[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.red(params[0].getPixel(w + b, h + a));
-                        Xg[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.green(params[0].getPixel(w + b, h + a));
-                        Xb[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.blue(params[0].getPixel(w + b, h + a));
+                        xr[a * N + b] = (byte) Color.red(params[0].getPixel(w + b, h + a));
+                        xg[a * N + b] = (byte) Color.green(params[0].getPixel(w + b, h + a));
+                        xb[a * N + b] = (byte) Color.blue(params[0].getPixel(w + b, h + a));
+                    }
+                }
+                for (int j = 0; j < Nsqr; j++) {
+                    for (int k = 0; k < Nsqr; k++) {
+                        autocorrelationR[j][k] += xr[k] * xr[j];
+                        autocorrelationG[j][k] += xg[k] * xg[j];
+                        autocorrelationB[j][k] += xb[k] * xb[j];
                     }
                 }
             }
-            publishProgress((int)((h / (double)H) * 50));
+            publishProgress((int) ((h / (double) H) * 65));
         }
 
-        publishProgress(50);
-        signatureR = GetSignatureVector(GetAutocorrelation(Xr));
-        publishProgress(60);
-        signatureG = GetSignatureVector(GetAutocorrelation(Xg));
+        signatureR = GetSignatureVector(autocorrelationR);
         publishProgress(70);
-        signatureB = GetSignatureVector(GetAutocorrelation(Xb));
+        signatureG = GetSignatureVector(autocorrelationG);
+        publishProgress(75);
+        signatureB = GetSignatureVector(autocorrelationB);
         publishProgress(80);
         //X = null; //Hoping that the GC will act fast // sadly there is the need of it
         Log.v(TAG, "Created autocorrelation matrices and signature vectors.");
@@ -121,80 +130,95 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         So the first three bits are coded into the same block on different colors, the second block
         on the three colors contains the next three bits and so on
          */
-        int P = Xr[0].length * 3; //All the same dimensions, but this time we have three times the information
+        int P = (H * W * 3) / Nsqr; //All the same dimensions, but this time we have three times the information
         //Padding the message
-        char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks, adding one for non perfect division
+        char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks times three colors, adding one for non perfect division
         for (int k = 0; k < message.length(); k++) {
             c[k] = message.charAt(k);
         }
-        for (int k = message.length(); k < P / 8; k++) {
+        for (int k = message.length(); k < c.length; k++) {
             c[k] = '\0';
         }
 
-        int sign;
+        //Because immutable, you know
+        Bitmap mutableBitmap = params[0].copy(Bitmap.Config.ARGB_8888, true);
+        int sign = 0;
         byte byteCounter = 0;
-        char b;
         double e;
-        //TODO This loop needs to be optimized with P not multiplied by 3 and without the if else statement inside
-        for (int p = 0; p < P; p++) { //Remeber that the P stands for the number of bits to embed in the image
-            b = (char) (c[p / 8] & 1 << byteCounter);
-            if (b == 0) sign = -1;
+        int Wmax = W / N; //Number of blocks per row
+        int w = 0;
+        int h = 0;
+        int r, g, blu;
+        for(int p = 0; p < P; p++) { //Remember that the P stands for the number of bits to embed in the image
+
+            if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
             else sign = 1;
-
-            //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
-            if (p % 3 == 0) { //On red plane
-                for (int n = 0; n < N * N; n++) {
-                    e = (sign * strength * signatureR[n] + Xr[n][p / 3]);
-                    if (e < 0) e = 0;
-                    else if (e > 255) e = 255;
-
-                    Xr[n][p / 3] = (char) Math.round(e);
-                }
-            } else if (p % 3 == 1) { //On green plane
-                for (int n = 0; n < N * N; n++) {
-                    e = (sign * strength * signatureG[n] + Xg[n][p / 3]);
-                    if (e < 0) e = 0;
-                    else if (e > 255) e = 255;
-
-                    Xg[n][p / 3] = (char) Math.round(e);
-                }
-            } else { //On blu plane if P % 3 == 2
-                for (int n = 0; n < N * N; n++) {
-                    e = (sign * strength * signatureB[n] + Xb[n][p / 3]);
-                    if (e < 0) e = 0;
-                    else if (e > 255) e = 255;
-
-                    Xb[n][p / 3] = (char) Math.round(e);
-                }
-            }
             byteCounter++;
-            if (byteCounter == 8) byteCounter = 0;
-            publishProgress((int)((p / (double)P) * 10) + 80);
-        }
+            if (byteCounter == 8)
+                byteCounter = 0;
 
-        publishProgress(90);
-        Log.v(TAG, "Embedded message.");
+            if(p % 3 == 0) {
+                //Applying the bit to the block
+                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                    for (int b = 0; b < N; b++) //Loop on block's columns
+                    {
+                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        if (e < 0) e = 0;
+                        else if (e > 255) e = 255;
 
-        int finWidth = params[0].getWidth();
-        int r;
-        int g;
-        int blu; //Otherwise redefinition error
-
-        for (int h = 0; h < finHeight; h += N) {
-            for (int w = 0; w < finWidth; w += N) {
-                for (int a = 0; a < N; a++) {
-                    for (int z = 0; z < N; z++) {
-                        r = Xr[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
-                        g = Xg[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
-                        blu = Xb[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
-                        params[0].setPixel(w + z, h + a, Color.argb(255, r, g, blu));
+                        r = (int) Math.round(e);
+                        g = Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
+                        blu = Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
+                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
             }
-            publishProgress((int)((h / (double)finHeight) * 10) + 90);
+            else if(p % 3 == 1)
+            {   //Applying the bit to the block
+                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                    for (int b = 0; b < N; b++) //Loop on block's columns
+                    {
+                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        if (e < 0) e = 0;
+                        else if (e > 255) e = 255;
+
+                        r = Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
+                        g = (int) Math.round(e);
+                        blu = Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
+                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
+                    }
+                }
+            }
+            else //p % 3 == 2
+            {   //Applying the bit to the block
+                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                    for (int b = 0; b < N; b++) //Loop on block's columns
+                    {
+                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        if (e < 0) e = 0;
+                        else if (e > 255) e = 255;
+
+                        r = Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
+                        g = Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
+                        blu = (int) Math.round(e);
+                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
+                    }
+                }
+
+                //At the next p increment we will be again in the top if statement, we need to be in the next block
+                w++; //Move one block left
+                if(w == Wmax)
+                {
+                    w = 0;
+                    h++; //Move on row down
+                }
+            }
+
+            publishProgress((int) ((p / (double) P) * 20) + 80);
         }
 
-        return params[0];
+        params[0].recycle();
+        return mutableBitmap;
     }
 
 
@@ -202,11 +226,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
         //Setting progress percentage
-        if(values[0] > 100)
-        {
+        if (values[0] > 100) {
             Toast.makeText(context, "Input text too long, trimming it at: " + (values[0] - 1000), Toast.LENGTH_LONG).show();
-        }
-        else {
+        } else {
             progressDialog.setProgress(values[0]);
         }
     }
@@ -229,7 +251,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight) {
 
-        if(original.getHeight() > finalHeight) {
+        if (original.getHeight() > finalHeight) {
             double ratio = (double) original.getHeight() / finalHeight;
             int finalWidth = original.getWidth() / (int) ratio;
 
@@ -237,8 +259,10 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
             return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
         }
-
-        return original;
+        else
+        {
+            return original.createBitmap(original, 0, 0, original.getWidth() - (original.getWidth() % N), original.getHeight() - (original.getHeight() % N));
+        }
     }
 
     /*
