@@ -45,10 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-/*
-    TODO manage max input lenght, but in asynctask use: http://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
-    TODO restore signature
- */
+
 public class EncodeFragment extends Fragment implements GetResultEmbedding, GetResultEncodingColor {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
@@ -56,6 +53,10 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
     private static final String bundleNameResult = "bNR";
     private static final String bundleTimeStamp = "bTS";
     private static final String bundleUri = "bU";
+    private static final String bundleSignBW = "bSBW";
+    private static final String bundleSignR = "bSR";
+    private static final String bundleSignG = "bSG";
+    private static final String bundleSignB = "bSB";
 
     Button photo;
     Button encode;
@@ -114,6 +115,15 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                     preview.setImageBitmap(im);
                 }
             }
+            if(savedInstanceState.containsKey(bundleSignBW))
+                signBlackWhite = savedInstanceState.getDoubleArray(bundleSignBW);
+            if(savedInstanceState.containsKey(bundleSignR))
+                signR = savedInstanceState.getDoubleArray(bundleSignR);
+            if(savedInstanceState.containsKey(bundleSignG))
+                signG = savedInstanceState.getDoubleArray(bundleSignG);
+            if(savedInstanceState.containsKey(bundleSignB))
+                signB = savedInstanceState.getDoubleArray(bundleSignB);
+
             Log.v(TAG, "Activity restored.");
         } else {
             fileNameOriginal = "nothing here";
@@ -133,6 +143,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                 fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.png";
                 inputText.setEnabled(true);
                 pickFile.setEnabled(true);
+                copySignature.setEnabled(false);
                 openImageIntent();
             }
         });
@@ -160,8 +171,8 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                             }
                             br.close();
                             inputFile = text.toString();
-                            inputText.setEnabled(false);
                             inputText.setHint("File correctly opened.");
+                            inputText.setEnabled(false);
                             encode.setEnabled(true);
                         } catch (IOException e) {
                             Toast.makeText(getContext(), "File not found", Toast.LENGTH_SHORT).show();
@@ -176,14 +187,10 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         //This makes sure that is impossible to choose a file once a single character is written in the field
         inputText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -192,10 +199,10 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                     inputFile = "not from file";
                     encode.setEnabled(true);
                 } else {
+                    inputFile = "actually we don't now yet";
                     pickFile.setEnabled(true);
                     encode.setEnabled(false);
                 }
-
             }
         });
 
@@ -203,13 +210,9 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onStopTrackingTouch(SeekBar bar) {
                 embeddingPower = bar.getProgress(); // the value of the seekBar progress
-
-
             }
 
-            public void onStartTrackingTouch(SeekBar bar) {
-
-            }
+            public void onStartTrackingTouch(SeekBar bar) { }
 
             public void onProgressChanged(SeekBar bar, int paramInt, boolean paramBoolean) {
                 percentageText.setText("" + paramInt + "%"); // here in textView the percent will be shown
@@ -220,22 +223,31 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         encode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StartActivity activity = (StartActivity) getActivity();
-                blockSizeSaved = activity.BlockSize;
-                cropSizeSaved = activity.CropSize;
-
-                if (inputFile.equalsIgnoreCase("not from file"))
-                    inputFile = inputText.getText().toString();
-
                 if (new File(fileNameOriginal).exists()) {
+                    StartActivity activity = (StartActivity) getActivity();
+                    blockSizeSaved = activity.BlockSize;
+                    cropSizeSaved = activity.CropSize;
+                    Bitmap image = ReadImage();
+
+                    if (inputFile.equalsIgnoreCase("not from file"))
+                        inputFile = inputText.getText().toString();
+                    //Strip all non ASCII characters
+                    inputFile =  inputFile.replaceAll("[^\\x20-\\x7e]", "");
+                    int maxLenght = (image.getHeight() * image.getWidth()) / (blockSizeSaved * blockSizeSaved * 8);
+                    if(inputFile.length() >= maxLenght)
+                    {
+                        inputFile = inputFile.substring(0, maxLenght - 1);
+                        Toast.makeText(getContext(), "Input text too long, trimming it at: " + (maxLenght - 1), Toast.LENGTH_LONG).show();
+                    }
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
+                    copySignature.setEnabled(true);
                     if(activity.inColor){
-                        MessageEmbeddingColor messageEmbeddingColor = new MessageEmbeddingColor(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEmbeddingColor.execute(ReadImage());
+                        MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
+                        messageEncodingColor.execute(image);
                     }
                     else {
                         MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEncoding.execute(ReadImage());
+                        messageEncoding.execute(image);
                     }
                 } else {
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
@@ -247,22 +259,16 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         copySignature.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double z;
-                String key = "";
-                Random caos = new Random();
-                for (double ev : signBlackWhite) {
-                    z = Math.floor(ev * 10000); //Save only first 4 digits
-                    if (z > 0) //If positive, insert a number
-                        key += caos.nextInt(10);
-                    else //Else negative, insert an Uppercase letter
-                        key += (char) (caos.nextInt(91 - 65) + 65); //Produces only numbers between 65 and 90, ASCII for uppercase letters
 
-                    z = Math.abs(z);
-                    //This is a positional encoding
-                    key += (int)z % 10;
-                    key += ((int)z / 10) % 10;
-                    key += ((int)z / 100) % 10;
-                    key += ((int)z / 1000) % 10;
+                StartActivity startActivity = (StartActivity) getActivity();
+                String key = "";
+                if(startActivity.inColor) {
+                    key += SignatureToString(signR);
+                    key += SignatureToString(signG);
+                    key += SignatureToString(signB);
+                }
+                else {
+                    key += SignatureToString(signBlackWhite);
                 }
 
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
@@ -275,6 +281,28 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         Log.v(TAG, "OnView ended");
     }
 
+    private String SignatureToString(double[] signature)
+    {
+        double z;
+        String key = "";
+        Random caos = new Random();
+        for (double ev : signature) {
+            z = Math.floor(ev * 10000); //Save only first 4 digits
+            if (z > 0) //If positive, insert a number
+                key += caos.nextInt(10);
+            else //Else negative, insert an Uppercase letter
+                key += (char) (caos.nextInt(91 - 65) + 65); //Produces only numbers between 65 and 90, ASCII for uppercase letters
+
+            z = Math.abs(z);
+            //This is a positional encoding
+            key += (int)z % 10;
+            key += ((int)z / 10) % 10;
+            key += ((int)z / 100) % 10;
+            key += ((int)z / 1000) % 10;
+        }
+
+        return key;
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -284,6 +312,14 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         outState.putString(bundleTimeStamp, timeStamp);
         if (outputFileUri != null)
             outState.putString(bundleUri, outputFileUri.toString());
+        if(signBlackWhite != null)
+            outState.putDoubleArray(bundleSignBW, signBlackWhite);
+        if(signR != null)
+            outState.putDoubleArray(bundleSignR, signR);
+        if(signG != null)
+            outState.putDoubleArray(bundleSignG, signG);
+        if(signB != null)
+            outState.putDoubleArray(bundleSignB, signB);
 
         super.onSaveInstanceState(outState);
     }

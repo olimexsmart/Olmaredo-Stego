@@ -80,7 +80,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char c = 0;
 
         for (int i = 0; i < Xr[0].length * 3; i++) {
-            if (i % 8 == 0) //Every eight cycles save the char in the result
+            if (i % 8 == 0 && i != 0) //Every eight cycles save the char in the result
             {
                 result += c;
                 c = 0;

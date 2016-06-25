@@ -13,8 +13,8 @@ import Jama.Matrix;
 /*
     TODO manage pictures on portrait, the resasing is done wrong
  */
-public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
-    private final String TAG = "MessageEmbeddingColor";
+public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
+    private final String TAG = "MessageEncodingColor";
 
     ProgressDialog progressDialog;
     Context context;
@@ -28,16 +28,16 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     double[] signatureB;
 
     //We don't wont this to be called without a message specified.
-    private MessageEmbeddingColor() {
+    private MessageEncodingColor() {
     }
 
-    public MessageEmbeddingColor(GetResultEncodingColor result, Context c, String message) {
+    public MessageEncodingColor(GetResultEncodingColor result, Context c, String message) {
         context = c;
         this.message = message;
         this.returnResult = result;
     }
 
-    public MessageEmbeddingColor(GetResultEncodingColor result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncodingColor(GetResultEncodingColor result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
         this.N = blockSize;
@@ -111,8 +111,6 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         on the three colors contains the next three bits and so on
          */
         int P = Xr[0].length * 3; //All the same dimensions, but this time we have three times the information
-        //byte N = (byte) Math.round(Math.sqrt(X.length));
-        //byte[][] Y = new byte[N][P]; the modification can be applied to X itself
         //Padding the message
         char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks, adding one for non perfect division
         for (int k = 0; k < message.length(); k++) {
@@ -133,7 +131,7 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             else sign = 1;
 
             //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
-            if (P % 3 == 0) { //On red plane
+            if (p % 3 == 0) { //On red plane
                 for (int n = 0; n < N * N; n++) {
                     e = (sign * strength * signatureR[n] + Xr[n][p / 3]);
                     if (e < 0) e = 0;
@@ -141,7 +139,7 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
                     Xr[n][p / 3] = (char) Math.round(e);
                 }
-            } else if (P % 3 == 1) { //On green plane
+            } else if (p % 3 == 1) { //On green plane
                 for (int n = 0; n < N * N; n++) {
                     e = (sign * strength * signatureG[n] + Xg[n][p / 3]);
                     if (e < 0) e = 0;
@@ -158,25 +156,25 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                     Xb[n][p / 3] = (char) Math.round(e);
                 }
             }
+            byteCounter++;
+            if (byteCounter == 8) byteCounter = 0;
         }
-        byteCounter++;
-        if (byteCounter == 8) byteCounter = 0;
 
         publishProgress(90);
         Log.v(TAG, "Embedded message.");
 
-        int finWidht = params[0].getWidth();
+        int finWidth = params[0].getWidth();
         int r;
         int g;
         int blu; //Otherwise redefinition error
 
         for (int h = 0; h < finHeight; h += N) {
-            for (int w = 0; w < finWidht; w += N) {
+            for (int w = 0; w < finWidth; w += N) {
                 for (int a = 0; a < N; a++) {
                     for (int z = 0; z < N; z++) {
-                        r = Xr[(a * N) + z][(finWidht / N) * (h / N) + (w / N)];
-                        g = Xg[(a * N) + z][(finWidht / N) * (h / N) + (w / N)];
-                        blu = Xb[(a * N) + z][(finWidht / N) * (h / N) + (w / N)];
+                        r = Xr[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
+                        g = Xg[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
+                        blu = Xb[(a * N) + z][(finWidth / N) * (h / N) + (w / N)];
                         params[0].setPixel(w + z, h + a, Color.argb(255, r, g, blu));
                     }
                 }
@@ -184,7 +182,6 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         }
 
         return params[0];
-
     }
 
 
@@ -213,12 +210,16 @@ public class MessageEmbeddingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight) {
 
-        double ratio = (double) original.getHeight() / finalHeight;
-        int finalWidth = original.getWidth() / (int) ratio;
+        if(original.getHeight() > finalHeight) {
+            double ratio = (double) original.getHeight() / finalHeight;
+            int finalWidth = original.getWidth() / (int) ratio;
 
-        Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
+            Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
 
-        return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
+            return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
+        }
+
+        return original;
     }
 
     /*

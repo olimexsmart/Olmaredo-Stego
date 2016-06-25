@@ -18,10 +18,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +48,8 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
     Button decode;
     TextView result;
     Button toClipboard;
+    RadioButton rbCustom;
+    RadioButton rbDefault;
     DecodeFragment thisthis;
     String fileNameOriginal;
     Uri outputFileUri = null;
@@ -68,6 +72,8 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
         decode = (Button) view.findViewById(R.id.btDecode);
         result = (TextView) view.findViewById(R.id.twShowResult);
         toClipboard = (Button) view.findViewById(R.id.btClipboardText);
+        rbCustom = (RadioButton) view.findViewById(R.id.rbCustom);
+        rbDefault = (RadioButton) view.findViewById(R.id.rbDefault);
 
         if (savedInstanceState != null) {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
@@ -90,7 +96,6 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                 Intent i = new Intent(
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
                 startActivityForResult(i, REQ_CODE);
             }
         });
@@ -112,32 +117,53 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
         decode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StartActivity activity = (StartActivity) getActivity();
-                double[] signature = new double[activity.BlockSize * activity.BlockSize];
+                //First thing to do is check if the file is valid
+                if (new File(fileNameOriginal).exists()) {
+                    StartActivity activity = (StartActivity) getActivity();
+                    //Renamed to lighten up code readability
+                    int blockSize = activity.BlockSize;
+                    String customKey = etCustom.getText().toString();
 
-                //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
-                if (etCustom.getText().toString().length() == activity.BlockSize * activity.BlockSize * 5) {
-                    Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
-                    char[] key = etCustom.getText().toString().toCharArray();
-                    for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
-                        signature[i] = (key[i * 5 + 1] - 48) / 10000.0 + (key[i * 5 + 2] - 48) / 1000.0 + (key[i * 5 + 3] - 48) / 100.0 + (key[i * 5 + 4] - 48) / 10.0;
-                        //Change signBlackWhite if the incipit is a letter
-                        if (isLetter(key[i * 5]))
-                            signature[i] *= -1;
-                    }
+                    if (activity.inColor) {
+                        toClipboard.setEnabled(true);
+                        double[] signR;
+                        double[] signG;
+                        double[] signB;
+                        //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
+                        //But since we are in color mode, we are expecting the same thin three times
+                        if (customKey.length() == blockSize * blockSize * 15) { //960 on standard blocksize, quite a lot
+                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
+                            //Dividing the string into the respective signature
+                            signR = StringToSignature(customKey.subSequence(0, blockSize * blockSize * 5 - 1).toString());
+                            signG = StringToSignature(customKey.subSequence(blockSize * blockSize * 5, blockSize * blockSize * 10 - 1).toString());
+                            signB = StringToSignature(customKey.subSequence(blockSize * blockSize * 10, blockSize * blockSize * 15 - 1).toString());
+                        } else { //Get the default one
+                            signR = GetDefaultSignature(blockSize);
+                            signG = GetDefaultSignature(blockSize);
+                            signB = GetDefaultSignature(blockSize);
+                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
+                        }
 
-                } else { //Get the default one
-                    Random caos = new Random();
-                    for (int i = 0; i < signature.length; i++) {   //Consider implementing a function of i that better mimics the pdf of the vector
-                        signature[i] = caos.nextInt(2500) / 10000.0;
-                        if (caos.nextBoolean())
-                            signature[i] *= -1;
+                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB);
+                        messageDecodingColor.execute(ReadImage());
+                    } else { //In black and white
+                        //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
+                        double[] signatureBW;
+                        if (customKey.length() == blockSize * blockSize * 5) {
+                            signatureBW = StringToSignature(customKey);
+                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
+                        } else { //Get the default one
+                            signatureBW = GetDefaultSignature(blockSize);
+                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
+                        }
+                        MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis);
+                        messageDecoding.execute(ReadImage());
                     }
-                    Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
                 }
-
-                MessageDecoding messageDecoding = new MessageDecoding(getContext(), signature, thisthis);
-                messageDecoding.execute(ReadImage());
+                else
+                {
+                    Toast.makeText(getContext(), "Choose a valid image.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -151,6 +177,34 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
             }
         });
 
+    }
+
+    private double[] StringToSignature(String key)
+    {
+        double[] signature = new double[key.length() / 5];
+
+        char[] keyChar = etCustom.getText().toString().toCharArray();
+        for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
+            signature[i] = (keyChar[i * 5 + 1] - 48) / 10000.0 + (keyChar[i * 5 + 2] - 48) / 1000.0 + (keyChar[i * 5 + 3] - 48) / 100.0 + (keyChar[i * 5 + 4] - 48) / 10.0;
+            //Change sign if the prefix is a letter
+            if (isLetter(keyChar[i * 5]))
+                signature[i] *= -1;
+        }
+
+        return signature;
+    }
+
+    private double[] GetDefaultSignature(int blockSize)
+    {
+        Random caos = new Random();
+        double [] signature = new double[blockSize * blockSize];
+        for (int i = 0; i < signature.length; i++) {   //Consider implementing a function of i that better mimics the pdf of the vector
+            signature[i] = caos.nextInt(2500) / 10000.0;
+            if (caos.nextBoolean())
+                signature[i] *= -1;
+        }
+
+        return signature;
     }
 
     @Override
@@ -187,8 +241,14 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
             Bitmap im = ReadImageScaled();
             if (im != null) {
                 preview.setImageBitmap(im);
+                rbDefault.setEnabled(true);
+                rbCustom.setEnabled(true);
+                decode.setEnabled(true);
                 Log.v(TAG, "Choosen photo.");
             } else {
+                rbDefault.setEnabled(false);
+                rbCustom.setEnabled(false);
+                decode.setEnabled(false);
                 Log.v(TAG, "Image is null");
             }
         }

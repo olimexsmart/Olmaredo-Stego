@@ -27,4 +27,5 @@
     <string name="result">Result</string>
     <string name="calorOnOff">Color</string>
     <string name="colorDescription">Choose whenever or not encode images in color</string>
+    <string name="enterMessage">Enter the message you want to hide.\nYou can write it here:</string>
 </resources>

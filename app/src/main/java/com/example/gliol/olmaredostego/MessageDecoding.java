@@ -57,7 +57,7 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
             for(int k = 0; k < Y.length; k++)
                 buffer[k] = Y[k][i];
             //Every eight cycles save the char in the result
-            if(i % 8 == 0)
+            if(i % 8 == 0 && i != 0)
             {
                 result += c;
                 c = 0;

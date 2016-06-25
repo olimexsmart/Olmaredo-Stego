@@ -27,6 +27,11 @@ import Jama.Matrix;
  * - Block size
  * - Embedding power
  */
+
+/*
+    TODO manage pictures on portrait, the resasing is done wrong
+ */
+
 public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private static final String TAG = "MessageEncoding";
 
@@ -143,12 +148,16 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight) {
 
-        double ratio = (double) original.getHeight() / finalHeight;
-        int finalWidth = original.getWidth() / (int) ratio;
+        if(original.getHeight() > finalHeight) {
+            double ratio = (double) original.getHeight() / finalHeight;
+            int finalWidth = original.getWidth() / (int) ratio;
 
-        Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
+            Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
 
-        return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
+            return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
+        }
+
+        return original;
     }
 
     /*

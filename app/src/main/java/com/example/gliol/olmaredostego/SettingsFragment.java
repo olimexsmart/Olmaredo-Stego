@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 /*
     TODO manage fragment restore
-    TODO add more options, like colour or black white, no radio buttons, just a simple trigger
     TODO empty editext when selected, so isn't necessary to erase the content every time
  */
 

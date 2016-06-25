@@ -91,12 +91,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
+                android:enabled="false"
                 android:text="Default" />
 
             <RadioButton
                 android:id="@+id/rbCustom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:text="Custom" />
 
         </RadioGroup>
@@ -130,6 +132,7 @@
             android:layout_below="@+id/riga2"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
+            android:enabled="false"
             android:text="@string/decodebt" />
 
         <TextView
@@ -158,6 +161,7 @@
             android:layout_alignLeft="@+id/twShowResult"
             android:layout_alignStart="@+id/twShowResult"
             android:layout_below="@+id/twShowResult"
+            android:enabled="false"
             android:text="@string/clipboardText" />
 
     </RelativeLayout>
