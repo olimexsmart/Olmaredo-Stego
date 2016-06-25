@@ -134,9 +134,9 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                         if (customKey.length() == blockSize * blockSize * 15) { //960 on standard blocksize, quite a lot
                             Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
                             //Dividing the string into the respective signature
-                            signR = StringToSignature(customKey.subSequence(0, blockSize * blockSize * 5 - 1).toString());
-                            signG = StringToSignature(customKey.subSequence(blockSize * blockSize * 5, blockSize * blockSize * 10 - 1).toString());
-                            signB = StringToSignature(customKey.subSequence(blockSize * blockSize * 10, blockSize * blockSize * 15 - 1).toString());
+                            signR = StringToSignature(customKey.substring(0, blockSize * blockSize * 5));
+                            signG = StringToSignature(customKey.substring(blockSize * blockSize * 5, blockSize * blockSize * 10));
+                            signB = StringToSignature(customKey.substring(blockSize * blockSize * 10, blockSize * blockSize * 15));
                         } else { //Get the default one
                             signR = GetDefaultSignature(blockSize);
                             signG = GetDefaultSignature(blockSize);

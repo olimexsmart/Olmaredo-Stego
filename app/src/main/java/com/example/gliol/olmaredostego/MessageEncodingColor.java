@@ -122,7 +122,12 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         publishProgress(75);
         signatureB = GetSignatureVector(autocorrelationB);
         publishProgress(80);
-        //X = null; //Hoping that the GC will act fast // sadly there is the need of it
+        autocorrelationR = null;
+        autocorrelationG = null;
+        autocorrelationB = null;
+        xr = null;
+        xg = null;
+        xb = null;
         Log.v(TAG, "Created autocorrelation matrices and signature vectors.");
 
         /*
@@ -142,7 +147,8 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         //Because immutable, you know
         Bitmap mutableBitmap = params[0].copy(Bitmap.Config.ARGB_8888, true);
-        int sign = 0;
+        params[0].recycle();
+        int sign;
         byte byteCounter = 0;
         double e;
         int Wmax = W / N; //Number of blocks per row
@@ -162,13 +168,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
                         r = (int) Math.round(e);
-                        g = Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
-                        blu = Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
+                        g = Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
+                        blu = Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
                         mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
@@ -178,13 +184,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
-                        r = Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
+                        r = Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
                         g = (int) Math.round(e);
-                        blu = Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
+                        blu = Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
                         mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
@@ -194,12 +200,12 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(params[0].getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
-                        r = Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
-                        g = Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
+                        r = Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
+                        g = Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
                         blu = (int) Math.round(e);
                         mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
@@ -217,7 +223,6 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             publishProgress((int) ((p / (double) P) * 20) + 80);
         }
 
-        params[0].recycle();
         return mutableBitmap;
     }
 
