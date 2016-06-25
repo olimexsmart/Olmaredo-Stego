@@ -8,14 +8,19 @@
     <string name="encode">Encode</string>
     <string name="select">Select image</string>
     <string name="hint">Input message here or -></string>
-    <string name="info">This app permits you to hide a message in an image in order to communicate secretly.\n
-        It is based on the spread-spectrum steganography, more specifically on the optimal version defined by
+    <string name="info">This app lets you to hide a message in an image in order to communicate secretly.\n
+        The steganographic process needs a signature derived from the autocorrelation matrix
+        of the original image, like a sort of key. You can clip it after the encoding process is complete and share it
+        with your partner that will insert it into the Custo field in the decoding tab along side the image
+        carrying the message. A default signature can be used but can\'t guarantee the same performance as the
+        original one. \n
+        In the setting tab can be specified the block dimension, the bigger, the harder to detect the information, since the
+        spectrum is larger and the key is longer. But with bigger blocks the image can hold less of them, so less information can be
+        included. The image height parameter sets the height dimension of the output image, bigger images can hold more information,
+        but the computation can take much longer and devices with no much RAM could have problems. To give you an idea, with default
+        settings the maximum length of the message is around 600 characters.
+        The algorithm is based on spread-spectrum steganography, more specifically on the optimal version defined by
         Gkizeli, Pados and Medley that maximizes the signal-to-interference-plus-noise ratio.\n
-        The image that you upload is divided in square blocks with custom side dimension (default value is 8 pixels).
-        Each bloc carry one hidden information bit and you have to define the intensity of embedding.
-        The steganographic process needs a signature derived from an autocorrelation matrix
-        derived from the image itself and you can enter a custom one (the default value is for generic image).\n
-
     </string>
 
     <string name="selectimagehides">Select the image that hide the message.</string>

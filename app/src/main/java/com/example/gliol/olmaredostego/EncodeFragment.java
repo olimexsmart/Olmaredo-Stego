@@ -227,27 +227,21 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                     StartActivity activity = (StartActivity) getActivity();
                     blockSizeSaved = activity.BlockSize;
                     cropSizeSaved = activity.CropSize;
-                    Bitmap image = ReadImage();
 
                     if (inputFile.equalsIgnoreCase("not from file"))
                         inputFile = inputText.getText().toString();
                     //Strip all non ASCII characters
                     inputFile =  inputFile.replaceAll("[^\\x20-\\x7e]", "");
-                    int maxLenght = (image.getHeight() * image.getWidth()) / (blockSizeSaved * blockSizeSaved * 8);
-                    if(inputFile.length() >= maxLenght)
-                    {
-                        inputFile = inputFile.substring(0, maxLenght - 1);
-                        Toast.makeText(getContext(), "Input text too long, trimming it at: " + (maxLenght - 1), Toast.LENGTH_LONG).show();
-                    }
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     copySignature.setEnabled(true);
+
                     if(activity.inColor){
                         MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEncodingColor.execute(image);
+                        messageEncodingColor.execute(ReadImage());
                     }
                     else {
                         MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputFile, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEncoding.execute(image);
+                        messageEncoding.execute(ReadImage());
                     }
                 } else {
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();

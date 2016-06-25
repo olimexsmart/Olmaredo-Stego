@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -52,7 +53,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         super.onPreExecute();
 
         progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Embedding message.");
+        progressDialog.setTitle("Embedding message in RGB");
         //progressDialog.setMessage("Resizing...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(100);
@@ -70,7 +71,16 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         params[0] = ResizeNCrop(params[0], N, finHeight);
         Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
-        publishProgress(10);
+        //Checking how much information can contain the image
+
+        int maxLenght = (params[0].getHeight() * params[0].getWidth() * 3) / (N * N * 8);
+        if(message.length() >= maxLenght)
+        {
+            message = message.substring(0, maxLenght - 1);
+            publishProgress(maxLenght + 1000); //To be sure is greater than 100
+        }
+
+
 
         //Getting X matrices
         int H = params[0].getHeight();
@@ -93,6 +103,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                     }
                 }
             }
+            publishProgress((int)((h / (double)H) * 50));
         }
 
         publishProgress(50);
@@ -158,6 +169,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             }
             byteCounter++;
             if (byteCounter == 8) byteCounter = 0;
+            publishProgress((int)((p / (double)P) * 10) + 80);
         }
 
         publishProgress(90);
@@ -179,6 +191,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                     }
                 }
             }
+            publishProgress((int)((h / (double)finHeight) * 10) + 90);
         }
 
         return params[0];
@@ -189,7 +202,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
         //Setting progress percentage
-        progressDialog.setProgress(values[0]);
+        if(values[0] > 100)
+        {
+            Toast.makeText(context, "Input text too long, trimming it at: " + (values[0] - 1000), Toast.LENGTH_LONG).show();
+        }
+        else {
+            progressDialog.setProgress(values[0]);
+        }
     }
 
 

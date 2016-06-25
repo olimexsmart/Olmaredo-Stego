@@ -37,7 +37,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         super.onPreExecute();
 
         progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Decoding message.");
+        progressDialog.setTitle("Decoding message in RGB");
         //progressDialog.setMessage("Resizing...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(100); //Set total number of blocks here
@@ -71,15 +71,16 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     }
                 }
             }
+            publishProgress((int)((h / (double)H) * 70));
         }
 
-        publishProgress(75);
         Log.v(TAG, "Created Y matrices.");
         String result = "";
         char[] buffer = new char[Xr.length]; //Used to copy one column
         char c = 0;
+        int I = Xr[0].length * 3;
 
-        for (int i = 0; i < Xr[0].length * 3; i++) {
+        for (int i = 0; i < I; i++) {
             if (i % 8 == 0 && i != 0) //Every eight cycles save the char in the result
             {
                 result += c;
@@ -114,6 +115,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     c |= (1 << (i % 8));
 
             }
+            publishProgress((int)((i / (double)I) * 30) + 70);
         }
 
         publishProgress(100);
@@ -150,6 +152,5 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         }
 
         return buffer > 0;
-
     }
 }

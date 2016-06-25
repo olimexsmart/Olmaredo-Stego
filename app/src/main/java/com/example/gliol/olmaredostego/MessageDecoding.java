@@ -31,7 +31,7 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
         super.onPreExecute();
 
         progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Decoding message.");
+        progressDialog.setTitle("Decoding message in grey scale");
         //progressDialog.setMessage("Resizing...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(100); //Set total number of blocks here
@@ -65,9 +65,10 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
             //Here assembly each char, bit by bit
             if(GetSign(signature, buffer)) //If true set the bit to one
                 c |= (1 << (i % 8));
+
+            publishProgress((int)((i / (double)Y[0].length) * 50) + 50);
         }
 
-        publishProgress(100);
         Log.v(TAG, "Giving back the result string");
         return result;
     }

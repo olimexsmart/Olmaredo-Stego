@@ -45,16 +45,11 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     //Used as test
     public static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
 
-    //Used to retrieve data when activity is reloaded
-
     //private static final String bundleSignature = "bS";
     private static final String bundleCropSize = "bCS";
     private static final String bundleBlockSize = "bBS";
     private static final String bundleInColor = "bIC";
 
-    Intent camera;
-    Context context;
-    StartActivity thisthis;
     TabLayout tabLayout;
     ViewPager viewPager;
     ViewPagerAdapter viewPagerAdapter;
@@ -96,20 +91,9 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
-/*
-
-        getResult = (Button) findViewById(R.id.decode);
-        resultHealth = (TextView) findViewById(R.id.resultHealth);
-        original = (ImageView) findViewById(R.id.imageView1);
-        output = (ImageView) findViewById(R.id.imageView2);
-        */
-        context = this;
-        thisthis = this;
-        camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //Create the app directory
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
-
 
         if (savedInstanceState != null) {
             BlockSize = savedInstanceState.getInt(bundleBlockSize);
@@ -120,8 +104,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
             Log.v(TAG, "Start Activity NOT restored.");
         }
 
-        Log.v(TAG, "Created instances");
-
+        Log.v(TAG, "OnCreate completed.");
     }
 
     //Save data in case activity is killed or restarted

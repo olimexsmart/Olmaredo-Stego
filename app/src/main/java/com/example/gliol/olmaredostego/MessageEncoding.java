@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         super.onPreExecute();
 
         progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Embedding message.");
+        progressDialog.setTitle("Embedding message in gray scale");
         //progressDialog.setMessage("Resizing...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(100);
@@ -86,6 +87,13 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         Bitmap buffer = ResizeNCrop(params[0], blockSize, finHeight);
         Log.v(TAG, "Image resized: " + buffer.getHeight() + " " + buffer.getWidth());
+
+        int maxLenght = (params[0].getHeight() * params[0].getWidth()) / (blockSize * blockSize * 8);
+        if(message.length() >= maxLenght)
+        {
+            message = message.substring(0, maxLenght - 1);
+            publishProgress(maxLenght + 1000); //To be sure is greater than 100
+        }
 
         //progressDialog.setMessage("Gray scaling...");
         publishProgress(10);
@@ -124,9 +132,14 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-
         //Setting progress percentage
-        progressDialog.setProgress(values[0]);
+        if(values[0] > 100)
+        {
+            Toast.makeText(context, "Input text too long, trimming it at: " + (values[0] - 1000), Toast.LENGTH_LONG).show();
+        }
+        else {
+            progressDialog.setProgress(values[0]);
+        }
     }
 
     @Override
