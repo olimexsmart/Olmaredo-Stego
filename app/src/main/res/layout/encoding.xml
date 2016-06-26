@@ -14,7 +14,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
-            android:text="Image"
+            android:text="@string/encSelectBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -24,7 +24,7 @@
             android:layout_below="@+id/tvLargeSelect"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="5dp"
-            android:text="Select the image.\nYou can choose an existing file or make a new photograph." />
+            android:text="@string/encSelect" />
 
 
         <Button
@@ -66,7 +66,7 @@
             android:layout_below="@+id/riga1"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
-            android:text="Message"
+            android:text="@string/encMessageBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -97,7 +97,7 @@
             android:layout_below="@+id/etMessage"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="5dp"
-            android:text="... or open a text file" />
+            android:text="@string/encOpenFile" />
 
         <Button
             android:id="@+id/btPickFile"
@@ -130,7 +130,7 @@
             android:layout_below="@+id/riga2"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
-            android:text="Intensity"
+            android:text="@string/encIntensity"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -151,7 +151,8 @@
             android:layout_alignRight="@+id/tvIntensity"
             android:layout_alignStart="@+id/tvIntensity"
             android:layout_below="@+id/tvIntensity"
-            android:layout_marginTop="5dp" />
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp" />
 
         <TextView
             android:id="@+id/tvSeekBar"
@@ -160,7 +161,7 @@
             android:layout_alignEnd="@+id/riga2"
             android:layout_alignRight="@+id/riga2"
             android:layout_alignTop="@+id/sbEmbeddingPower"
-            android:text="0%" />
+            android:text="@string/encPercentage" />
 
         <Button
             android:id="@+id/btEncode"

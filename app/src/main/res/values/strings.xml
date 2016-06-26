@@ -10,17 +10,17 @@
     <string name="hint">Input message here or -></string>
     <string name="info">This app lets you to hide a message in an image in order to communicate secretly.\n
         The steganographic process needs a signature derived from the autocorrelation matrix
-        of the original image, like a sort of key. You can clip it after the encoding process is complete and share it
-        with your partner that will insert it into the Custo field in the decoding tab along side the image
-        carrying the message. A default signature can be used but can\'t guarantee the same performance as the
+        of the original image, like a sort of key. You can clip it after the encoding process and share it
+        with your partner that will insert it into the field in the decoding tab along side the image
+        carrying the message. A generic signature can be used but can\'t guarantee the performance of the
         original one. \n
         In the setting tab can be specified the block dimension, the bigger, the harder to detect the information, since the
         spectrum is larger and the key is longer. But with bigger blocks the image can hold less of them, so less information can be
         included. The image height parameter sets the height dimension of the output image, bigger images can hold more information,
         but the computation can take much longer and devices with no much RAM could have problems. To give you an idea, with default
-        settings the maximum length of the message is around 600 characters.
+        settings the maximum length of the message is around 600 characters.\n
         The algorithm is based on spread-spectrum steganography, more specifically on the optimal version defined by
-        Gkizeli, Pados and Medley that maximizes the signal-to-interference-plus-noise ratio.\n
+        Gkizeli, Pados and Medley that maximizes the signal-to-interference-plus-noise ratio.
     </string>
 
     <string name="selectimagehides">Select the image that hide the message.</string>
@@ -39,4 +39,19 @@
     <string name="px4">4 pixel</string>
     <string name="px8">8 pixel</string>
     <string name="px16">16 pixel</string>
+    <string name="buttonSaveSetting">Save settings</string>
+    <string name="heightImage">Define the height of the image once it has been cropped."</string>
+    <string name="heightImageBig">Image height</string>
+    <string name="blockSetting">Define the dimension in pixel of the block used in the steganographic method.</string>
+    <string name="blockSettingBig">Block dimension</string>
+    <string name="encSelect">Select the image.\nYou can choose an existing file or make a new photograph.</string>
+    <string name="encSelectBig">Image</string>
+    <string name="encMessageBig">Message</string>
+    <string name="encOpenFile">... or open a text file</string>
+    <string name="encIntensity">Intensity</string>
+    <string name="encPercentage">0%</string>
+    <string name="decSignatureBig">Signature</string>
+    <string name="decSelect">Select image</string>
+    <string name="decSelectBig">Image</string>
+
 </resources>

@@ -14,7 +14,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
-            android:text="Image"
+            android:text="@string/decSelectBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -35,7 +35,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="0dp"
             android:drawableLeft="@drawable/browse"
-            android:text="Select image" />
+            android:text="@string/decSelect" />
 
         <ImageView
             android:id="@+id/ivPreview"
@@ -65,7 +65,7 @@
             android:layout_below="@+id/riga1"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
-            android:text="Signature"
+            android:text="@string/decSignatureBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
