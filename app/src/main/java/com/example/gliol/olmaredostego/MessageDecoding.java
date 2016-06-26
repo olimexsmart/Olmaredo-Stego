@@ -5,7 +5,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
@@ -29,6 +37,8 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+
+        SaveSignature(signature);
 
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle("Decoding message in grey scale");
@@ -145,4 +155,21 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
         return X;
     }
 
+
+    private void SaveSignature(double [] signature)
+    {
+
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-DECODING-signatureBW.txt";
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
+            for (double aSignature : signature) {
+                outputStreamWriter.write(aSignature + "\n");
+            }
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
+    }
 }

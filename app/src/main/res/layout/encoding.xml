@@ -178,10 +178,23 @@
             android:id="@+id/copySignature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/btEncode"
-            android:layout_centerHorizontal="true"
             android:enabled="false"
-            android:text="@string/clipboard" />
+            android:text="@string/clipboard"
+            android:layout_below="@+id/btEncode"
+            android:layout_alignRight="@+id/etMessage"
+            android:layout_alignEnd="@+id/etMessage" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text=""
+            android:id="@+id/twSignature"
+            android:layout_alignBottom="@+id/copySignature"
+            android:layout_toLeftOf="@+id/copySignature"
+            android:layout_below="@+id/btEncode"
+            android:layout_alignLeft="@+id/sbEmbeddingPower"
+            android:layout_alignStart="@+id/sbEmbeddingPower" />
 
 
     </RelativeLayout>

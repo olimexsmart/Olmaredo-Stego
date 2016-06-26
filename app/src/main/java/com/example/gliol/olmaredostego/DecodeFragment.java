@@ -93,6 +93,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent i = new Intent(
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -120,6 +121,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                 //First thing to do is check if the file is valid
                 if (new File(fileNameOriginal).exists()) {
                     StartActivity activity = (StartActivity) getActivity();
+                    toClipboard.setEnabled(true);
                     //Renamed to lighten up code readability
                     int blockSize = activity.BlockSize;
                     String customKey = etCustom.getText().toString();
@@ -132,7 +134,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                         //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
                         //But since we are in color mode, we are expecting the same thin three times
                         if (customKey.length() == blockSize * blockSize * 15) { //960 on standard blocksize, quite a lot
-                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_SHORT).show();
                             //Dividing the string into the respective signature
                             signR = StringToSignature(customKey.substring(0, blockSize * blockSize * 5));
                             signG = StringToSignature(customKey.substring(blockSize * blockSize * 5, blockSize * blockSize * 10));
@@ -141,7 +143,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                             signR = GetDefaultSignature(blockSize);
                             signG = GetDefaultSignature(blockSize);
                             signB = GetDefaultSignature(blockSize);
-                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_SHORT).show();
                         }
 
                         MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB);
@@ -151,10 +153,10 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                         double[] signatureBW;
                         if (customKey.length() == blockSize * blockSize * 5) {
                             signatureBW = StringToSignature(customKey);
-                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "Using custom signature", Toast.LENGTH_SHORT).show();
                         } else { //Get the default one
                             signatureBW = GetDefaultSignature(blockSize);
-                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "Using default signature", Toast.LENGTH_SHORT).show();
                         }
                         MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis);
                         messageDecoding.execute(ReadImage());
@@ -173,7 +175,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("nothing", result.getText().toString());
                 clipboard.setPrimaryClip(clip);
-                Toast.makeText(getContext(), "Signature copied in the clipboard", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Message copied in the clipboard", Toast.LENGTH_SHORT).show();
             }
         });
 

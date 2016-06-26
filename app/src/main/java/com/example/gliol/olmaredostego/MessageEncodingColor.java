@@ -5,8 +5,16 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -122,6 +130,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         publishProgress(75);
         signatureB = GetSignatureVector(autocorrelationB);
         publishProgress(80);
+        SaveSignature(signatureR, "red");
+        SaveSignature(signatureG, "green");
+        SaveSignature(signatureB, "blue");
         autocorrelationR = null;
         autocorrelationG = null;
         autocorrelationB = null;
@@ -325,6 +336,23 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             result[n] = temp[n][smallestI];
 
         return result;
+    }
+
+    private void SaveSignature(double [] signature, String type)
+    {
+
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-ENCODING-signature-" + type + ".txt";
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
+            for (double aSignature : signature) {
+                outputStreamWriter.write(aSignature + "\n");
+            }
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
     }
 
 }
