@@ -218,10 +218,11 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                     inputString = "not from file";
                     encode.setEnabled(true);
                 } else {
-                    inputString = "actually we don't now yet";
                     pickFile.setEnabled(true);
-                    if(inputText.isEnabled())
+                    if(inputText.isEnabled()) {
+                        inputString = "actually we don't now yet";
                         encode.setEnabled(false);
+                    }
                     else
                         encode.setEnabled(true);
                 }

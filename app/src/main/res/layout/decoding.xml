@@ -45,7 +45,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="5dp" />
+            android:layout_marginTop="5dp"
+            android:adjustViewBounds="true" />
 
         <View
             android:id="@+id/riga1"
@@ -79,7 +80,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <RadioGroup
-            android:id="@+id/radioGroup"
+            android:id="@+id/rgSignatureSource"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvSignature"
@@ -110,7 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_alignEnd="@+id/riga2"
             android:layout_alignRight="@+id/riga2"
-            android:layout_alignTop="@+id/radioGroup"
+            android:layout_alignTop="@+id/rgSignatureSource"
             android:layout_toRightOf="@+id/btClipboardText"
             android:hint="@string/hintSignture"
             android:singleLine="true" />
@@ -119,7 +120,7 @@
             android:id="@+id/riga2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@+id/radioGroup"
+            android:layout_below="@+id/rgSignatureSource"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
@@ -152,7 +153,8 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView"
             android:layout_alignStart="@+id/textView"
-            android:layout_below="@+id/textView" />
+            android:layout_below="@+id/textView"
+            android:layout_marginRight="20dp" />
 
         <Button
             android:id="@+id/btClipboardText"

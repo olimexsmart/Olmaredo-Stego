@@ -24,10 +24,11 @@
             android:id="@+id/tvBlockDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/tvBlockDimension"
             android:layout_alignLeft="@+id/tvBlockDimension"
+            android:layout_alignRight="@+id/tvBlockDimension"
             android:layout_alignStart="@+id/tvBlockDimension"
             android:layout_below="@+id/tvBlockDimension"
-            android:layout_marginRight="80dp"
             android:layout_marginTop="5dp"
             android:text="Define the dimension in pixel of the block used in the steganographic method."
             android:textAppearance="?android:attr/textAppearanceSmall" />
@@ -36,21 +37,21 @@
             android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/tvBlockDescription"
-            android:layout_alignStart="@+id/tvBlockDescription"
-            android:layout_below="@+id/tvBlockDescription"
+            android:layout_alignLeft="@+id/tvBlockDimension"
+            android:layout_alignStart="@+id/tvBlockDimension"
+            android:layout_below="@+id/rgSignatureSource"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:background="@android:color/darker_gray" />
 
         <TextView
             android:id="@+id/tvCropped"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/tvBlockDescription"
-            android:layout_alignStart="@+id/tvBlockDescription"
-            android:layout_below="@+id/tvBlockDescription"
-            android:layout_marginTop="40dp"
+            android:layout_alignLeft="@+id/view"
+            android:layout_alignStart="@+id/view"
+            android:layout_below="@+id/view"
+            android:layout_marginTop="20dp"
             android:text="Image height"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -65,16 +66,6 @@
             android:layout_marginTop="5dp"
             android:text="Define the height of the image once it has been cropped."
             android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <EditText
-            android:id="@+id/etBlock"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/view"
-            android:layout_alignRight="@+id/view"
-            android:layout_alignTop="@+id/tvBlockDimension"
-            android:ems="10"
-            android:inputType="number" />
 
         <EditText
             android:id="@+id/etCropped"
@@ -99,7 +90,7 @@
             android:id="@+id/view2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/tvBlockDescription"
+            android:layout_alignLeft="@+id/tvCroppedDescription"
             android:layout_below="@+id/tvCroppedDescription"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
@@ -133,10 +124,39 @@
             android:layout_alignLeft="@+id/textView2"
             android:layout_alignStart="@+id/textView2"
             android:layout_below="@+id/textView2"
-            android:text="@string/colorDescription"
-            android:layout_marginTop="5dp"
             android:layout_marginRight="80dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/colorDescription"
             android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <RadioGroup
+            android:id="@id/rgSignatureSource"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/tvBlockDimension"
+            android:layout_marginLeft="50dp"
+            android:layout_toEndOf="@+id/tvBlockDescription"
+            android:layout_toRightOf="@+id/tvBlockDescription">
+
+            <RadioButton
+                android:id="@+id/block4px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/px4" />
+
+            <RadioButton
+                android:id="@+id/block8px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/px8" />
+
+            <RadioButton
+                android:id="@+id/block16px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/px16" />
+        </RadioGroup>
 
     </RelativeLayout>
 </ScrollView>

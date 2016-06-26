@@ -36,4 +36,7 @@
     <string name="radioOriginal">Original</string>
     <string name="radioStandard">Generic</string>
     <string name="hintSignture">Insert signature</string>
+    <string name="px4">4 pixel</string>
+    <string name="px8">8 pixel</string>
+    <string name="px16">16 pixel</string>
 </resources>

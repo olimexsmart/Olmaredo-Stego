@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
 
 import static java.lang.Character.isLetter;
 
@@ -67,7 +66,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
         //Radio button e altre amenità
         photo = (Button) view.findViewById(R.id.btBrowseDecode);
         preview = (ImageView) view.findViewById(R.id.ivPreview);
-        groupRadio = (RadioGroup) view.findViewById(R.id.radioGroup);
+        groupRadio = (RadioGroup) view.findViewById(R.id.rgSignatureSource);
         etCustom = (EditText) view.findViewById(R.id.etCustom);
         decode = (Button) view.findViewById(R.id.btDecode);
         result = (TextView) view.findViewById(R.id.twShowResult);
