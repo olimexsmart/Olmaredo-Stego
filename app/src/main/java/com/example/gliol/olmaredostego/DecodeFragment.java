@@ -183,8 +183,8 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
     private double[] StringToSignature(String key)
     {
         double[] signature = new double[key.length() / 5];
-
-        char[] keyChar = etCustom.getText().toString().toCharArray();
+        //Quel momento in cui vorresti scrivere una bestemmia nel codice ma poi sai che c'è Martino che legge e non vuoi offenderlo
+        char[] keyChar = key.toCharArray();
         for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
             signature[i] = (keyChar[i * 5 + 1] - 48) / 10000.0 + (keyChar[i * 5 + 2] - 48) / 1000.0 + (keyChar[i * 5 + 3] - 48) / 100.0 + (keyChar[i * 5 + 4] - 48) / 10.0;
             //Change sign if the prefix is a letter
