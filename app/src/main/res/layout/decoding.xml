@@ -84,22 +84,23 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvSignature"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="0dp">
+            android:layout_marginTop="10dp">
 
             <RadioButton
-                android:id="@+id/rbDefault"
+                android:id="@+id/rbOriginal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:enabled="false"
-                android:text="Default" />
+                android:text="@string/radioOriginal" />
 
             <RadioButton
-                android:id="@+id/rbCustom"
+                android:id="@+id/rbGeneric"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="false"
-                android:text="Custom" />
+                android:text="@string/radioStandard" />
+
 
         </RadioGroup>
 
@@ -107,13 +108,12 @@
             android:id="@+id/etCustom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/radioGroup"
             android:layout_alignEnd="@+id/riga2"
             android:layout_alignRight="@+id/riga2"
+            android:layout_alignTop="@+id/radioGroup"
             android:layout_toRightOf="@+id/btClipboardText"
-            android:hint="Enter the signature"
-            android:singleLine="true"
-            android:visibility="invisible" />
+            android:hint="@string/hintSignture"
+            android:singleLine="true" />
 
         <View
             android:id="@+id/riga2"
@@ -159,8 +159,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/twShowResult"
-            android:enabled="false"
             android:layout_centerHorizontal="true"
+            android:enabled="false"
             android:text="@string/clipboardText" />
 
     </RelativeLayout>
