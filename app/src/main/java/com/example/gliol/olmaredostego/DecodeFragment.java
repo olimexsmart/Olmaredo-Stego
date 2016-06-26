@@ -89,6 +89,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
             Log.v(TAG, "Activity NOT restored.");
         }
 
+
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
