@@ -146,6 +146,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
             publishProgress((int)((h / (double)H) * 50) + 10);
         }
 
+        SaveSignature(signature);
         signature = GetSignatureVector(autocorrelation);
         publishProgress(70);
 
@@ -484,7 +485,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         try {
             String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-decoded.txt";
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-signature.txt";
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
             for (double aSignature : signature) {
                 outputStreamWriter.write(aSignature + "\n");
