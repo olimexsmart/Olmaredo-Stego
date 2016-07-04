@@ -47,22 +47,13 @@ import java.util.Locale;
 import java.util.Random;
 
 /*
-    TODO enable/disable widget definitely needs some improvements
     TODO if someone tries to embed a different message without selecting again the image, the previuos image is overwritten
-    TODO https://androidresearch.wordpress.com/2013/05/10/dealing-with-asynctask-and-screen-orientation/
-    TODO http://stackoverflow.com/questions/19655715/progress-dialog-is-closed-when-touch-on-screen
-    TODO http://stackoverflow.com/questions/3599206/how-to-disable-the-back-button-when-the-alert-box-is-on-the-screen
-    TODO https://developer.android.com/training/permissions/requesting.html
-
-    TODO finish following the example
  */
 
 public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
     private static final String bundleNameOriginal = "bNO";
-    private static final String bundleNameResult = "bNR";
-    private static final String bundleTimeStamp = "bTS";
     private static final String bundleUri = "bU";
     private static final String bundleSignBW = "bSBW";
     private static final String bundleSignR = "bSR";
@@ -73,6 +64,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
+    private static final String bundleKeySignature = "bKS";
 
 
     Button photo;
@@ -84,10 +76,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
     EditText inputText;
     SeekBar seekPower;
     String fileNameOriginal;
-    String fileNameResult;
     String fileNameText;
-    String timeStamp;
     String inputString = "not from file";
+    String keySignature = "";
     Uri outputFileUri = null;
     int embeddingPower = 20;
     //MessageEncoding messageEmbedding;
@@ -142,8 +133,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         if (savedInstanceState != null) {
             boolean readyToEncode = false; //Determine when restoring the activity if there is all the necessary to start encoding
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
-            fileNameResult = savedInstanceState.getString(bundleNameResult);
-            timeStamp = savedInstanceState.getString(bundleTimeStamp);
             embeddingPower = savedInstanceState.getInt(bundleEmbedPow);
             fileNameText = savedInstanceState.getString(bundleNameText);
             wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
@@ -160,7 +149,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             if (new File(fileNameText).exists()) {
                 inputString = ReadTextFile(fileNameText);
                 inputText.setHint(new File(fileNameText).getName() + " correctly opened.");
-                inputText.setEnabled(false);
 
                 if (readyToEncode)
                     encode.setEnabled(true);
@@ -177,15 +165,18 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
             if (savedInstanceState.containsKey(bundleTaskProgress))
                 taskProgress = savedInstanceState.getInt(bundleTaskProgress);
-            if(savedInstanceState.containsKey(bundleTaskType))
+            if (savedInstanceState.containsKey(bundleTaskType))
                 taskType = savedInstanceState.getString(bundleTaskType);
 
+            if(savedInstanceState.containsKey(bundleKeySignature)) {
+                keySignature = savedInstanceState.getString(bundleKeySignature);
+                signaturePreview.setText(keySignature);
+                copySignature.setEnabled(true);
+            }
             Log.v(TAG, "Activity restored.");
         } else {
             fileNameOriginal = "nothing here";
-            fileNameResult = "nothing here";
             fileNameText = "nothing here";
-            timeStamp = "nothing here";
             Log.v(TAG, "Activity NOT restored.");
         }
 
@@ -193,14 +184,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+                String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
                 Log.v(TAG, timeStamp);
 
                 fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
-                fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result.png";
-                inputText.setEnabled(true);
-                pickFile.setEnabled(true);
-                copySignature.setEnabled(false);
                 openImageIntent();
             }
         });
@@ -220,8 +207,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
                         Log.v(TAG, "Opened text file: " + fileNameText);
 
                         inputString = ReadTextFile(fileNameText);
+                        inputText.setText("");
                         inputText.setHint(file.getName() + " correctly opened.");
-                        inputText.setEnabled(false);
                         encode.setEnabled(true);
                     }
                 });
@@ -243,18 +230,11 @@ public class EncodeFragment extends Fragment implements TaskManager {
             @Override
             public void afterTextChanged(Editable s) {
                 if (inputText.getText().length() > 0) {
-                    pickFile.setEnabled(false);
-                    inputString = "not from file";
                     encode.setEnabled(true);
-                } else {
-                    pickFile.setEnabled(true);
-                    if(inputText.isEnabled()) {
-                        inputString = "actually we don't now yet";
-                        encode.setEnabled(false);
-                    }
-                    else
-                        encode.setEnabled(true);
-                }
+                } else if (inputString.length() > 0) {
+                    encode.setEnabled(true);
+                } else
+                    encode.setEnabled(false);
             }
         });
 
@@ -283,7 +263,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     blockSizeSaved = activity.BlockSize;
                     cropSizeSaved = activity.CropSize;
 
-                    if (inputString.equalsIgnoreCase("not from file"))
+                    if (inputText.getText().length() > 0)
                         inputString = inputText.getText().toString();
                     //Strip all non ASCII characters
                     inputString = inputString.replaceAll("[^\\x20-\\x7e]", "");
@@ -321,8 +301,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
     public void onSaveInstanceState(Bundle outState) {
 
         outState.putString(bundleNameOriginal, fileNameOriginal);
-        outState.putString(bundleNameResult, fileNameResult);
-        outState.putString(bundleTimeStamp, timeStamp);
         outState.putInt(bundleEmbedPow, embeddingPower);
         outState.putString(bundleNameText, fileNameText);
         outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
@@ -337,10 +315,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
             outState.putDoubleArray(bundleSignG, signG);
         if (signB != null)
             outState.putDoubleArray(bundleSignB, signB);
-        if(wasTaskRunning) {
+        if (wasTaskRunning) {
             outState.putInt(bundleTaskProgress, taskProgress);
             outState.putString(bundleTaskType, taskType);
         }
+        if(keySignature.length() > 0)
+            outState.putString(bundleKeySignature, keySignature);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -582,9 +563,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
         String key = "";
         key += SignatureToString(signBlackWhite);
+        keySignature = key;
         signaturePreview.setText(key);
 
         FileOutputStream out = null;
+        String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+        String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-blackwhite.png";
         try {
             out = new FileOutputStream(fileNameResult);
             bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
@@ -624,9 +608,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
         key += SignatureToString(signR);
         key += SignatureToString(signG);
         key += SignatureToString(signB);
+        keySignature = key;
         signaturePreview.setText(key);
 
         FileOutputStream out = null;
+        String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+        String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-color.png";
         try {
             out = new FileOutputStream(fileNameResult);
             bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance

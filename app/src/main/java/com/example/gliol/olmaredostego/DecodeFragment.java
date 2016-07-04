@@ -43,6 +43,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
+    private static final String bundleResultText = "bRT";
 
 
     Button photo;
@@ -56,6 +57,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     RadioButton rbGeneric;
     DecodeFragment thisthis;
     String fileNameOriginal;
+    String resultText = "";
     Uri outputFileUri = null;
     ProgressDialog progressDialog;
     int taskProgress;
@@ -102,12 +104,21 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 Bitmap im = ReadImageScaled();
                 if (im != null) {
                     preview.setImageBitmap(im);
+                    rbGeneric.setEnabled(true);
+                    rbOriginal.setEnabled(true);
+                    decode.setEnabled(true);
                 }
             }
             if (savedInstanceState.containsKey(bundleTaskProgress))
                 taskProgress = savedInstanceState.getInt(bundleTaskProgress);
             if(savedInstanceState.containsKey(bundleTaskType))
                 taskType = savedInstanceState.getString(bundleTaskType);
+            if(savedInstanceState.containsKey(bundleResultText))
+            {
+                resultText = savedInstanceState.getString(bundleResultText);
+                result.setText(resultText);
+                toClipboard.setEnabled(true);
+            }
             Log.v(TAG, "Activity restored.");
         } else {
             fileNameOriginal = "nothing here";
@@ -232,6 +243,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
             outState.putInt(bundleTaskProgress, taskProgress);
             outState.putString(bundleTaskType, taskType);
         }
+        if(resultText.length() > 0)
+            outState.putString(bundleResultText, resultText);
 
         super.onSaveInstanceState(outState);
     }
@@ -387,6 +400,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     public void onTaskCompleted(String message) {
         result.setText(message);
         toClipboard.setEnabled(true);
+        resultText = message;
 
         if (progressDialog != null) {
             progressDialog.dismiss();

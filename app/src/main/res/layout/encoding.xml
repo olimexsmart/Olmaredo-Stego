@@ -5,7 +5,9 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true">
 
         <TextView
             android:id="@+id/tvLargeSelect"
@@ -87,7 +89,6 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="0dp"
             android:ems="10"
-            android:enabled="false"
             android:singleLine="true" />
 
         <TextView
@@ -109,7 +110,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="0dp"
             android:drawableLeft="@drawable/browse"
-            android:enabled="false"
             android:text="@string/pickFile" />
 
         <View
@@ -146,13 +146,13 @@
             android:id="@+id/sbEmbeddingPower"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/tvIntensity"
             android:layout_alignLeft="@+id/tvIntensity"
-            android:layout_alignRight="@+id/tvIntensity"
             android:layout_alignStart="@+id/tvIntensity"
             android:layout_below="@+id/tvIntensity"
+            android:layout_marginRight="20dp"
             android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp" />
+            android:layout_toLeftOf="@+id/tvSeekBar"
+            android:layout_toStartOf="@+id/tvSeekBar" />
 
         <TextView
             android:id="@+id/tvSeekBar"

@@ -5,7 +5,9 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true">
 
         <TextView
             android:id="@+id/tvBlockDimension"
@@ -24,8 +26,8 @@
             android:id="@+id/tvBlockDescription"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
             android:layout_below="@+id/tvBlockDimension"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="5dp"
             android:text="@string/blockSetting"
             android:textAppearance="?android:attr/textAppearanceSmall" />
@@ -131,8 +133,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignTop="@+id/tvBlockDimension"
-            android:layout_toRightOf="@+id/tvBlockDescription"
-            android:layout_toEndOf="@+id/tvBlockDescription">
+            android:layout_toEndOf="@+id/tvBlockDescription"
+            android:layout_toRightOf="@+id/tvBlockDescription">
 
             <RadioButton
                 android:id="@+id/block4px"
