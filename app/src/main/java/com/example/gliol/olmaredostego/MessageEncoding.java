@@ -36,31 +36,30 @@ import Jama.Matrix;
 public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     private static final String TAG = "MessageEncoding";
 
-    ProgressDialog progressDialog;
     Context context;
     String message;
     byte N = 8;
     int finHeight = 480; //This could be useful to add in a constructor
     int strength = 1;
-    GetResultEmbedding returnResult;
+    TaskManager callerFragment;
     double[] signature;
 
     //We don't wont this to be called without a message specified.
     private MessageEncoding() {
     }
 
-    public MessageEncoding(GetResultEmbedding result, Context c, String message) {
+    public MessageEncoding(TaskManager result, Context c, String message) {
         context = c;
         this.message = message;
-        this.returnResult = result;
+        this.callerFragment = result;
     }
 
-    public MessageEncoding(GetResultEmbedding result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncoding(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
         this.N = blockSize;
         this.strength = strength;
-        returnResult = result;
+        callerFragment = result;
         finHeight = cropSize;
     }
 
@@ -69,15 +68,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Embedding message in gray scale");
-        //progressDialog.setMessage("Resizing...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(100);
-        progressDialog.setCancelable(true);
-        progressDialog.setIndeterminate(false);
-
-        progressDialog.show();
+        callerFragment.onTaskStarted("Embedding message in gray scale");
 
         Log.v(TAG, "PreExecute terminated");
     }
@@ -147,7 +138,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         }
 
         signature = GetSignatureVector(autocorrelation);
-        SaveSignature(signature);
+        //SaveSignature(signature);
         publishProgress(70);
 
         int P = (H * W) / Nsqr;
@@ -207,17 +198,15 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
             Toast.makeText(context, "Input text too long, trimming it at: " + (values[0] - 1000), Toast.LENGTH_LONG).show();
         }
         else {
-            progressDialog.setProgress(values[0]);
+            callerFragment.onTaskProgress(values[0]);
         }
     }
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
         super.onPostExecute(bitmap);
-        progressDialog.hide();
-        //if (progressDialog.isShowing())
-        progressDialog.dismiss();
-        this.returnResult.onResultsReady(bitmap, signature);
+
+        callerFragment.onTaskCompleted(bitmap, signature);
     }
 
     //################################ PROCESSING FUNCTIONS #############################################

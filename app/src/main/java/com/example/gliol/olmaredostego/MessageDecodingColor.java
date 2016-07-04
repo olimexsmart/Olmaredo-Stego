@@ -15,15 +15,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * Created by gliol on 24/06/2016.
- */
+
 public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
 
-    ProgressDialog progressDialog;
     Context context;
-    GetResultDecoding returnResult;
+    TaskManager callerFragment;
     double[] signatureR;
     double[] signatureG;
     double[] signatureB;
@@ -32,31 +29,23 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private MessageDecodingColor() {
     }
 
-    public MessageDecodingColor(GetResultDecoding result, Context c, double[] sR, double[] sG, double[] sB) {
+    public MessageDecodingColor(TaskManager result, Context c, double[] sR, double[] sG, double[] sB) {
         context = c;
         signatureR = sR;
         signatureG = sG;
         signatureB = sB;
-        returnResult = result;
+        callerFragment = result;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-
+/*
         SaveSignature(signatureR, "red");
         SaveSignature(signatureG, "green");
         SaveSignature(signatureB, "blue");
-
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Decoding message in RGB");
-        //progressDialog.setMessage("Resizing...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(100); //Set total number of blocks here
-        progressDialog.setCancelable(true);
-        progressDialog.setIndeterminate(false);
-
-        progressDialog.show();
+*/
+        callerFragment.onTaskStarted("Decoding message in RGB");
     }
 
     @Override
@@ -139,16 +128,15 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        progressDialog.setProgress(values[0]);
+
+        callerFragment.onTaskProgress(values[0]);
     }
 
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
 
-        progressDialog.hide();
-        progressDialog.dismiss();
-        this.returnResult.OnResultReady(s);
+        callerFragment.onTaskCompleted(s);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////

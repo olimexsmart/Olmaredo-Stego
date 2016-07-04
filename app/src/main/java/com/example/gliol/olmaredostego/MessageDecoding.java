@@ -1,6 +1,5 @@
 package com.example.gliol.olmaredostego;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -19,36 +18,26 @@ import java.util.Locale;
 public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecoding";
 
-    ProgressDialog progressDialog;
     Context context;
-    GetResultDecoding returnResult;
+    TaskManager callerFragment;
     double[] signature;
     byte N;
 
     private MessageDecoding() {}
 
-    public MessageDecoding(Context c, double[] s, GetResultDecoding result)
+    public MessageDecoding(Context c, double[] s, TaskManager result)
     {
         context = c;
         signature = s;
-        returnResult = result;
+        callerFragment = result;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
 
-        SaveSignature(signature);
-
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Decoding message in grey scale");
-        //progressDialog.setMessage("Resizing...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(100); //Set total number of blocks here
-        progressDialog.setCancelable(true);
-        progressDialog.setIndeterminate(false);
-
-        progressDialog.show();
+        //SaveSignature(signature);
+        callerFragment.onTaskStarted("Decoding message in grey scale");
     }
 
     @Override
@@ -87,16 +76,14 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
 
-        progressDialog.setProgress(values[0]);
+        callerFragment.onTaskProgress(values[0]);
     }
 
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
 
-        progressDialog.hide();
-        progressDialog.dismiss();
-        this.returnResult.OnResultReady(s);
+        callerFragment.onTaskCompleted(s);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////

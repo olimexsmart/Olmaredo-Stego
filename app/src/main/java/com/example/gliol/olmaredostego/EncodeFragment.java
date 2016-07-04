@@ -1,6 +1,7 @@
 package com.example.gliol.olmaredostego;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -48,9 +49,15 @@ import java.util.Random;
 /*
     TODO enable/disable widget definitely needs some improvements
     TODO if someone tries to embed a different message without selecting again the image, the previuos image is overwritten
+    TODO https://androidresearch.wordpress.com/2013/05/10/dealing-with-asynctask-and-screen-orientation/
+    TODO http://stackoverflow.com/questions/19655715/progress-dialog-is-closed-when-touch-on-screen
+    TODO http://stackoverflow.com/questions/3599206/how-to-disable-the-back-button-when-the-alert-box-is-on-the-screen
+    TODO https://developer.android.com/training/permissions/requesting.html
+
+    TODO finish following the example
  */
 
-public class EncodeFragment extends Fragment implements GetResultEmbedding, GetResultEncodingColor {
+public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
     private static final String bundleNameOriginal = "bNO";
@@ -63,6 +70,10 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
     private static final String bundleSignB = "bSB";
     private static final String bundleEmbedPow = "bEP";
     private static final String bundleNameText = "bNT";
+    private static final String bundleTaskProgress = "bTP";
+    private static final String bundleWasTaskRunning = "bWTR";
+    private static final String bundleTaskType = "bTT";
+
 
     Button photo;
     Button encode;
@@ -88,7 +99,22 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
     double[] signR;
     double[] signG;
     double[] signB;
-    int check;
+    ProgressDialog progressDialog;
+    int taskProgress;
+    String taskType;
+    boolean wasTaskRunning = false;
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        // If we are returning here from a screen orientation
+        // and the AsyncTask is still working, re-create and display the
+        // progress dialog.
+        if (wasTaskRunning) {
+            onTaskStarted(taskType);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -120,6 +146,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
             timeStamp = savedInstanceState.getString(bundleTimeStamp);
             embeddingPower = savedInstanceState.getInt(bundleEmbedPow);
             fileNameText = savedInstanceState.getString(bundleNameText);
+            wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
 
             if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
@@ -134,8 +161,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                 inputString = ReadTextFile(fileNameText);
                 inputText.setHint(new File(fileNameText).getName() + " correctly opened.");
                 inputText.setEnabled(false);
-                Log.v(TAG, "Restored text file: " + fileNameText);
-                Log.v(TAG, "Ready to Encode: " + readyToEncode);
 
                 if (readyToEncode)
                     encode.setEnabled(true);
@@ -149,6 +174,11 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                 signG = savedInstanceState.getDoubleArray(bundleSignG);
             if (savedInstanceState.containsKey(bundleSignB))
                 signB = savedInstanceState.getDoubleArray(bundleSignB);
+
+            if (savedInstanceState.containsKey(bundleTaskProgress))
+                taskProgress = savedInstanceState.getInt(bundleTaskProgress);
+            if(savedInstanceState.containsKey(bundleTaskType))
+                taskType = savedInstanceState.getString(bundleTaskType);
 
             Log.v(TAG, "Activity restored.");
         } else {
@@ -174,7 +204,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                 openImageIntent();
             }
         });
-
 
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
@@ -259,7 +288,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                     //Strip all non ASCII characters
                     inputString = inputString.replaceAll("[^\\x20-\\x7e]", "");
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
-                    copySignature.setEnabled(true);
+                    //copySignature.setEnabled(true);
 
                     if (activity.inColor) {
                         MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
@@ -286,6 +315,33 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         });
 
         Log.v(TAG, "OnView ended");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putString(bundleNameOriginal, fileNameOriginal);
+        outState.putString(bundleNameResult, fileNameResult);
+        outState.putString(bundleTimeStamp, timeStamp);
+        outState.putInt(bundleEmbedPow, embeddingPower);
+        outState.putString(bundleNameText, fileNameText);
+        outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
+
+        if (outputFileUri != null)
+            outState.putString(bundleUri, outputFileUri.toString());
+        if (signBlackWhite != null)
+            outState.putDoubleArray(bundleSignBW, signBlackWhite);
+        if (signR != null)
+            outState.putDoubleArray(bundleSignR, signR);
+        if (signG != null)
+            outState.putDoubleArray(bundleSignG, signG);
+        if (signB != null)
+            outState.putDoubleArray(bundleSignB, signB);
+        if(wasTaskRunning) {
+            outState.putInt(bundleTaskProgress, taskProgress);
+            outState.putString(bundleTaskType, taskType);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     private String ReadTextFile(String path) {
@@ -329,29 +385,6 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
         }
 
         return key;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-
-        outState.putString(bundleNameOriginal, fileNameOriginal);
-        outState.putString(bundleNameResult, fileNameResult);
-        outState.putString(bundleTimeStamp, timeStamp);
-        outState.putInt(bundleEmbedPow, embeddingPower);
-        outState.putString(bundleNameText, fileNameText);
-
-        if (outputFileUri != null)
-            outState.putString(bundleUri, outputFileUri.toString());
-        if (signBlackWhite != null)
-            outState.putDoubleArray(bundleSignBW, signBlackWhite);
-        if (signR != null)
-            outState.putDoubleArray(bundleSignR, signR);
-        if (signG != null)
-            outState.putDoubleArray(bundleSignG, signG);
-        if (signB != null)
-            outState.putDoubleArray(bundleSignB, signB);
-
-        super.onSaveInstanceState(outState);
     }
 
 
@@ -483,7 +516,7 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
 
     private void openImageIntent() {
 
-// Determine Uri of camera image to save.
+        // Determine Uri of camera image to save.
         File fromCamera = new File(fileNameOriginal);
         outputFileUri = Uri.fromFile(fromCamera);
 
@@ -514,7 +547,36 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
     }
 
     @Override
-    public void onResultsReady(Bitmap bm, double[] signature) {
+    public void onTaskStarted(String type) {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle(type);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMax(100);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setIndeterminate(false);
+        progressDialog.show();
+
+        wasTaskRunning = true;
+        taskType = type;
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onTaskProgress(int progress) {
+        progressDialog.setProgress(progress);
+        taskProgress = progress;
+    }
+
+    @Override
+    public void onTaskCompleted(Bitmap bm, double[] signature) {
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        wasTaskRunning = false;
+        setRetainInstance(false);
+        copySignature.setEnabled(true);
 
         signBlackWhite = signature;
 
@@ -545,7 +607,14 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
     }
 
     @Override
-    public void onResultsReady(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+    public void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        wasTaskRunning = false;
+        setRetainInstance(false);
+        copySignature.setEnabled(true);
 
         signR = signatureR;
         signG = signatureG;
@@ -577,5 +646,21 @@ public class EncodeFragment extends Fragment implements GetResultEmbedding, GetR
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void onTaskCompleted(String message) {
+        //Nothing to do here
+    }
+
+    //https://androidresearch.wordpress.com/2013/05/10/dealing-with-asynctask-and-screen-orientation/
+    @Override
+    public void onDetach() {
+        // All dialogs should be closed before leaving the activity in order to avoid
+        // the: Activity has leaked window com.android.internal.policy... exception
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+        super.onDetach();
     }
 }

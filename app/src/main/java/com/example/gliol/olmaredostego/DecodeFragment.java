@@ -1,6 +1,7 @@
 package com.example.gliol.olmaredostego;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -31,13 +32,17 @@ import java.io.InputStream;
 import static java.lang.Character.isLetter;
 
 /*
-    TODO find a generic signature that works
+    TODO add paste button https://developer.android.com/guide/topics/text/copy-paste.html
+    TODO remove all references to the generic signature
  */
-public class DecodeFragment extends Fragment implements GetResultDecoding {
+public class DecodeFragment extends Fragment implements TaskManager {
     private final int REQ_CODE = 2222;
     private final String TAG = "DecodeFragment";
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
+    private static final String bundleTaskProgress = "bTP";
+    private static final String bundleWasTaskRunning = "bWTR";
+    private static final String bundleTaskType = "bTT";
 
 
     Button photo;
@@ -52,6 +57,21 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
     DecodeFragment thisthis;
     String fileNameOriginal;
     Uri outputFileUri = null;
+    ProgressDialog progressDialog;
+    int taskProgress;
+    String taskType;
+    boolean wasTaskRunning = false;
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        // If we are returning here from a screen orientation
+        // and the AsyncTask is still working, re-create and display the
+        // progress dialog.
+        if (wasTaskRunning) {
+            onTaskStarted(taskType);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -76,6 +96,7 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
 
         if (savedInstanceState != null) {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
+            wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
             if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
                 Bitmap im = ReadImageScaled();
@@ -83,6 +104,10 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                     preview.setImageBitmap(im);
                 }
             }
+            if (savedInstanceState.containsKey(bundleTaskProgress))
+                taskProgress = savedInstanceState.getInt(bundleTaskProgress);
+            if(savedInstanceState.containsKey(bundleTaskType))
+                taskType = savedInstanceState.getString(bundleTaskType);
             Log.v(TAG, "Activity restored.");
         } else {
             fileNameOriginal = "nothing here";
@@ -127,7 +152,6 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
                     String customKey = etCustom.getText().toString();
 
                     if (activity.inColor) {
-                        toClipboard.setEnabled(true);
                         double[] signR;
                         double[] signG;
                         double[] signB;
@@ -201,8 +225,13 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
     public void onSaveInstanceState(Bundle outState) {
 
         outState.putString(bundleNameOriginal, fileNameOriginal);
+        outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
         if (outputFileUri != null)
             outState.putString(bundleUri, outputFileUri.toString());
+        if(wasTaskRunning) {
+            outState.putInt(bundleTaskProgress, taskProgress);
+            outState.putString(bundleTaskType, taskType);
+        }
 
         super.onSaveInstanceState(outState);
     }
@@ -323,10 +352,59 @@ public class DecodeFragment extends Fragment implements GetResultDecoding {
 
 
     @Override
-    public void OnResultReady(String message) {
-        result.setText(message);
+    public void onTaskStarted(String type) {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle(type);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMax(100);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setIndeterminate(false);
+        progressDialog.show();
+
+        wasTaskRunning = true;
+        taskType = type;
+        setRetainInstance(true);
     }
 
+    @Override
+    public void onTaskProgress(int progress) {
+        progressDialog.setProgress(progress);
+        taskProgress = progress;
+    }
+
+    @Override
+    public void onTaskCompleted(Bitmap bm, double[] signature) {
+        //Nothing to do here
+    }
+
+    @Override
+    public void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+        //Nothing to do here
+    }
+
+    @Override
+    public void onTaskCompleted(String message) {
+        result.setText(message);
+        toClipboard.setEnabled(true);
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        wasTaskRunning = false;
+        setRetainInstance(false);
+    }
+
+    //https://androidresearch.wordpress.com/2013/05/10/dealing-with-asynctask-and-screen-orientation/
+    @Override
+    public void onDetach() {
+        // All dialogs should be closed before leaving the activity in order to avoid
+        // the: Activity has leaked window com.android.internal.policy... exception
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+        super.onDetach();
+    }
 
     private double[] GetDefaultSignature(int blockSize)
     {

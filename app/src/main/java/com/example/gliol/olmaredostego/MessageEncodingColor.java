@@ -1,6 +1,5 @@
 package com.example.gliol.olmaredostego;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -25,13 +24,12 @@ import Jama.Matrix;
 public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
 
-    ProgressDialog progressDialog;
     Context context;
     String message;
     byte N = 8; //Block size
     int finHeight = 480; //This could be useful to add in a constructor, DONE
     int strength = 1;
-    GetResultEncodingColor returnResult;
+    TaskManager callerFragment;
     double[] signatureR;
     double[] signatureG;
     double[] signatureB;
@@ -40,18 +38,18 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private MessageEncodingColor() {
     }
 
-    public MessageEncodingColor(GetResultEncodingColor result, Context c, String message) {
+    public MessageEncodingColor(TaskManager result, Context c, String message) {
         context = c;
         this.message = message;
-        this.returnResult = result;
+        this.callerFragment = result;
     }
 
-    public MessageEncodingColor(GetResultEncodingColor result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncodingColor(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
         context = c;
         this.message = message;
         this.N = blockSize;
         this.strength = strength;
-        returnResult = result;
+        callerFragment = result;
         finHeight = cropSize;
     }
 
@@ -60,15 +58,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Embedding message in RGB");
-        //progressDialog.setMessage("Resizing...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(100);
-        progressDialog.setCancelable(true);
-        progressDialog.setIndeterminate(false);
-
-        progressDialog.show();
+        callerFragment.onTaskStarted("Embedding message in RGB");
 
         Log.v(TAG, "PreExecute terminated");
     }
@@ -130,9 +120,11 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         publishProgress(75);
         signatureB = GetSignatureVector(autocorrelationB);
         publishProgress(80);
+        /*
         SaveSignature(signatureR, "red");
         SaveSignature(signatureG, "green");
         SaveSignature(signatureB, "blue");
+        */
         autocorrelationR = null;
         autocorrelationG = null;
         autocorrelationB = null;
@@ -245,7 +237,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         if (values[0] > 100) {
             Toast.makeText(context, "Input text too long, trimming it at: " + (values[0] - 1000), Toast.LENGTH_LONG).show();
         } else {
-            progressDialog.setProgress(values[0]);
+            callerFragment.onTaskProgress(values[0]);
         }
     }
 
@@ -253,9 +245,8 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap bitmap) {
         super.onPostExecute(bitmap);
-        progressDialog.hide();
-        progressDialog.dismiss();
-        this.returnResult.onResultsReady(bitmap, signatureR, signatureG, signatureB);
+
+        callerFragment.onTaskCompleted(bitmap, signatureR, signatureG, signatureB);
     }
 
 
