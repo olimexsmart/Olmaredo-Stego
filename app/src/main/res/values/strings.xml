@@ -53,5 +53,6 @@
     <string name="decSignatureBig">Signature</string>
     <string name="decSelect">Select image</string>
     <string name="decSelectBig">Image</string>
+    <string name="paste">Paste key</string>
 
 </resources>

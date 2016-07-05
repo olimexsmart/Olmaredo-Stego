@@ -4,22 +4,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 /*
-    TODO manage pictures on portrait, the resasing is done wrong
+
  */
 public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
@@ -36,12 +28,6 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     //We don't wont this to be called without a message specified.
     private MessageEncodingColor() {
-    }
-
-    public MessageEncodingColor(TaskManager result, Context c, String message) {
-        context = c;
-        this.message = message;
-        this.callerFragment = result;
     }
 
     public MessageEncodingColor(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
@@ -120,11 +106,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         publishProgress(75);
         signatureB = GetSignatureVector(autocorrelationB);
         publishProgress(80);
-        /*
-        SaveSignature(signatureR, "red");
-        SaveSignature(signatureG, "green");
-        SaveSignature(signatureB, "blue");
-        */
+        //Giving a push to the garbage collector
         autocorrelationR = null;
         autocorrelationG = null;
         autocorrelationB = null;
@@ -158,7 +140,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int w = 0;
         int h = 0;
         int r, g, blu;
-        for(int p = 0; p < P; p++) { //Remember that the P stands for the number of bits to embed in the image
+        for (int p = 0; p < P; p++) { //Remember that the P stands for the number of bits to embed in the image
 
             if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
             else sign = 1;
@@ -166,7 +148,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             if (byteCounter == 8)
                 byteCounter = 0;
 
-            if(p % 3 == 0) {
+            if (p % 3 == 0) {
                 //Applying the bit to the block
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
@@ -181,9 +163,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                         mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
-            }
-            else if(p % 3 == 1)
-            {   //Applying the bit to the block
+            } else if (p % 3 == 1) {   //Applying the bit to the block
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
@@ -197,8 +177,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                         mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
-            }
-            else //p % 3 == 2
+            } else //p % 3 == 2
             {   //Applying the bit to the block
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
@@ -216,8 +195,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
                 //At the next p increment we will be again in the top if statement, we need to be in the next block
                 w++; //Move one block left
-                if(w == Wmax)
-                {
+                if (w == Wmax) {
                     w = 0;
                     h++; //Move on row down
                 }
@@ -256,42 +234,26 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         is a multiple of the block size.
      */
 
-    private Bitmap ResizeNCrop(Bitmap original, int N, int finalHeight) {
+    private Bitmap ResizeNCrop(Bitmap original, int N, int finalDimension) {
 
-        if (original.getHeight() > finalHeight) {
-            double ratio = (double) original.getHeight() / finalHeight;
-            int finalWidth = original.getWidth() / (int) ratio;
+        Bitmap resized = original;
 
-            Bitmap resized = original.createScaledBitmap(original, finalWidth, finalHeight, false);
+        if (original.getHeight() < original.getWidth() && original.getHeight() > finalDimension) { //Image is in landscape and needs to be resized
+            double ratio = (double) finalDimension / original.getHeight();
+            int finalWidth = original.getWidth() * (int) ratio;
 
-            return Bitmap.createBitmap(resized, 0, 0, finalWidth - (finalWidth % N), finalHeight - (finalHeight % N));
-        }
-        else
+            resized = Bitmap.createScaledBitmap(original, finalWidth, finalDimension, false);
+        } else if (original.getHeight() > original.getWidth() && original.getWidth() > finalDimension) //Image is in portrait and needs to be resized
         {
-            return original.createBitmap(original, 0, 0, original.getWidth() - (original.getWidth() % N), original.getHeight() - (original.getHeight() % N));
-        }
-    }
+            double ratio = (double) finalDimension / original.getWidth();
+            int finalHeight = original.getHeight() * (int) ratio;
 
-    /*
-        This gets a N^2 x P matrix, where N is the block size
-        and P is the number of blocks.
-        The return value is the autocorrelation matrix.
-     */
-    private double[][] GetAutocorrelation(char[][] x) {
-        int P = x[0].length;
-        int Nsqr = x.length;
-        double[][] buffer = new double[Nsqr][Nsqr];
-
-        for (int p = 0; p < P; p++) {
-            for (int j = 0; j < Nsqr; j++) {
-                for (int k = 0; k < Nsqr; k++) {
-                    buffer[j][k] += x[k][p] * x[j][p];
-                }
-            }
+            resized = Bitmap.createScaledBitmap(original, finalDimension, finalHeight, false);
         }
 
-        return buffer;
+        return Bitmap.createBitmap(resized, 0, 0, resized.getWidth() - (resized.getWidth() % N), resized.getHeight() - (resized.getHeight() % N));
     }
+
 
     //Reference http://math.nist.gov/javanumerics/jama/
     /*
@@ -328,22 +290,4 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         return result;
     }
-
-    private void SaveSignature(double [] signature, String type)
-    {
-
-        try {
-            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-ENCODING-signature-" + type + ".txt";
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
-            for (double aSignature : signature) {
-                outputStreamWriter.write(aSignature + "\n");
-            }
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-
-    }
-
 }

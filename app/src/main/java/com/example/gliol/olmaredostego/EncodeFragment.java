@@ -47,7 +47,8 @@ import java.util.Locale;
 import java.util.Random;
 
 /*
-    TODO if someone tries to embed a different message without selecting again the image, the previuos image is overwritten
+    TODO allow something more then mere ASCII chars, è in example
+    TODO modify welcome string and text 
  */
 
 public class EncodeFragment extends Fragment implements TaskManager {
@@ -117,8 +118,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         super.onViewCreated(view, savedInstanceState);
 
         thisthis = this;
-        File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
-        dir.mkdir();
 
         photo = (Button) view.findViewById(R.id.btPhotoEncode);
         encode = (Button) view.findViewById(R.id.btEncode);

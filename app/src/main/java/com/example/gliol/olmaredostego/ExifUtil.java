@@ -14,9 +14,7 @@ http://stackoverflow.com/questions/3647993/android-bitmaps-loaded-from-gallery-a
 https://gist.github.com/9re/1990019
 */
 public class ExifUtil {
-    /**
-     * @see http://sylvana.net/jpegcrop/exif_orientation.html
-     */
+
     public static Bitmap rotateBitmap(String src, Bitmap bitmap) {
         try {
             int orientation = getExifOrientation(src);

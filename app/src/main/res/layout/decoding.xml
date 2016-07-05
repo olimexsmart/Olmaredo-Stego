@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/riga1"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="@string/decSignatureBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -81,40 +81,15 @@
             android:text="@string/selectwichsignature"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <RadioGroup
-            android:id="@+id/rgSignatureSource"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvSignature"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp">
-
-            <RadioButton
-                android:id="@+id/rbOriginal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:enabled="false"
-                android:text="@string/radioOriginal" />
-
-            <RadioButton
-                android:id="@+id/rbGeneric"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="@string/radioStandard" />
-
-
-        </RadioGroup>
-
         <EditText
             android:id="@+id/etCustom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/riga2"
-            android:layout_alignRight="@+id/riga2"
-            android:layout_alignTop="@+id/rgSignatureSource"
-            android:layout_toRightOf="@+id/btClipboardText"
+            android:layout_alignLeft="@+id/tvSignature"
+            android:layout_alignStart="@+id/tvSignature"
+            android:layout_below="@+id/tvSignature"
+            android:layout_toLeftOf="@+id/btPaste"
+            android:layout_marginBottom="20dp"
             android:hint="@string/hintSignture"
             android:singleLine="true" />
 
@@ -122,7 +97,8 @@
             android:id="@+id/riga2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@+id/rgSignatureSource"
+            android:layout_alignBottom="@+id/btPaste"
+            android:layout_centerHorizontal="true"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
@@ -156,7 +132,8 @@
             android:layout_alignLeft="@+id/textView"
             android:layout_alignStart="@+id/textView"
             android:layout_below="@+id/textView"
-            android:layout_marginRight="20dp" />
+            android:layout_marginRight="20dp"
+            android:textColor="@color/abc_input_method_navigation_guard" />
 
         <Button
             android:id="@+id/btClipboardText"
@@ -166,6 +143,15 @@
             android:layout_centerHorizontal="true"
             android:enabled="false"
             android:text="@string/clipboardText" />
+
+        <Button
+            android:id="@+id/btPaste"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/etCustom"
+            android:layout_alignEnd="@+id/riga1"
+            android:layout_alignRight="@+id/riga1"
+            android:text="@string/paste" />
 
     </RelativeLayout>
 </ScrollView>
