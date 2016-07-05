@@ -240,13 +240,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         if (original.getHeight() < original.getWidth() && original.getHeight() > finalDimension) { //Image is in landscape and needs to be resized
             double ratio = (double) finalDimension / original.getHeight();
-            int finalWidth = original.getWidth() * (int) ratio;
+            int finalWidth = (int) (original.getWidth() * ratio);
 
             resized = Bitmap.createScaledBitmap(original, finalWidth, finalDimension, false);
         } else if (original.getHeight() > original.getWidth() && original.getWidth() > finalDimension) //Image is in portrait and needs to be resized
         {
             double ratio = (double) finalDimension / original.getWidth();
-            int finalHeight = original.getHeight() * (int) ratio;
+            int finalHeight = (int) (original.getHeight() * ratio);
 
             resized = Bitmap.createScaledBitmap(original, finalDimension, finalHeight, false);
         }

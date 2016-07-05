@@ -8,19 +8,32 @@
     <string name="encode">Encode</string>
     <string name="select">Select image</string>
     <string name="hint">Input message here or -></string>
-    <string name="info">This app lets you to hide a message in an image in order to communicate secretly.\n
-        The steganographic process needs a key derived from the image itself
-        during encoding. You can clip it after the encoding process completed and share it
-        with your partner. \nIn order to decode the message, in the decode tab you need to will insert the image
-        carrying the message alongside the key. Keep in mind that black and white encoding and color encoding use a different key.\n\n
-        In the setting tab can be specified the block dimension, the bigger, the harder to detect the information, since the
-        spectrum is larger and the key is longer. But with bigger blocks the image can hold less of them, so less information can be
-        encoded. \nThe image shorter dimension parameter sets the length of the shorter edge of the output image, bigger images can hold more information,
-        but the computation can take much longer and devices with few RAM could have problems. To give you an idea, with default
-        settings and a 4:3 image the maximum length of the message is around 600 characters.\n
-        The algorithm is based on spread-spectrum steganography, more specifically on the optimal version defined by
-        Gkizeli, Pados and Medley that maximizes the signal-to-interference-plus-noise ratio. \n\nThis app is completely open source,
-        the link to the GitHub repository can be found in the Play Store.
+    <string name="info">"Steganography is a technique with the ambition to conceal secret information into other information apparently innocuous. Regarding this app, it uses spread spectrum steganography applied to images.
+
+The basic workflow is the following:
+1. Open the app and pore over the INFO tab
+2. Tap on ENCODE
+3. Choose an image
+4. Type the message or open a text file containing it
+5. Launch the process
+6. Copy the decoding key in the clipboard
+
+Now, in order to your homie to read the glorious pun you just encoded, you have to send him the processed image alongside the decoding key.
+Keep in mind that the image MUST NOT be compressed in any way, otherwise the information will be lost! With default setting the image shouldn't be compressed by popular messaging application like Whastapp. But this isn't true anymore stepping up the resolution in the SETTING tab.
+
+This is what your bro has to do:
+1. Tap the DECODE tab
+2. Go to the INFO tab, read it, and then tap back again on DECODE
+3. Choose the received image containing the message
+4. Paste the key, without white spaces or other things
+5. Start the decode process
+6. The message will pop up below and will be possible to copy it
+
+If you aren't color blind, you might enjoy encoding messages into color images, just enable the color mode in SETTING. Moreover will be possible to include three times the information than in black and white, but the computation time will be longer as well.
+
+
+This app origins from the assignment for the Multimedia Apps and Future Internet course of the University of Genoa, Electronic Engineering and Information Technology.
+The work is completely open source, you can find the source code following the link that is in the Play Store somewhere or just look for OlimexSmart on GitHub."
     </string>
 
     <string name="selectimagehides">Select the image that hide the message.</string>
