@@ -1,4 +1,4 @@
-package com.example.gliol.olmaredostego;
+package com.olmaredo.gliol.olmaredostego;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -48,7 +48,6 @@ import java.util.Random;
 
 /*
     TODO allow something more then mere ASCII chars, è in example
-    TODO modify welcome string and text 
  */
 
 public class EncodeFragment extends Fragment implements TaskManager {

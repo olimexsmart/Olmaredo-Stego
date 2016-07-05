@@ -1,4 +1,4 @@
-package com.example.gliol.olmaredostego;
+package com.olmaredo.gliol.olmaredostego;
 
 import org.junit.Test;
 

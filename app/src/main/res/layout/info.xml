@@ -20,6 +20,7 @@
             android:layout_marginBottom="20dp"
             android:text="@string/info"
             android:textAppearance="?android:attr/textAppearanceSmall"
-             />
+            android:textSize="15dp"
+            android:textColor="@color/design_snackbar_background_color" />
     </RelativeLayout>
 </ScrollView>

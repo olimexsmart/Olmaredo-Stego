@@ -1,4 +1,4 @@
-package com.example.gliol.olmaredostego;
+package com.olmaredo.gliol.olmaredostego;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
