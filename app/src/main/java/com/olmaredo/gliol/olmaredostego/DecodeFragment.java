@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +36,8 @@ import static java.lang.Character.isLetter;
 
  */
 public class DecodeFragment extends Fragment implements TaskManager {
-    private final int REQ_CODE = 2222;
+    private final int REQ_CODE_GALLERY = 2222;
+    private final int PERMISSION_CODE = 14;
     private final String TAG = "DecodeFragment";
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
@@ -122,11 +125,14 @@ public class DecodeFragment extends Fragment implements TaskManager {
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Intent i = new Intent(
-                        Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(i, REQ_CODE);
+                if(CheckPermissions()) {
+                    Intent i = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(i, REQ_CODE_GALLERY);
+                }else {
+                    Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -251,11 +257,24 @@ public class DecodeFragment extends Fragment implements TaskManager {
         super.onSaveInstanceState(outState);
     }
 
+    private boolean CheckPermissions() {
+        if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            requestPermissions(permissions, PERMISSION_CODE);
+
+            return false;
+        }
+        else
+            return true;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQ_CODE && resultCode == Activity.RESULT_OK && null != data) {
+        if (requestCode == REQ_CODE_GALLERY && resultCode == Activity.RESULT_OK && null != data) {
             outputFileUri = data.getData();
             //At this point we have the image selected Uri
             //Now get the absolute path into a nice String

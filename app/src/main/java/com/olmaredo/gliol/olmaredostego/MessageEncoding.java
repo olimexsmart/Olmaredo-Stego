@@ -30,7 +30,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     Context context;
     String message;
     byte N = 8;
-    int finHeight = 480; //This could be useful to add in a constructor
+    int finDimension = 480; //This could be useful to add in a constructor
     int strength = 1;
     TaskManager callerFragment;
     double[] signature;
@@ -45,7 +45,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         this.N = blockSize;
         this.strength = strength;
         callerFragment = result;
-        finHeight = cropSize;
+        finDimension = cropSize;
     }
 
     @Override
@@ -59,10 +59,11 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
     @Override
     protected Bitmap doInBackground(Bitmap... params) {
-
-        params[0] = ResizeNCrop(params[0], N, finHeight);
+        //Resize the image and crop it to have multiple of N edges
+        params[0] = ResizeNCrop(params[0], N, finDimension);
         Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
 
+        //ow much informa
         int maxLenght = (params[0].getHeight() * params[0].getWidth()) / (N * N * 8);
         if (message.length() >= maxLenght) {
             message = message.substring(0, maxLenght - 1);

@@ -18,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -53,6 +54,7 @@ import java.util.Random;
 public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
     private final int CAMERA_REQUEST_CODE = 4444;
+    private final int PERMISSION_CODE = 14;
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
     private static final String bundleSignBW = "bSBW";
@@ -166,7 +168,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             if (savedInstanceState.containsKey(bundleTaskType))
                 taskType = savedInstanceState.getString(bundleTaskType);
 
-            if(savedInstanceState.containsKey(bundleKeySignature)) {
+            if (savedInstanceState.containsKey(bundleKeySignature)) {
                 keySignature = savedInstanceState.getString(bundleKeySignature);
                 signaturePreview.setText(keySignature);
                 copySignature.setEnabled(true);
@@ -182,11 +184,15 @@ public class EncodeFragment extends Fragment implements TaskManager {
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-                Log.v(TAG, timeStamp);
+                if (CheckPermissions()) {
+                    String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+                    Log.v(TAG, timeStamp);
 
-                fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
-                openImageIntent();
+                    fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
+                    openImageIntent();
+                } else {
+                    Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -194,23 +200,27 @@ public class EncodeFragment extends Fragment implements TaskManager {
         pickFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FileChooser fileChooser = new FileChooser(getActivity());
-                fileChooser.setExtension(".txt");
-                fileChooser.setFileListener(new FileChooser.FileSelectedListener() {
-                    @Override
-                    public void fileSelected(final File file) {
-                        //Read text from file
+                if (CheckPermissions()) {
+                    FileChooser fileChooser = new FileChooser(getActivity());
+                    fileChooser.setExtension(".txt");
+                    fileChooser.setFileListener(new FileChooser.FileSelectedListener() {
+                        @Override
+                        public void fileSelected(final File file) {
+                            //Read text from file
 
-                        fileNameText = file.getAbsolutePath();
-                        Log.v(TAG, "Opened text file: " + fileNameText);
+                            fileNameText = file.getAbsolutePath();
+                            Log.v(TAG, "Opened text file: " + fileNameText);
 
-                        inputString = ReadTextFile(fileNameText);
-                        inputText.setText("");
-                        inputText.setHint(file.getName() + " correctly opened.");
-                        encode.setEnabled(true);
-                    }
-                });
-                fileChooser.showDialog();
+                            inputString = ReadTextFile(fileNameText);
+                            inputText.setText("");
+                            inputText.setHint(file.getName() + " correctly opened.");
+                            encode.setEnabled(true);
+                        }
+                    });
+                    fileChooser.showDialog();
+                } else {
+                    Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -317,11 +327,25 @@ public class EncodeFragment extends Fragment implements TaskManager {
             outState.putInt(bundleTaskProgress, taskProgress);
             outState.putString(bundleTaskType, taskType);
         }
-        if(keySignature.length() > 0)
+        if (keySignature.length() > 0)
             outState.putString(bundleKeySignature, keySignature);
 
         super.onSaveInstanceState(outState);
     }
+
+    private boolean CheckPermissions() {
+        if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            requestPermissions(permissions, PERMISSION_CODE);
+
+            return false;
+        }
+        else
+            return true;
+    }
+
 
     private String ReadTextFile(String path) {
 
@@ -549,42 +573,46 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     @Override
     public void onTaskCompleted(Bitmap bm, double[] signature) {
-
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
-        wasTaskRunning = false;
-        setRetainInstance(false);
-        copySignature.setEnabled(true);
-
-        signBlackWhite = signature;
-
-        String key = "";
-        key += SignatureToString(signBlackWhite);
-        keySignature = key;
-        signaturePreview.setText(key);
-
-        FileOutputStream out = null;
-        String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-        String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-blackwhite.png";
-        try {
-            out = new FileOutputStream(fileNameResult);
-            bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-            File f = new File(fileNameResult);
-            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
-            // PNG is a lossless format, the compression factor (100) is ignored
-        } catch (FileNotFoundException e) {
-            Log.v(TAG, "Invalid saving path.");
-        } catch (NullPointerException e) {
-            Log.v(TAG, "The embedding result is null.");
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (progressDialog != null) {
+                progressDialog.dismiss();
             }
+            wasTaskRunning = false;
+            setRetainInstance(false);
+
+        if (CheckPermissions()) {
+            copySignature.setEnabled(true);
+
+            signBlackWhite = signature;
+
+            String key = "";
+            key += SignatureToString(signBlackWhite);
+            keySignature = key;
+            signaturePreview.setText(key);
+
+            FileOutputStream out = null;
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-blackwhite.png";
+            try {
+                out = new FileOutputStream(fileNameResult);
+                bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                File f = new File(fileNameResult);
+                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+                // PNG is a lossless format, the compression factor (100) is ignored
+            } catch (FileNotFoundException e) {
+                Log.v(TAG, "Invalid saving path.");
+            } catch (NullPointerException e) {
+                Log.v(TAG, "The embedding result is null.");
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -596,40 +624,45 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
         wasTaskRunning = false;
         setRetainInstance(false);
-        copySignature.setEnabled(true);
 
-        signR = signatureR;
-        signG = signatureG;
-        signB = signatureB;
+        if (CheckPermissions()) {
+            copySignature.setEnabled(true);
 
-        String key = "";
-        key += SignatureToString(signR);
-        key += SignatureToString(signG);
-        key += SignatureToString(signB);
-        keySignature = key;
-        signaturePreview.setText(key);
+            signR = signatureR;
+            signG = signatureG;
+            signB = signatureB;
 
-        FileOutputStream out = null;
-        String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-        String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-color.png";
-        try {
-            out = new FileOutputStream(fileNameResult);
-            bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-            File f = new File(fileNameResult);
-            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
-            // PNG is a lossless format, the compression factor (100) is ignored
-        } catch (FileNotFoundException e) {
-            Log.v(TAG, "Invalid saving path.");
-        } catch (NullPointerException e) {
-            Log.v(TAG, "The embedding result is null.");
-        } finally {
+            String key = "";
+            key += SignatureToString(signR);
+            key += SignatureToString(signG);
+            key += SignatureToString(signB);
+            keySignature = key;
+            signaturePreview.setText(key);
+
+            FileOutputStream out = null;
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-color.png";
             try {
-                if (out != null) {
-                    out.close();
+                out = new FileOutputStream(fileNameResult);
+                bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                File f = new File(fileNameResult);
+                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+                // PNG is a lossless format, the compression factor (100) is ignored
+            } catch (FileNotFoundException e) {
+                Log.v(TAG, "Invalid saving path.");
+            } catch (NullPointerException e) {
+                Log.v(TAG, "The embedding result is null.");
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } else {
+            Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
         }
     }
 
