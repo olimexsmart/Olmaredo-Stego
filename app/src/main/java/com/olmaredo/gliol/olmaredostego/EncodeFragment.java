@@ -278,7 +278,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     //copySignature.setEnabled(true);
 
-                    if (activity.inColor) {
+                    if (activity.InColor) {
                         MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
                         messageEncodingColor.execute(ReadImage());
                     } else {

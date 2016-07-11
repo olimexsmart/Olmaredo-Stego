@@ -67,5 +67,6 @@ The work is completely open source, you can find the source code following the l
     <string name="decSelect">Select image</string>
     <string name="decSelectBig">Image</string>
     <string name="paste">Paste key</string>
-
+    <string name="signRotOnOff">Pattern reduction</string>
+    <string name="signRotOnOffDescription">To avoid repetition pattern, errors can be more. </string>
 </resources>

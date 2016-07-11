@@ -148,7 +148,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
                     int blockSize = activity.BlockSize;
                     String customKey = keySignature.getText().toString();
 
-                    if (activity.inColor) {
+                    if (activity.InColor) {
                         double[] signR;
                         double[] signG;
                         double[] signB;

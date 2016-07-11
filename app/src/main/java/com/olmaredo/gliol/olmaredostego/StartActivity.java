@@ -23,6 +23,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     private static final String bundleCropSize = "bCS";
     private static final String bundleBlockSize = "bBS";
     private static final String bundleInColor = "bIC";
+    private static final String bundlePatternReduction = "bPR";
 
     TabLayout tabLayout;
     ViewPager viewPager;
@@ -30,7 +31,8 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
-    public boolean inColor = false;
+    public boolean InColor = false;
+    public boolean PatternReduction = false;
 
 
     @Override
@@ -72,7 +74,8 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         if (savedInstanceState != null) {
             BlockSize = savedInstanceState.getInt(bundleBlockSize);
             CropSize = savedInstanceState.getInt(bundleCropSize);
-            inColor = savedInstanceState.getBoolean(bundleInColor);
+            InColor = savedInstanceState.getBoolean(bundleInColor);
+            PatternReduction = savedInstanceState.getBoolean(bundlePatternReduction);
             Log.v(TAG, "Start Activity restored.");
         } else {
             Log.v(TAG, "Start Activity NOT restored.");
@@ -86,14 +89,16 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(bundleBlockSize, BlockSize);
         outState.putInt(bundleCropSize, CropSize);
-        outState.putBoolean(bundleInColor, inColor);
+        outState.putBoolean(bundleInColor, InColor);
+        outState.putBoolean(bundlePatternReduction, PatternReduction);
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void UpdateSettings(int blockSize, int cropSize, boolean color) {
+    public void UpdateSettings(int blockSize, int cropSize, boolean color, boolean patternReduction) {
         BlockSize = blockSize;
         CropSize = cropSize;
-        inColor = color;
+        InColor = color;
+        PatternReduction = patternReduction;
     }
 }

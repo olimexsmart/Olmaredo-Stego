@@ -26,11 +26,12 @@ public class SettingsFragment extends Fragment {
     EditText etCropped;
     OnSettingsUpdated callback;
     Switch onColor;
+    Switch patternReduction;
     RadioGroup groupRadio;
     int blockSize = DEFAULT_BLOCK_SIZE;
 
     public interface OnSettingsUpdated {
-        void UpdateSettings(int blockSize, int cropSize, boolean color);
+        void UpdateSettings(int blockSize, int cropSize, boolean color, boolean patternReduction);
     }
 
     @Override
@@ -45,6 +46,7 @@ public class SettingsFragment extends Fragment {
         groupRadio = (RadioGroup) view.findViewById(R.id.rgSignatureSource);
         etCropped = (EditText) view.findViewById(R.id.etCropped);
         onColor = (Switch) view.findViewById(R.id.sColor);
+        patternReduction = (Switch) view.findViewById(R.id.sPattern);
 
         //Default values
         etCropped.setText(String.valueOf(DEFAULT_CROP_SIZE));
@@ -55,7 +57,7 @@ public class SettingsFragment extends Fragment {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callback.UpdateSettings(blockSize, Integer.parseInt(etCropped.getText().toString()), onColor.isChecked());
+                callback.UpdateSettings(blockSize, Integer.parseInt(etCropped.getText().toString()), onColor.isChecked(), patternReduction.isChecked());
                 Toast.makeText(getContext(), "Settings updated!", Toast.LENGTH_SHORT).show();
             }
         });
