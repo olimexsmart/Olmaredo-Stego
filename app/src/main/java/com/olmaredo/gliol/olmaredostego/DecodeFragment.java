@@ -53,6 +53,26 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskType = "bTT";
     private static final String bundleResultText = "bRT";
 
+    private static final String lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus varius laoreet nunc, non tempus ipsum. Aenean ut quam odio. Aliquam efficitur ullamcorper urna, in ultrices erat. Sed purus risus, ullamcorper et est lobortis, molestie fermentum sapien. Morbi ut orci fringilla, imperdiet tellus sed, interdum mi. Nunc porttitor sem eget mi dapibus, ac porta orci bibendum. Nam semper et nulla sit amet varius. Mauris id augue ac lorem pulvinar sodales ac id felis. Nunc gravida odio sapien, ut ornare sapien lacinia vel. Cras pharetra justo id quam maximus pharetra. Nullam a consectetur lectus, ut faucibus sem. Praesent sed luctus purus, sed congue nunc. Nullam massa odio, finibus quis tincidunt at, blandit quis elit.\n" +
+            "\n" +
+            "Ut mollis ac mauris id viverra. Nam ut sagittis ante. Cras in diam a leo mattis vulputate. Sed porttitor eget nibh ut feugiat. Fusce auctor lorem quis nisl elementum, non ornare eros eleifend. Mauris molestie ex est, iaculis mollis nibh bibendum vitae. Donec porttitor semper nibh a euismod. Nam placerat, metus quis ullamcorper aliquet, nisi lectus porta enim, posuere tristique elit tortor ut velit. Nunc odio tortor, mattis ac dolor in, congue varius ante.\n" +
+            "\n" +
+            "Pellentesque at mattis elit. Cras et mi est. Mauris non urna lacinia massa pretium placerat ut nec neque. Duis a metus facilisis, ullamcorper lectus ut, eleifend urna. Praesent venenatis hendrerit dui pellentesque venenatis. Cras sed justo nec sapien mollis convallis. Suspendisse potenti. Fusce pellentesque ultricies nunc non dignissim.\n" +
+            "\n" +
+            "Etiam sed porta augue. Quisque a magna mauris. Vivamus congue nec est vel pretium. Nullam eu nulla id tellus mollis lobortis. Suspendisse tincidunt hendrerit molestie. Ut ut ornare urna. Nunc eget rhoncus enim.\n" +
+            "\n" +
+            "Cras libero elit, porttitor vitae sapien ac, imperdiet tristique lectus. Aenean dapibus lacus eget eleifend condimentum. Donec eu ullamcorper dolor. Mauris commodo, augue at auctor facilisis, lectus dolor faucibus ipsum, ut blandit ligula velit at turpis. Integer pretium elit ut volutpat egestas. Vivamus eu massa velit. Ut mollis, dui eget tempor faucibus, enim ex sagittis lorem, sed euismod nibh dolor a diam. Sed iaculis imperdiet consequat. Phasellus convallis orci sed nibh consectetur interdum. Phasellus mauris lorem, dignissim eu placerat sed, mollis ut dolor. Phasellus tortor ipsum, maximus at tristique eu, hendrerit eu odio. Sed ac tempor lectus. Sed viverra augue at felis blandit, sit amet vulputate nisl auctor. Nunc sed congue velit. Donec ut quam nisl.\n" +
+            "\n" +
+            "Aenean consequat sodales aliquam. Morbi diam mi, suscipit quis rhoncus sit amet, viverra id dui. In ut pharetra ipsum, sit amet auctor nisi. In vitae risus ut turpis commodo vulputate. Morbi non augue eu lacus molestie commodo. Suspendisse sit amet urna sed mi hendrerit congue. Morbi nec quam a dolor porttitor laoreet. Praesent in augue sollicitudin, tristique diam a, pellentesque dolor. Donec vitae odio purus.\n" +
+            "\n" +
+            "Praesent aliquam mi lectus, aliquam placerat ante aliquet nec. Vivamus vehicula, libero ac hendrerit placerat, ante nunc euismod eros, vitae efficitur tortor ipsum et augue. Aenean at porttitor ipsum. Cras rhoncus nulla vel felis laoreet feugiat. Nulla dictum turpis nunc, ac condimentum velit tincidunt sit amet. Maecenas ac libero elementum, hendrerit quam at, aliquet purus. Donec porttitor arcu quis neque tristique, nec eleifend quam interdum. Nam pharetra iaculis vehicula. Sed auctor feugiat commodo.\n" +
+            "\n" +
+            "Duis dignissim lacus vel lacus dignissim, vel euismod urna bibendum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec at vehicula purus. Suspendisse commodo vulputate leo. Nam porta dolor arcu, sit amet ullamcorper arcu molestie quis. In a dolor magna. Sed condimentum neque sit amet nisl faucibus, eu tristique neque vestibulum. Nam aliquam eleifend vehicula. Aenean neque augue, condimentum vitae ipsum dapibus, consequat suscipit odio. Vivamus in turpis ac purus maximus suscipit.\n" +
+            "\n" +
+            "Etiam sit amet bibendum nisl. Nunc interdum ex sed sagittis mattis. Morbi arcu augue, posuere sit amet libero vestibulum, volutpat sollicitudin augue. Nullam sit amet velit varius, sagittis metus a, gravida erat. Cras vulputate pharetra volutpat. Nunc porta ac ligula at pulvinar. Donec imperdiet ligula felis, ac convallis elit vestibulum eu.\n" +
+            "\n" +
+            "Nunc fringilla posuere consectetur. Integer dapibus suscipit purus ac bibendum. Proin at dolor eleifend odio molestie condimentum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque in metus dapibus, posuere lectus quis, imperdiet nulla. Nunc bibendum dui in molestie sodales. Aliquam faucibus libero risus, faucibus accumsan odio convallis quis. Etiam vel rhoncus est, et porta lectus. Vivamus semper est vitae faucibus elementum.";
+
 
     Button photo;
     ImageView preview;
@@ -423,7 +443,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
     @Override
     public void onTaskCompleted(String message) {
         result.setText(message);
-        PrintTextFile(message);
+        int health = HealthIndex(message);
+        Toast.makeText(getContext(), "####Health index: " + health, Toast.LENGTH_LONG).show();
+        PrintTextFile(message + "\n ####Health index: " + health);
         toClipboard.setEnabled(true);
         resultText = message;
 
@@ -456,5 +478,18 @@ public class DecodeFragment extends Fragment implements TaskManager {
         } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
+    }
+
+    public int HealthIndex(String text)
+    {
+        double index = 0;
+        String loremStripped = lorem.replaceAll("[^\\x20-\\x7e]", "");
+        for(int i = 0; i < text.length(); i++)
+        {
+            if(text.charAt(i) == loremStripped.charAt(i))
+                index++;
+        }
+
+        return (int) ((index * 1000) / text.length());
     }
 }
