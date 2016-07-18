@@ -13,14 +13,16 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
     TaskManager callerFragment;
     double[] signature;
     byte N;
+    boolean patternReduction = false;
 
     private MessageDecoding() {}
 
-    public MessageDecoding(Context c, double[] s, TaskManager result)
+    public MessageDecoding(Context c, double[] s, TaskManager result, boolean patternRed)
     {
         context = c;
         signature = s;
         callerFragment = result;
+        patternReduction = patternRed;
     }
 
     @Override
@@ -40,6 +42,7 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
         String result = "";
         char[] buffer = new char[Y.length]; //Used to copy one column
         char c = 0;
+        int offset = 0; //shifts the signature vector reading, % Nsqr cycles the index
         Log.v(TAG, "Created Y matrix.");
 
         for(int i = 0; i < Y[0].length; i++)
@@ -53,8 +56,11 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
                 c = 0;
             }
             //Here assembly each char, bit by bit
-            if(GetSign(signature, buffer)) //If true set the bit to one
+            if(GetSign(signature, buffer, offset)) //If true set the bit to one
                 c |= (1 << (i % 8));
+
+            if(patternReduction)
+                offset++;
 
             publishProgress((int)((i / (double)Y[0].length) * 50) + 50);
         }
@@ -83,16 +89,15 @@ public class MessageDecoding extends AsyncTask<Bitmap, Integer, String> {
         Returns the value of the bit assigned to the
         block.
      */
-    private boolean GetSign (double[]signature, char[]block)
+    private boolean GetSign (double[]signature, char[]block, int offset)
     {
         double buffer = 0;
         for (int i = 0; i < signature.length; i++ )
         {
-            buffer += signature[i] * block[i];
+            buffer += signature[(i + offset) % signature.length] * block[i];
         }
 
         return buffer > 0;
-
     }
 
     private char[][] GetXMatrix(Bitmap image, byte N)

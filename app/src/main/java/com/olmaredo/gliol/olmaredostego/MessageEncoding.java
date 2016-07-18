@@ -34,18 +34,20 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     int strength = 1;
     TaskManager callerFragment;
     double[] signature;
+    boolean patternReduction = false;
 
     //We don't wont this to be called without a message specified.
     private MessageEncoding() {
     }
 
-    public MessageEncoding(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncoding(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength, boolean patternRed) {
         context = c;
         this.message = message;
         this.N = blockSize;
         this.strength = strength;
         callerFragment = result;
         finDimension = cropSize;
+        patternReduction = patternRed;
     }
 
     @Override
@@ -142,10 +144,11 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         int sign;
         byte byteCounter = 0;
-        double e;
+        double e; //temp value holding the new pixel value
         int Wmax = W / N; //Number of blocks per row
         int w = 0;
         int h = 0;
+        int offset = 0; //shifts the signature vector reading, % Nsqr cycles the index
         for (int p = 0; p < P; p++) {
             if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
             else sign = 1;
@@ -153,8 +156,8 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
             //Applying the bit to the block
             for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                 for (int b = 0; b < N; b++) //Loop on block's columns
-                {
-                    e = (sign * strength * signature[(a * N) + b] + Color.green(params[0].getPixel((w * N) + b, (h * N) + a)));
+                {   //e is the final value of the pixel
+                    e = (sign * strength * signature[((a * N) + b + offset) % Nsqr] + Color.green(params[0].getPixel((w * N) + b, (h * N) + a)));
                     if (e < 0) e = 0;
                     else if (e > 255) e = 255;
 
@@ -164,6 +167,9 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
             }
 
             w++; //Move one block left
+            if(patternReduction)
+                offset++;
+
             if (w == Wmax) {
                 w = 0;
                 h++; //Move on row down

@@ -25,18 +25,20 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     double[] signatureR;
     double[] signatureG;
     double[] signatureB;
+    boolean patternReduction = false;
 
     //We don't wont this to be called without a message specified.
     private MessageEncodingColor() {
     }
 
-    public MessageEncodingColor(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    public MessageEncodingColor(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength, boolean patternRed) {
         context = c;
         this.message = message;
         this.N = blockSize;
         this.strength = strength;
         callerFragment = result;
         finHeight = cropSize;
+        patternReduction = patternRed;
     }
 
 
@@ -140,6 +142,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int w = 0;
         int h = 0;
         int r, g, blu;
+        int offset = 0; //shifts the signature vector reading, % Nsqr cycles the index
         for (int p = 0; p < P; p++) { //Remember that the P stands for the number of bits to embed in the image
 
             if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
@@ -148,12 +151,11 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             if (byteCounter == 8)
                 byteCounter = 0;
 
-            if (p % 3 == 0) {
-                //Applying the bit to the block
+            if (p % 3 == 0) {   //Applying the bit to the block
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureR[((a * N) + b + offset) % Nsqr] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -167,7 +169,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureG[((a * N) + b + offset) % Nsqr] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -182,7 +184,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureB[((a * N) + b + offset) % Nsqr] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -201,6 +203,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 }
             }
 
+            if(patternReduction)
+                offset++;
+            
             publishProgress((int) ((p / (double) P) * 20) + 80);
         }
 

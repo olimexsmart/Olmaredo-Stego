@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -27,10 +28,16 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import static java.lang.Character.isLetter;
+import static java.lang.Character.isSpaceChar;
 
 /*
 
@@ -161,7 +168,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
                             signG = StringToSignature(customKey.substring(blockSize * blockSize * 5, blockSize * blockSize * 10));
                             signB = StringToSignature(customKey.substring(blockSize * blockSize * 10, blockSize * blockSize * 15));
 
-                            MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB);
+                            MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB, activity.PatternReduction);
                             messageDecodingColor.execute(ReadImage());
                         } else { //Ask for another
                             Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
@@ -174,7 +181,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
                             Toast.makeText(getContext(), "Key is valid", Toast.LENGTH_SHORT).show();
 
                             signatureBW = StringToSignature(customKey);
-                            MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis);
+                            MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis, activity.PatternReduction);
                             messageDecoding.execute(ReadImage());
                         } else { //Get the default one
                             Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
@@ -416,6 +423,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     @Override
     public void onTaskCompleted(String message) {
         result.setText(message);
+        PrintTextFile(message);
         toClipboard.setEnabled(true);
         resultText = message;
 
@@ -437,5 +445,16 @@ public class DecodeFragment extends Fragment implements TaskManager {
         super.onDetach();
     }
 
-
+    public void PrintTextFile(String text) {
+        //Saving result as text as debug support
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
+            String path = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-Message.txt";
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(path));
+            outputStreamWriter.write(text);
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
 }

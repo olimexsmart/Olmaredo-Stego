@@ -15,16 +15,18 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     double[] signatureG;
     double[] signatureB;
     byte N;
+    boolean patternReduction = false;
 
     private MessageDecodingColor() {
     }
 
-    public MessageDecodingColor(TaskManager result, Context c, double[] sR, double[] sG, double[] sB) {
+    public MessageDecodingColor(TaskManager result, Context c, double[] sR, double[] sG, double[] sB, boolean patternRed) {
         context = c;
         signatureR = sR;
         signatureG = sG;
         signatureB = sB;
         callerFragment = result;
+        patternReduction = patternRed;
     }
 
     @Override
@@ -69,6 +71,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         String result = "";
         char[] buffer = new char[Xr.length]; //Used to copy one column
         char c = 0;
+        int offset = 0; //shifts the signature vector reading, % Nsqr cycles the index
         int I = Xr[0].length * 3;
 
         for (int i = 0; i < I; i++) {
@@ -84,7 +87,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xr[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signatureR, buffer)) //If true set the bit to one
+                if (GetSign(signatureR, buffer, offset)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             } else if (i % 3 == 1) {
@@ -93,7 +96,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xg[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signatureG, buffer)) //If true set the bit to one
+                if (GetSign(signatureG, buffer, offset)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             } else {
@@ -102,10 +105,13 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xb[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signatureB, buffer)) //If true set the bit to one
+                if (GetSign(signatureB, buffer, offset)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             }
+
+            if(patternReduction)
+                offset++;
             publishProgress((int)((i / (double)I) * 30) + 70);
         }
 
@@ -135,10 +141,12 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         Returns the value of the bit assigned to the
         block.
      */
-    private boolean GetSign(double[] signature, char[] block) {
+    private boolean GetSign (double[]signature, char[]block, int offset)
+    {
         double buffer = 0;
-        for (int i = 0; i < signature.length; i++) {
-            buffer += signature[i] * block[i];
+        for (int i = 0; i < signature.length; i++ )
+        {
+            buffer += signature[(i + offset) % signature.length] * block[i];
         }
 
         return buffer > 0;

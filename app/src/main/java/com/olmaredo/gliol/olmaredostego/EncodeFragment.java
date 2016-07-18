@@ -279,10 +279,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     //copySignature.setEnabled(true);
 
                     if (activity.InColor) {
-                        MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
+                        MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower, activity.PatternReduction);
                         messageEncodingColor.execute(ReadImage());
                     } else {
-                        MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
+                        MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower, activity.PatternReduction);
                         messageEncoding.execute(ReadImage());
                     }
                 } else {
