@@ -48,7 +48,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskType = "bTT";
     private static final String bundleResultText = "bRT";
 
-
+    //GUI objects
     Button photo;
     ImageView preview;
     EditText keySignature;
@@ -56,14 +56,15 @@ public class DecodeFragment extends Fragment implements TaskManager {
     TextView result;
     Button toClipboard;
     Button pasteKey;
-    DecodeFragment thisthis;
-    String fileNameOriginal;
-    String resultText = "";
-    Uri outputFileUri = null;
+
     ProgressDialog progressDialog;
     int taskProgress;
     String taskType;
     boolean wasTaskRunning = false;
+    DecodeFragment thisthis;
+    String fileNameOriginal;
+    String resultText = "";
+    Uri outputFileUri = null;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {

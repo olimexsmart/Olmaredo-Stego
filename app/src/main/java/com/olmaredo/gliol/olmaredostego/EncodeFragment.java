@@ -395,7 +395,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
         return key;
     }
 
-
+    //Returning from the camera app or the gallery
+    //Save, resize, load in GUI
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -403,7 +404,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             Log.v(TAG, "Entered activity result");
             Log.v(TAG, fileNameOriginal);
-
+            //From where are we coming from, it's a super-safe triple check
             final boolean isCamera;
             if (data == null) {
                 isCamera = true;
@@ -420,21 +421,19 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 outputFileUri = data.getData();
                 //At this point we have the image selected Uri
                 //Now get the absolute path into a nice String
-
                 // SDK < API11
                 if (Build.VERSION.SDK_INT < 11)
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
-
-                    // SDK >= 11 && SDK < 19
+                // SDK >= 11 && SDK < 19
                 else if (Build.VERSION.SDK_INT < 19)
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
-
-                    // SDK > 19 (Android 4.4)
+                // SDK > 19 (Android 4.4)
                 else
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
             } else //Force media update if we added a new photo
                 getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, outputFileUri));
 
+            //Loading a scaled image in the GUI, saving RAM
             Bitmap im = ReadImageScaled();
             if (im != null) {
                 preview.setImageBitmap(im);
@@ -445,6 +444,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
     }
 
+    //Read a full size image, like for processing it
     private Bitmap ReadImage() {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
@@ -464,6 +464,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
     //http://stackoverflow.com/questions/3331527/android-resize-a-large-bitmap-file-to-scaled-output-file
+    //Useful to save RAM for a GUI preview
     private Bitmap ReadImageScaled() {
         InputStream in = null;
         try {
@@ -524,7 +525,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     //Takes an absolute path of a txt file and gives back its contents, this simple
     private String ReadTextFile(String path) {
-
         StringBuilder text = new StringBuilder();
         BufferedReader br;
         String line;
@@ -544,8 +544,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
         return text.toString();
     }
 
+    //Display a dialog box that let you choose between an already existing image o taking a new one
     private void openImageIntent() {
-
         // Determine Uri of camera image to save.
         File fromCamera = new File(fileNameOriginal);
         outputFileUri = Uri.fromFile(fromCamera);
@@ -576,8 +576,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
         startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
     }
 
+    //From now on there is all the methods from the TaskManager, managing asyncTasks
     @Override
-    public void onTaskStarted(String type) {
+    public void onTaskStarted(String type) { //Creates the progressDialog
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setTitle(type);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -593,12 +594,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
     @Override
-    public void onTaskProgress(int progress) {
+    public void onTaskProgress(int progress) { //Updates the Dialog
         progressDialog.setProgress(progress);
         taskProgress = progress;
     }
 
-    @Override
+    //This takes the modified photo and saves it
+    @Override //BLACK AND WHITE
     public void onTaskCompleted(Bitmap bm, double[] signature) {
             if (progressDialog != null) {
                 progressDialog.dismiss();
@@ -623,7 +625,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 out = new FileOutputStream(fileNameResult);
                 bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
                 File f = new File(fileNameResult);
-                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f))); //Scan files to update gallery
                 // PNG is a lossless format, the compression factor (100) is ignored
             } catch (FileNotFoundException e) {
                 Log.v(TAG, "Invalid saving path.");
@@ -643,7 +645,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
     }
 
-    @Override
+    //This takes the modified photo and saves it
+    @Override //COLOR
     public void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
 
         if (progressDialog != null) {
@@ -699,6 +702,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
     //https://androidresearch.wordpress.com/2013/05/10/dealing-with-asynctask-and-screen-orientation/
+    //Basically the problem was that during activity lifecycle the AT continued going on but the PD retained
+    //always the original references to the activity, crashing when it was time to destroying it.
+    //This way the PD is managed directly from the activity
     @Override
     public void onDetach() {
         // All dialogs should be closed before leaving the activity in order to avoid
