@@ -36,9 +36,11 @@ import static java.lang.Character.isLetter;
 
  */
 public class DecodeFragment extends Fragment implements TaskManager {
+    private final String TAG = "DecodeFragment";
+    //Random numbers to match requests
     private final int REQ_CODE_GALLERY = 2222;
     private final int PERMISSION_CODE = 14;
-    private final String TAG = "DecodeFragment";
+    //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
     private static final String bundleTaskProgress = "bTP";
@@ -82,9 +84,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        thisthis = this;
 
-        //Radio button e altre amenità
+        thisthis = this; //this
+        //Interface link to XML
         photo = (Button) view.findViewById(R.id.btBrowseDecode);
         preview = (ImageView) view.findViewById(R.id.ivPreview);
         keySignature = (EditText) view.findViewById(R.id.etCustom);
@@ -93,7 +95,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
         toClipboard = (Button) view.findViewById(R.id.btClipboardText);
         pasteKey = (Button) view.findViewById(R.id.btPaste);
 
-
+        //All this if statement basically takes the saved instance and resumes the activity status
+        //Generally after a screen rotation, but doesn't know generally
         if (savedInstanceState != null) {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
             wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
@@ -223,6 +226,14 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
         });
     }
+
+
+    /*
+      .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+      :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
+     */
+
 
     private double[] StringToSignature(String key)
     {

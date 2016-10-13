@@ -40,8 +40,9 @@ public class SettingsFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Button bt = (Button) view.findViewById(R.id.btSettings);
 
+        //Interface link to XML
+        Button bt = (Button) view.findViewById(R.id.btSettings);
         groupRadio = (RadioGroup) view.findViewById(R.id.rgSignatureSource);
         etCropped = (EditText) view.findViewById(R.id.etCropped);
         onColor = (Switch) view.findViewById(R.id.sColor);
@@ -88,6 +89,4 @@ public class SettingsFragment extends Fragment {
             throw new ClassCastException(activity.toString() + " must implement OnSettingsUpdated");
         }
     }
-
-
 }

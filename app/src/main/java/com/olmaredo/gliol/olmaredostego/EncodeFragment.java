@@ -53,8 +53,11 @@ import java.util.Random;
 
 public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
-    private final int CAMERA_REQUEST_CODE = 4444;
-    private final int PERMISSION_CODE = 14;
+    //Random numbers to match requests
+    private static final int CAMERA_REQUEST_CODE = 4444;
+    private static final int PERMISSION_CODE = 14;
+    private static final int DEFAULT_EMBEDDING_POWER = 20;
+    //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
     private static final String bundleSignBW = "bSBW";
@@ -69,39 +72,43 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleKeySignature = "bKS";
 
 
-    Button photo;
-    Button encode;
-    Button pickFile;
-    Button copySignature;
-    ImageView preview;
-    TextView signaturePreview;
-    EditText inputText;
-    SeekBar seekPower;
-    String fileNameOriginal;
-    String fileNameText;
-    String inputString = "not from file";
-    String keySignature = "";
-    Uri outputFileUri = null;
-    int embeddingPower = 20;
-    //MessageEncoding messageEmbedding;
-    TextView percentageText;
-    int blockSizeSaved;
-    int cropSizeSaved;
+    Button photo;   //Pick photo button handler
+    Button encode;  //Encode button
+    Button pickFile;    //To open text file from file manager
+    Button copySignature; //Put in the clipboard the signature used
+    ImageView preview;  //Preview the image selected
+    TextView signaturePreview;  //Shows part of the signature helping acknowledge successful encoding
+    EditText inputText; //Box to type the hidden text manually
+    SeekBar seekPower;  //Cursor that selects the embedding power
+    TextView percentageText; //Shows the embedding power strength
+
+    String fileNameOriginal;    //Name of the original photo file
+    String fileNameText;    //Hold the path of the input text file
+    String inputString = "not from file";   //Input text, also used in logic flux
+    String keySignature = ""; //Holds the image signature after encoding
+    Uri outputFileUri = null; //Camera output file path, stupid URI thing
+    int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
+
+    //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
     EncodeFragment thisthis;
+
+    //Here structures to hold the various types of signatures
     double[] signBlackWhite;
     double[] signR;
     double[] signG;
     double[] signB;
+
+    //All it needs to manage destruction and creation of the ProgressDialog
     ProgressDialog progressDialog;
     int taskProgress;
     String taskType;
     boolean wasTaskRunning = false;
 
-
+    //In order to have smoothest transition possible, immediately create the new Dialog
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // If we are returning here from a screen orientation
+        // If we are returning here from a screen orientation change
         // and the AsyncTask is still working, re-create and display the
         // progress dialog.
         if (wasTaskRunning) {
@@ -109,6 +116,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
     }
 
+    //Tab layout manager
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.encoding, container, false);
@@ -118,8 +126,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        thisthis = this;
-
+        thisthis = this; //this
+        //Interface link to XML
         photo = (Button) view.findViewById(R.id.btPhotoEncode);
         encode = (Button) view.findViewById(R.id.btEncode);
         preview = (ImageView) view.findViewById(R.id.imPreview);
@@ -129,7 +137,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
         percentageText = (TextView) view.findViewById(R.id.tvSeekBar);
         copySignature = (Button) view.findViewById(R.id.copySignature);
         signaturePreview = (TextView) view.findViewById(R.id.twSignature);
+        //Some GUI changes
+        seekPower.setProgress(embeddingPower);
+        percentageText.setText("" + embeddingPower + "%");
 
+        //All this if statement basically takes the saved instance and resumes the activity status
+        //Generally after a screen rotation, but doesn't know generally
         if (savedInstanceState != null) {
             boolean readyToEncode = false; //Determine when restoring the activity if there is all the necessary to start encoding
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
@@ -180,17 +193,19 @@ public class EncodeFragment extends Fragment implements TaskManager {
             Log.v(TAG, "Activity NOT restored.");
         }
 
-
+        //Choose photo from gallery or take a photo
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (CheckPermissions()) {
+                    //Timestamp to avoid an already existing file name
                     String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
                     Log.v(TAG, timeStamp);
-
                     fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
+                    //Opens a dialog that let you choose if open the gallery or the camera app
                     openImageIntent();
                 } else {
+                    //If some tin-foil-hat didn't give the permissions
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
                 }
             }
@@ -202,12 +217,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
             public void onClick(View v) {
                 if (CheckPermissions()) {
                     FileChooser fileChooser = new FileChooser(getActivity());
-                    fileChooser.setExtension(".txt");
+                    fileChooser.setExtension(".txt");  //Only plain text files for now
+
                     fileChooser.setFileListener(new FileChooser.FileSelectedListener() {
                         @Override
                         public void fileSelected(final File file) {
                             //Read text from file
-
                             fileNameText = file.getAbsolutePath();
                             Log.v(TAG, "Opened text file: " + fileNameText);
 
@@ -219,6 +234,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     });
                     fileChooser.showDialog();
                 } else {
+                    //I hate those smart ass motherfuckers
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
                 }
             }
@@ -229,32 +245,32 @@ public class EncodeFragment extends Fragment implements TaskManager {
         inputText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //Bah...
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //Meh...
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (inputText.getText().length() > 0) {
-                    encode.setEnabled(true);
-                } else if (inputString.length() > 0) {
+                //Basically if there if some text somewhere, from GUI or from file
+                if (inputText.getText().length() > 0 && inputString.length() > 0) {
                     encode.setEnabled(true);
                 } else
                     encode.setEnabled(false);
             }
         });
 
-
-        seekPower.setProgress(embeddingPower);
-        percentageText.setText("" + embeddingPower + "%");
+        //Updates the embedding power value
         seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onStopTrackingTouch(SeekBar bar) {
                 embeddingPower = bar.getProgress(); // the value of the seekBar progress
             }
 
             public void onStartTrackingTouch(SeekBar bar) {
+                //Man...
             }
 
             public void onProgressChanged(SeekBar bar, int paramInt, boolean paramBoolean) {
@@ -267,16 +283,17 @@ public class EncodeFragment extends Fragment implements TaskManager {
             @Override
             public void onClick(View v) {
                 if (new File(fileNameOriginal).exists()) {
+                    //Retrieving the encoding settings
                     StartActivity activity = (StartActivity) getActivity();
-                    blockSizeSaved = activity.BlockSize;
-                    cropSizeSaved = activity.CropSize;
-
+                    int blockSizeSaved = activity.BlockSize;
+                    int cropSizeSaved = activity.CropSize;
+                    //TODO this needs to be addressed, there is already a todo somewhere
                     if (inputText.getText().length() > 0)
                         inputString = inputText.getText().toString();
                     //Strip all non ASCII characters
                     inputString = inputString.replaceAll("[^\\x20-\\x7e]", "");
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
-                    //copySignature.setEnabled(true);
+                    //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
 
                     if (activity.inColor) {
                         MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
@@ -286,6 +303,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                         messageEncoding.execute(ReadImage());
                     }
                 } else {
+                    //Geeez
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
                 }
             }
@@ -305,6 +323,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
         Log.v(TAG, "OnView ended");
     }
 
+    /*
+      .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+      :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
+     */
+
+    //Saves the state of the activity before is destroyed, orientation change and such
     @Override
     public void onSaveInstanceState(Bundle outState) {
 
@@ -333,6 +358,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         super.onSaveInstanceState(outState);
     }
 
+    //Necessary to Android 6.0 and above for run time permissions
     private boolean CheckPermissions() {
         if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
@@ -346,32 +372,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
             return true;
     }
 
-
-    private String ReadTextFile(String path) {
-
-        StringBuilder text = new StringBuilder();
-        BufferedReader br;
-        String line;
-        File f = new File(path);
-
-        try {
-            br = new BufferedReader(new FileReader(f));
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-            }
-            br.close();
-        } catch (IOException e) {
-            Toast.makeText(getContext(), f.getName() + " not found", Toast.LENGTH_SHORT).show();
-        }
-
-        return text.toString();
-    }
-
+    //Converts a double array into a string, rounding to 4 decimal digits and saving the sign
     private String SignatureToString(double[] signature) {
         double z;
         String key = "";
-        Random caos = new Random();
+        Random caos = new Random(); //Just to confuse things a little bit
+
         for (double ev : signature) {
             z = Math.floor(ev * 10000); //Save only first 4 digits
             if (z > 0) //If positive, insert a number
@@ -386,7 +392,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             key += ((int) z / 100) % 10;
             key += ((int) z / 1000) % 10;
         }
-
         return key;
     }
 
@@ -515,6 +520,28 @@ public class EncodeFragment extends Fragment implements TaskManager {
             Log.e(TAG, e.getMessage(), e);
             return null;
         }
+    }
+
+    //Takes an absolute path of a txt file and gives back its contents, this simple
+    private String ReadTextFile(String path) {
+
+        StringBuilder text = new StringBuilder();
+        BufferedReader br;
+        String line;
+        File f = new File(path);
+
+        try {
+            br = new BufferedReader(new FileReader(f));
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+            }
+            br.close();
+        } catch (IOException e) {
+            Toast.makeText(getContext(), f.getName() + " not found", Toast.LENGTH_SHORT).show();
+        }
+
+        return text.toString();
     }
 
     private void openImageIntent() {
