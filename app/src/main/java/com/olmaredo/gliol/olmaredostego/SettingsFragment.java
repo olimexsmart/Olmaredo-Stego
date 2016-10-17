@@ -16,10 +16,12 @@ import android.widget.Toast;
 /*
     TODO manage fragment restore
     TODO empty editext when selected, so isn't necessary to erase the content every time
+	TODO get rid of that save settings button
  */
 
 public class SettingsFragment extends Fragment {
     private final String TAG = "SettingFragment";
+	//These should be written in the startActivity maybe
     static int DEFAULT_BLOCK_SIZE = 8;
     static int DEFAULT_CROP_SIZE = 480;
 

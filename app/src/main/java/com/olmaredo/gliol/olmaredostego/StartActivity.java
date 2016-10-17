@@ -16,18 +16,17 @@ import java.io.File;
 
 public class StartActivity extends AppCompatActivity implements SettingsFragment.OnSettingsUpdated{
     private static final String TAG = "StartActivity";
-    //Used as test
-    public static final String Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sit amet ligula vitae tortor finibus viverra ut ac nulla. Suspendisse feugiat est non interdum finibus. Aenean nisi odio, congue in velit ac, gravida lobortis sapien. Donec ut mi finibus, dapibus leo eu, eleifend tortor. Ut mattis euismod pharetra. Nam tincidunt accumsan eros vitae congue. Quisque varius blandit bibendum. Praesent pellentesque aliquet ligula eget hendrerit. Curabitur fringilla venenatis erat, ut porta mauris auctor non.";
 
-    //private static final String bundleSignature = "bS";
     private static final String bundleCropSize = "bCS";
     private static final String bundleBlockSize = "bBS";
     private static final String bundleInColor = "bIC";
 
+	//Objects that manage the Tab GUI
     TabLayout tabLayout;
     ViewPager viewPager;
     ViewPagerAdapter viewPagerAdapter;
 
+	//This data is used to communicate between tabs
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
     public boolean inColor = false;
@@ -37,38 +36,38 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-        getSupportActionBar().hide();
-
-        tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        getSupportActionBar().hide(); //Hide the bar with the title, take up space and it's useless
+		
+		//Create and connects the Java objects to the XML design
+        tabLayout = (TabLayout) findViewById(R.id.tablayout); 
         final TabLayout.Tab encode = tabLayout.newTab();
         final TabLayout.Tab decode = tabLayout.newTab();
         final TabLayout.Tab info = tabLayout.newTab();
         final TabLayout.Tab settings = tabLayout.newTab();
-
         encode.setText("Encode");
         decode.setText("Decode");
         info.setText("Info");
         settings.setText("Setup");
-
+		//Position of tabs
         tabLayout.addTab(info, 0);
         tabLayout.addTab(encode, 1);
         tabLayout.addTab(decode, 2);
         tabLayout.addTab(settings, 3);
-
+		//No idea, just woks
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         viewPager.setAdapter(viewPagerAdapter);
-
+		//Colors are important
         tabLayout.setTabTextColors(ContextCompat.getColorStateList(this, R.drawable.tab_selector));
         tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this, R.color.indicator));
-
+		//Click on the tab and change view
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         //Create the app directory
         File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
         dir.mkdir();
-
+		//As always activity information needs to be saved and restored
         if (savedInstanceState != null) {
             BlockSize = savedInstanceState.getInt(bundleBlockSize);
             CropSize = savedInstanceState.getInt(bundleCropSize);
@@ -89,8 +88,8 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         outState.putBoolean(bundleInColor, inColor);
         super.onSaveInstanceState(outState);
     }
-
-    @Override
+    
+	@Override //Simply nicer than directly reference class objects, TODO maybe some kind of consistency check would be nice
     public void UpdateSettings(int blockSize, int cropSize, boolean color) {
         BlockSize = blockSize;
         CropSize = cropSize;
