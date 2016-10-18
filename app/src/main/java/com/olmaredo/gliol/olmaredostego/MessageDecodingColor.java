@@ -6,6 +6,9 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 
+/*
+	This activity manges the decoding tab.
+*/
 public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
 
