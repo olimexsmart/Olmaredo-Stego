@@ -17,6 +17,7 @@ import android.widget.Toast;
     TODO manage fragment restore
     TODO empty editext when selected, so isn't necessary to erase the content every time
 	TODO get rid of that save settings button
+	TODO enhance hints and suggestions on how to use setting
  */
 
 public class SettingsFragment extends Fragment {
@@ -24,6 +25,7 @@ public class SettingsFragment extends Fragment {
 	//These should be written in the startActivity maybe
     static int DEFAULT_BLOCK_SIZE = 8;
     static int DEFAULT_CROP_SIZE = 480;
+    static boolean DEFAULT_ON_COLOR = true;
 
     EditText etCropped;
     OnSettingsUpdated callback;
@@ -51,7 +53,7 @@ public class SettingsFragment extends Fragment {
 
         //Default values
         etCropped.setText(String.valueOf(DEFAULT_CROP_SIZE));
-        onColor.setChecked(false);
+        onColor.setChecked(DEFAULT_ON_COLOR);
 
 
         //Button
@@ -79,7 +81,7 @@ public class SettingsFragment extends Fragment {
         });
     }
 
-    @Override
+    @Override //It's deprecated but it works, STFU
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 

@@ -22,6 +22,9 @@ import Jama.Matrix;
 
 /*
     TODO final for can be optimized when c = 0
+    AsyncTask launched to encode a message into an image.
+    All it needs to operate is in the only public constructor
+    TODO put all params in the constructors?
  */
 
 public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
@@ -51,7 +54,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-
+        //Put a nice message onto the GUI
         callerFragment.onTaskStarted("Embedding message in gray scale");
 
         Log.v(TAG, "PreExecute terminated");
@@ -63,17 +66,16 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         params[0] = ResizeNCrop(params[0], N, finDimension);
         Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
 
-        //ow much informa
+        //Determine how many blocks can fit in the image, thus the max text length
         int maxLenght = (params[0].getHeight() * params[0].getWidth()) / (N * N * 8);
         if (message.length() >= maxLenght) {
             message = message.substring(0, maxLenght - 1);
             publishProgress(maxLenght + 1000); //To be sure is greater than 100
         }
 
-
-        params[0] = ToGrayscale(params[0]);
+        params[0] = ToGrayscale(params[0]); //Gray scale the image
         Log.v(TAG, "Gray-scaled.");
-        publishProgress(10);
+        publishProgress(10); //Quite random progress update
 
         int H = params[0].getHeight();
         int W = params[0].getWidth();
@@ -264,7 +266,7 @@ public class MessageEncoding extends AsyncTask<Bitmap, Integer, Bitmap> {
         Matrix A = new Matrix(matrix);
         A = A.transpose().times(A);
 
-        // compute the spectral decomposition
+        //Compute the spectral decomposition
         EigenvalueDecomposition e = A.eig();
         Matrix V = e.getV();    //<-- Eigenvalues
         Matrix D = e.getD();    //<-- Eigenvectors

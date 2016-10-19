@@ -233,7 +233,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         Returns the image cropped in a way that every dimension
         is a multiple of the block size.
      */
-
+    //TODO put these into a static encoding utility class
     private Bitmap ResizeNCrop(Bitmap original, int N, int finalDimension) {
 
         Bitmap resized = original;

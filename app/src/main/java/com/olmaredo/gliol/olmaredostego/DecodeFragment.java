@@ -413,6 +413,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
     /*
         Async task management
+        Allow to separate the GUI management from the AsyncTask
      */
     @Override
     public void onTaskProgress(int progress) {

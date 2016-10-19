@@ -228,7 +228,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
                             inputString = ReadTextFile(fileNameText);
                             inputText.setText("");
-                            inputText.setHint(file.getName() + " correctly opened.");
+                            inputText.setHint(file.getName() + " correctly opened."); //Give a confirmation of the operation
                             encode.setEnabled(true);
                         }
                     });

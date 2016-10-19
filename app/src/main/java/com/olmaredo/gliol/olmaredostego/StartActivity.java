@@ -29,7 +29,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 	//This data is used to communicate between tabs
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
-    public boolean inColor = false;
+    public boolean inColor = SettingsFragment.DEFAULT_ON_COLOR;
 
 
     @Override
