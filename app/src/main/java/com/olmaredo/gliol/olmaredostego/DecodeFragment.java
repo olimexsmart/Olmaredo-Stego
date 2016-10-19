@@ -33,7 +33,7 @@ import java.io.InputStream;
 import static java.lang.Character.isLetter;
 
 /*
-
+    Tab that manages message decoding
  */
 public class DecodeFragment extends Fragment implements TaskManager {
     private final String TAG = "DecodeFragment";
@@ -57,14 +57,16 @@ public class DecodeFragment extends Fragment implements TaskManager {
     Button toClipboard;
     Button pasteKey;
 
+    DecodeFragment thisthis; //Holt eference of this fragment where "this" keyword isn't enough
+    String fileNameOriginal; //Holds the absolute path of the photo opened
+    String resultText = ""; //Result of decoding
+    Uri outputFileUri = null; //When returning from the gallery this is the result given
+
+    //All it needs to manage PrograssDialog of an asyncTask via interface
     ProgressDialog progressDialog;
     int taskProgress;
     String taskType;
     boolean wasTaskRunning = false;
-    DecodeFragment thisthis;
-    String fileNameOriginal;
-    String resultText = "";
-    Uri outputFileUri = null;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -111,10 +113,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
             if (savedInstanceState.containsKey(bundleTaskProgress))
                 taskProgress = savedInstanceState.getInt(bundleTaskProgress);
-            if(savedInstanceState.containsKey(bundleTaskType))
+            if (savedInstanceState.containsKey(bundleTaskType))
                 taskType = savedInstanceState.getString(bundleTaskType);
-            if(savedInstanceState.containsKey(bundleResultText))
-            {
+            if (savedInstanceState.containsKey(bundleResultText)) {
                 resultText = savedInstanceState.getString(bundleResultText);
                 result.setText(resultText);
                 toClipboard.setEnabled(true);
@@ -125,39 +126,37 @@ public class DecodeFragment extends Fragment implements TaskManager {
             Log.v(TAG, "Activity NOT restored.");
         }
 
-
+        //Pick photo from gallery
         photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(CheckPermissions()) {
-                    Intent i = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(i, REQ_CODE_GALLERY);
-                }else {
+                if (CheckPermissions()) {
+                    Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(i, REQ_CODE_GALLERY); //Actually opens te gallery
+                } else {
+                    //Com'on
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
-
+        //Starte decoding process
         decode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO erase blank spaces and other non printable chars from the signature
                 //First thing to do is check if the file is valid
                 if (new File(fileNameOriginal).exists()) {
                     StartActivity activity = (StartActivity) getActivity();
-                    toClipboard.setEnabled(true);
-                    //Renamed to lighten up code readability
-                    int blockSize = activity.BlockSize;
-                    String customKey = keySignature.getText().toString();
+                    int blockSize = activity.BlockSize; //Not needed but makes the code more readable
+                    String customKey = keySignature.getText().toString(); //Get the signature from the GUI
 
                     if (activity.inColor) {
                         double[] signR;
                         double[] signG;
                         double[] signB;
                         //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
-                        //But since we are in color mode, we are expecting the same thin three times
+                        //But since we are in color mode, we are expecting the same thing three times
                         if (customKey.length() == blockSize * blockSize * 15) { //960 on standard blocksize, quite a lot
                             Toast.makeText(getContext(), "Key is valid", Toast.LENGTH_SHORT).show();
                             //Dividing the string into the respective signature
@@ -167,6 +166,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
                             MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB);
                             messageDecodingColor.execute(ReadImage());
+
+                            toClipboard.setEnabled(true); //Make possible copying the text elsewhere
                         } else { //Ask for another
                             Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
                         }
@@ -180,18 +181,20 @@ public class DecodeFragment extends Fragment implements TaskManager {
                             signatureBW = StringToSignature(customKey);
                             MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis);
                             messageDecoding.execute(ReadImage());
+
+                            toClipboard.setEnabled(true); //Make possible copying the text elsewhere
                         } else { //Get the default one
                             Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
                         }
                     }
-                }
-                else
-                {
+                } else {
+                    //Dai belin
                     Toast.makeText(getContext(), "Choose a valid image.", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
+        //Handy button that pastes the result into the clipboard
         toClipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,6 +205,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
         });
 
+        //Lets you paste the enormous signature
         pasteKey.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -220,8 +224,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
                     } else {
                         Toast.makeText(getContext(), "Nothing to paste from the clipboard", Toast.LENGTH_SHORT).show();
                     }
-                }
-                else {
+                } else {
                     Toast.makeText(getContext(), "Nothing to paste from the clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -235,13 +238,12 @@ public class DecodeFragment extends Fragment implements TaskManager {
       `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
      */
 
-
-    private double[] StringToSignature(String key)
-    {
+    //Converts a string into a double array
+    private double[] StringToSignature(String key) {
         double[] signature = new double[key.length() / 5];
         //Quel momento in cui vorresti scrivere una bestemmia nel codice ma poi sai che c'è Martino che legge e non vuoi offenderlo
         char[] keyChar = key.toCharArray();
-        for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position
+        for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position. 48 is a magic number, number zero I guess
             signature[i] = (keyChar[i * 5 + 1] - 48) / 10000.0 + (keyChar[i * 5 + 2] - 48) / 1000.0 + (keyChar[i * 5 + 3] - 48) / 100.0 + (keyChar[i * 5 + 4] - 48) / 10.0;
             //Change sign if the prefix is a letter
             if (isLetter(keyChar[i * 5]))
@@ -252,37 +254,35 @@ public class DecodeFragment extends Fragment implements TaskManager {
     }
 
 
-    @Override
+    @Override //Save the state of the fragment prior to destruction
     public void onSaveInstanceState(Bundle outState) {
-
         outState.putString(bundleNameOriginal, fileNameOriginal);
         outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
         if (outputFileUri != null)
             outState.putString(bundleUri, outputFileUri.toString());
-        if(wasTaskRunning) {
+        if (wasTaskRunning) {
             outState.putInt(bundleTaskProgress, taskProgress);
             outState.putString(bundleTaskType, taskType);
         }
-        if(resultText.length() > 0)
+        if (resultText.length() > 0)
             outState.putString(bundleResultText, resultText);
 
         super.onSaveInstanceState(outState);
     }
 
+    //Android 6.0 and above permission check
     private boolean CheckPermissions() {
-        if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
             requestPermissions(permissions, PERMISSION_CODE);
 
             return false;
-        }
-        else
+        } else
             return true;
     }
 
-    @Override
+    @Override //Flow ends up here when returning from the pick photo from gallery intent
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -303,7 +303,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
             else
                 fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
 
-            Bitmap im = ReadImageScaled();
+            Bitmap im = ReadImageScaled(); //Read a smaller version of the image and load it into the GUI
             if (im != null) {
                 preview.setImageBitmap(im);
                 decode.setEnabled(true);
@@ -315,6 +315,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
         }
     }
 
+    //Read image from absolute path
+    //TODO all these common utility methods should be written once and shared through a static class
     private Bitmap ReadImage() {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
@@ -409,6 +411,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
         setRetainInstance(true);
     }
 
+    /*
+        Async task management
+     */
     @Override
     public void onTaskProgress(int progress) {
         progressDialog.setProgress(progress);

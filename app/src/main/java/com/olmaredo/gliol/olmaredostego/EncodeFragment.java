@@ -360,15 +360,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     //Necessary to Android 6.0 and above for run time permissions
     private boolean CheckPermissions() {
-        if(ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
             requestPermissions(permissions, PERMISSION_CODE);
 
             return false;
-        }
-        else
+        } else
             return true;
     }
 
@@ -424,10 +422,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 // SDK < API11
                 if (Build.VERSION.SDK_INT < 11)
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
-                // SDK >= 11 && SDK < 19
+                    // SDK >= 11 && SDK < 19
                 else if (Build.VERSION.SDK_INT < 19)
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
-                // SDK > 19 (Android 4.4)
+                    // SDK > 19 (Android 4.4)
                 else
                     fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
             } else //Force media update if we added a new photo
@@ -602,11 +600,11 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //This takes the modified photo and saves it
     @Override //BLACK AND WHITE
     public void onTaskCompleted(Bitmap bm, double[] signature) {
-            if (progressDialog != null) {
-                progressDialog.dismiss();
-            }
-            wasTaskRunning = false;
-            setRetainInstance(false);
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        wasTaskRunning = false;
+        setRetainInstance(false);
 
         if (CheckPermissions()) {
             copySignature.setEnabled(true);
