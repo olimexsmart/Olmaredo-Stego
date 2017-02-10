@@ -33,7 +33,9 @@ If you aren't color blind, you might enjoy encoding messages into color images, 
 
 
 This app origins from the assignment for the Multimedia Apps and Future Internet course of the University of Genoa, Electronic Engineering and Information Technology.
-The work is completely open source, you can find the source code following the link that is in the Play Store somewhere or just look for OlimexSmart on GitHub."
+The work is completely open source, you can find the source code following the link that is in the Play Store somewhere or just look for OlimexSmart on GitHub.
+
+<a href="http://htmlpreview.github.io/?https://raw.githubusercontent.com/olimexsmart/Olmaredo-Stego/master/privacy-policy.html">Privacy Policy</a>"
     </string>
 
     <string name="selectimagehides">Select the image that hide the message.</string>

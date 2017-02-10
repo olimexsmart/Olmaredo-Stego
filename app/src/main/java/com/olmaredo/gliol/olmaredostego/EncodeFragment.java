@@ -204,10 +204,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
                     //Opens a dialog that let you choose if open the gallery or the camera app
                     openImageIntent();
-                } else {
+                } /*else {
                     //If some tin-foil-hat didn't give the permissions
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }
+                }*/
             }
         });
 
@@ -233,10 +233,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
                         }
                     });
                     fileChooser.showDialog();
-                } else {
+                } /*else {
                     //I hate those smart ass motherfuckers
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }
+                }*/
             }
         });
 
@@ -638,9 +638,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     e.printStackTrace();
                 }
             }
-        } else {
-            Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-        }
+        } //else {
+//            Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
+//        }
     }
 
     //This takes the modified photo and saves it
@@ -689,9 +689,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     e.printStackTrace();
                 }
             }
-        } else {
+        } /*else {
             Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-        }
+        }*/
     }
 
     @Override

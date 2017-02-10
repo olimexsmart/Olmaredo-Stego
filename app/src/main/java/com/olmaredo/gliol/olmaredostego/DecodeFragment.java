@@ -133,10 +133,10 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 if (CheckPermissions()) {
                     Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(i, REQ_CODE_GALLERY); //Actually opens te gallery
-                } else {
+                } /*else {
                     //Com'on
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }
+                }*/
             }
         });
 
