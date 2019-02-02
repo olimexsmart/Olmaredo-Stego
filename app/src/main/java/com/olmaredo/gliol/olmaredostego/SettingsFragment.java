@@ -25,7 +25,6 @@ public class SettingsFragment extends Fragment {
 	//These should be written in the startActivity maybe
     static int DEFAULT_BLOCK_SIZE = 8;
     static int DEFAULT_CROP_SIZE = 480;
-    static boolean DEFAULT_ON_COLOR = true;
 
     EditText etCropped;
     OnSettingsUpdated callback;
@@ -49,11 +48,9 @@ public class SettingsFragment extends Fragment {
         Button bt = (Button) view.findViewById(R.id.btSettings);
         groupRadio = (RadioGroup) view.findViewById(R.id.rgSignatureSource);
         etCropped = (EditText) view.findViewById(R.id.etCropped);
-        onColor = (Switch) view.findViewById(R.id.sColor);
 
         //Default values
         etCropped.setText(String.valueOf(DEFAULT_CROP_SIZE));
-        onColor.setChecked(DEFAULT_ON_COLOR);
 
 
         //Button

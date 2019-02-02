@@ -7,8 +7,13 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import Jama.EigenvalueDecomposition;
-import Jama.Matrix;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 
 /*
 
@@ -17,22 +22,21 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
 
     Context context;
-    String message;
-    byte N = 8; //Block size
-    int finHeight = 480; //This could be useful to add in a constructor, DONE
-    int strength = 1;
-    TaskManager callerFragment;
-    double[] signatureR;
-    double[] signatureG;
-    double[] signatureB;
+    private String message;
+    private char[] key;
+    private byte N; //Block size
+    private int finHeight;
+    private double strength;
+    private TaskManager callerFragment;
 
     //We don't wont this to be called without a message specified.
     private MessageEncodingColor() {
     }
 
-    public MessageEncodingColor(TaskManager result, Context c, String message, byte blockSize, int cropSize, int strength) {
+    MessageEncodingColor(TaskManager result, Context c, String message, char[] key, byte blockSize, int cropSize, double strength) {
         context = c;
         this.message = message;
+        this.key = key;
         this.N = blockSize;
         this.strength = strength;
         callerFragment = result;
@@ -64,56 +68,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         }
 
 
-        //Getting X matrices
         int H = params[0].getHeight();
         int W = params[0].getWidth();
-
         int Nsqr = N * N;
-        byte[] xr = new byte[Nsqr];
-        byte[] xg = new byte[Nsqr];
-        byte[] xb = new byte[Nsqr];
-        double[][] autocorrelationR = new double[Nsqr][Nsqr];
-        double[][] autocorrelationG = new double[Nsqr][Nsqr];
-        double[][] autocorrelationB = new double[Nsqr][Nsqr];
 
-        for (int h = 0; h < H; h += N)  //Loop on image's rows (going down)
-        {
-            for (int w = 0; w < W; w += N)  //Loop on image's columns (from left to right for each row)
-            {
-                for (int a = 0; a < N; a++) //Loop on block's rows
-                {
-                    for (int b = 0; b < N; b++) //Loop on block's columns
-                    {
-                        xr[a * N + b] = (byte) Color.red(params[0].getPixel(w + b, h + a));
-                        xg[a * N + b] = (byte) Color.green(params[0].getPixel(w + b, h + a));
-                        xb[a * N + b] = (byte) Color.blue(params[0].getPixel(w + b, h + a));
-                    }
-                }
-                for (int j = 0; j < Nsqr; j++) {
-                    for (int k = 0; k < Nsqr; k++) {
-                        autocorrelationR[j][k] += xr[k] * xr[j];
-                        autocorrelationG[j][k] += xg[k] * xg[j];
-                        autocorrelationB[j][k] += xb[k] * xb[j];
-                    }
-                }
-            }
-            publishProgress((int) ((h / (double) H) * 65));
-        }
-
-        signatureR = GetSignatureVector(autocorrelationR);
-        publishProgress(70);
-        signatureG = GetSignatureVector(autocorrelationG);
-        publishProgress(75);
-        signatureB = GetSignatureVector(autocorrelationB);
-        publishProgress(80);
-        //Giving a push to the garbage collector
-        autocorrelationR = null;
-        autocorrelationG = null;
-        autocorrelationB = null;
-        xr = null;
-        xg = null;
-        xb = null;
-        Log.v(TAG, "Created autocorrelation matrices and signature vectors.");
+        byte[] signature = HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
+        Log.v(TAG, "Signature length: " + signature.length);
+        Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
 
         /*
         Encoding message here, the logic is to use all planes consequently following RGB order.
@@ -126,6 +87,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         for (int k = 0; k < message.length(); k++) {
             c[k] = message.charAt(k);
         }
+        // TODO remove this for and understand consequences
         for (int k = message.length(); k < c.length; k++) {
             c[k] = '\0';
         }
@@ -150,10 +112,12 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
             if (p % 3 == 0) {
                 //Applying the bit to the block
-                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signature[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+
+                        //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -164,10 +128,10 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                     }
                 }
             } else if (p % 3 == 1) {   //Applying the bit to the block
-                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signature[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -179,10 +143,10 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 }
             } else //p % 3 == 2
             {   //Applying the bit to the block
-                for (int a = 0; a < N; a++) {   //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
+                for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signature[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -201,7 +165,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 }
             }
 
-            publishProgress((int) ((p / (double) P) * 20) + 80);
+            publishProgress((int) ((p / (double) P) * 100));
         }
 
         return mutableBitmap;
@@ -224,7 +188,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPostExecute(Bitmap bitmap) {
         super.onPostExecute(bitmap);
 
-        callerFragment.onTaskCompleted(bitmap, signatureR, signatureG, signatureB);
+        callerFragment.onTaskCompleted(bitmap);
     }
 
 
@@ -255,39 +219,15 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     }
 
 
-    //Reference http://math.nist.gov/javanumerics/jama/
-    /*
-        This gets a N x N matrix, calculates eigenvalues
-        and eigenvectors, selects the smallest eigenvalue
-        and returns the corresponding eigenvector.
-     */
-    private double[] GetSignatureVector(double[][] matrix) {   //It's a N x N matrix
-        int N = matrix.length;
-
-        Matrix A = new Matrix(matrix);
-        A = A.transpose().times(A);
-
-        // compute the spectral decomposition
-        EigenvalueDecomposition e = A.eig();
-        Matrix V = e.getV();    //<-- Eigenvalues
-        Matrix D = e.getD();    //<-- Eigenvectors
-
-        //Select the smallest eigenvalue and return the corresponding eigenvector
-        int smallestI = 0;
-        double smallest = D.get(0, 0);
-        for (int k = 1; k < N; k++) {
-            if (D.get(k, k) < smallest) {
-                smallest = D.get(k, k);
-                smallestI = k;
-            }
+    // Hash key, from string to array of bytes
+    private byte[] HashKey(final char[] password, final byte[] salt, final int iterations, final int keyLength) {
+        try {
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
+            SecretKey key = skf.generateSecret(spec);
+            return key.getEncoded();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
         }
-
-        //Copy into a one dimensional array
-        double[][] temp = V.getArray();
-        double[] result = new double[N];
-        for (int n = 0; n < N; n++)
-            result[n] = temp[n][smallestI];
-
-        return result;
     }
 }

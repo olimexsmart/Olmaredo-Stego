@@ -69,5 +69,7 @@ The work is completely open source, you can find the source code following the l
     <string name="decSelect">Select image</string>
     <string name="decSelectBig">Image</string>
     <string name="paste">Paste key</string>
+    <string name="tvKeyHint">Create a key</string>
+    <string name="tvMessageHint">Enter text to hide</string>
 
 </resources>

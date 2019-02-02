@@ -29,7 +29,6 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 	//This data is used to communicate between tabs
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
-    public boolean inColor = SettingsFragment.DEFAULT_ON_COLOR;
 
 
     @Override
@@ -71,7 +70,6 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         if (savedInstanceState != null) {
             BlockSize = savedInstanceState.getInt(bundleBlockSize);
             CropSize = savedInstanceState.getInt(bundleCropSize);
-            inColor = savedInstanceState.getBoolean(bundleInColor);
             Log.v(TAG, "Start Activity restored.");
         } else {
             Log.v(TAG, "Start Activity NOT restored.");
@@ -85,7 +83,6 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(bundleBlockSize, BlockSize);
         outState.putInt(bundleCropSize, CropSize);
-        outState.putBoolean(bundleInColor, inColor);
         super.onSaveInstanceState(outState);
     }
     
@@ -93,6 +90,5 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     public void UpdateSettings(int blockSize, int cropSize, boolean color) {
         BlockSize = blockSize;
         CropSize = cropSize;
-        inColor = color;
     }
 }

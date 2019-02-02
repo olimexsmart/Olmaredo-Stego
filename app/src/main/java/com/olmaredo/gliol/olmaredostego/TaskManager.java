@@ -18,7 +18,6 @@ public interface TaskManager {
 
     void onTaskProgress(int progress);
 
-    void onTaskCompleted(Bitmap bm, double[] signature);
-    void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB);
+    void onTaskCompleted(Bitmap bm);
     void onTaskCompleted(String message);
 }

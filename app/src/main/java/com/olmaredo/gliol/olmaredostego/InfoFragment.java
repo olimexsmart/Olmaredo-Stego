@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 public class InfoFragment extends Fragment {
 
-    TextView info;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.info, container, false);
@@ -22,7 +21,7 @@ public class InfoFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        info = (TextView) view.findViewById(R.id.textView3);
+        TextView info = view.findViewById(R.id.textView3);
         info.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

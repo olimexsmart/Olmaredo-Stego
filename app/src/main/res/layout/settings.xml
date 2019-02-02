@@ -80,9 +80,10 @@
             android:id="@+id/btSettings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView4"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="40dp"
+            android:layout_below="@+id/view2"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="144dp"
+            android:layout_marginTop="1dp"
             android:text="@string/buttonSaveSetting" />
 
         <View
@@ -94,39 +95,6 @@
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"
             android:background="@android:color/darker_gray" />
-
-        <Switch
-            android:id="@+id/sColor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/view2"
-            android:layout_alignRight="@+id/view2"
-            android:layout_below="@+id/view2"
-            android:layout_centerVertical="true"
-            android:layout_marginTop="20dp"
-            android:text="" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/view2"
-            android:layout_alignStart="@+id/view2"
-            android:layout_alignTop="@+id/sColor"
-            android:text="@string/calorOnOff"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/textView2"
-            android:layout_alignStart="@+id/textView2"
-            android:layout_below="@+id/textView2"
-            android:layout_marginRight="80dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/colorDescription"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <RadioGroup
             android:id="@id/rgSignatureSource"

@@ -15,9 +15,11 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,11 +43,9 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 /*
     TODO allow something more then mere ASCII chars, è in example
@@ -56,53 +56,38 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //Random numbers to match requests
     private static final int CAMERA_REQUEST_CODE = 4444;
     private static final int PERMISSION_CODE = 14;
-    private static final int DEFAULT_EMBEDDING_POWER = 20;
+    private static final int DEFAULT_EMBEDDING_POWER = 5;
     //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
-    private static final String bundleSignBW = "bSBW";
-    private static final String bundleSignR = "bSR";
-    private static final String bundleSignG = "bSG";
-    private static final String bundleSignB = "bSB";
     private static final String bundleEmbedPow = "bEP";
     private static final String bundleNameText = "bNT";
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
-    private static final String bundleKeySignature = "bKS";
 
 
-    Button photo;   //Pick photo button handler
-    Button encode;  //Encode button
-    Button pickFile;    //To open text file from file manager
-    Button copySignature; //Put in the clipboard the signature used
-    ImageView preview;  //Preview the image selected
-    TextView signaturePreview;  //Shows part of the signature helping acknowledge successful encoding
-    EditText inputText; //Box to type the hidden text manually
-    SeekBar seekPower;  //Cursor that selects the embedding power
-    TextView percentageText; //Shows the embedding power strength
+    private Button encode;  //Encode button
+    private Button copySignature; //Put in the clipboard the signature used
+    private ImageView preview;  //Preview the image selected
+    private EditText inputText; //Box to type the hidden text manually
+    private TextView percentageText; //Shows the embedding power strength
+    private EditText keyField; // Enter encoding key
 
-    String fileNameOriginal;    //Name of the original photo file
-    String fileNameText;    //Hold the path of the input text file
-    String inputString = "not from file";   //Input text, also used in logic flux
-    String keySignature = ""; //Holds the image signature after encoding
-    Uri outputFileUri = null; //Camera output file path, stupid URI thing
-    int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
+    private String fileNameOriginal;    //Name of the original photo file
+    private String fileNameText;    //Hold the path of the input text file
+    private String inputString = "not from file";   //Input text, also used in logic flux
+    private Uri outputFileUri = null; //Camera output file path, stupid URI thing
+    private int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
 
     //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
-    EncodeFragment thisthis;
-
-    //Here structures to hold the various types of signatures
-    double[] signBlackWhite;
-    double[] signR;
-    double[] signG;
-    double[] signB;
+    private EncodeFragment thisthis;
 
     //All it needs to manage destruction and creation of the ProgressDialog
-    ProgressDialog progressDialog;
-    int taskProgress;
-    String taskType;
-    boolean wasTaskRunning = false;
+    private ProgressDialog progressDialog;
+    private int taskProgress;
+    private String taskType;
+    private boolean wasTaskRunning = false;
 
     //In order to have smoothest transition possible, immediately create the new Dialog
     @Override
@@ -128,15 +113,18 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
         thisthis = this; //this
         //Interface link to XML
-        photo = (Button) view.findViewById(R.id.btPhotoEncode);
-        encode = (Button) view.findViewById(R.id.btEncode);
-        preview = (ImageView) view.findViewById(R.id.imPreview);
-        pickFile = (Button) view.findViewById(R.id.btPickFile);
-        inputText = (EditText) view.findViewById(R.id.etMessage);
-        seekPower = (SeekBar) view.findViewById(R.id.sbEmbeddingPower);
-        percentageText = (TextView) view.findViewById(R.id.tvSeekBar);
-        copySignature = (Button) view.findViewById(R.id.copySignature);
-        signaturePreview = (TextView) view.findViewById(R.id.twSignature);
+        //Pick photo button handler
+        Button photo = view.findViewById(R.id.btPhotoEncode);
+        encode = view.findViewById(R.id.btEncode);
+        preview = view.findViewById(R.id.imPreview);
+        //To open text file from file manager
+        Button pickFile = view.findViewById(R.id.btPickFile);
+        inputText = view.findViewById(R.id.etMessage);
+        //Cursor that selects the embedding power
+        SeekBar seekPower = view.findViewById(R.id.sbEmbeddingPower);
+        percentageText = view.findViewById(R.id.tvSeekBar);
+        copySignature = view.findViewById(R.id.copySignature);
+        keyField = view.findViewById(R.id.etKey);
         //Some GUI changes
         seekPower.setProgress(embeddingPower);
         percentageText.setText("" + embeddingPower + "%");
@@ -167,25 +155,12 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     encode.setEnabled(true);
             }
 
-            if (savedInstanceState.containsKey(bundleSignBW))
-                signBlackWhite = savedInstanceState.getDoubleArray(bundleSignBW);
-            if (savedInstanceState.containsKey(bundleSignR))
-                signR = savedInstanceState.getDoubleArray(bundleSignR);
-            if (savedInstanceState.containsKey(bundleSignG))
-                signG = savedInstanceState.getDoubleArray(bundleSignG);
-            if (savedInstanceState.containsKey(bundleSignB))
-                signB = savedInstanceState.getDoubleArray(bundleSignB);
 
             if (savedInstanceState.containsKey(bundleTaskProgress))
                 taskProgress = savedInstanceState.getInt(bundleTaskProgress);
             if (savedInstanceState.containsKey(bundleTaskType))
                 taskType = savedInstanceState.getString(bundleTaskType);
 
-            if (savedInstanceState.containsKey(bundleKeySignature)) {
-                keySignature = savedInstanceState.getString(bundleKeySignature);
-                signaturePreview.setText(keySignature);
-                copySignature.setEnabled(true);
-            }
             Log.v(TAG, "Activity restored.");
         } else {
             fileNameOriginal = "nothing here";
@@ -211,6 +186,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
         });
 
+        //TODO complitely rethink flow of input file and edit text string
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -256,7 +232,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             @Override
             public void afterTextChanged(Editable s) {
                 //Basically if there if some text somewhere, from GUI or from file
-                if (inputText.getText().length() > 0 && inputString.length() > 0) {
+                if (inputText.getText().length() > 0 || inputString.length() > 0) {
                     encode.setEnabled(true);
                 } else
                     encode.setEnabled(false);
@@ -287,21 +263,26 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     StartActivity activity = (StartActivity) getActivity();
                     int blockSizeSaved = activity.BlockSize;
                     int cropSizeSaved = activity.CropSize;
-                    //TODO this needs to be addressed, there is already a todo somewhere
-                    if (inputText.getText().length() > 0)
+                    // Checking consistency of input data
+                    if (inputText.getText().length() > 0 || inputString.length() > 0)
                         inputString = inputText.getText().toString();
+                    else {
+                        Toast.makeText(getContext(), "Enter some text to hide", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (keyField.getText().length() < 4) {
+                        Toast.makeText(getContext(), "Enter key at least 4 characters long", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Log.v(TAG, "Entered key: " + keyField.getText());
                     //Strip all non ASCII characters
                     inputString = inputString.replaceAll("[^\\x20-\\x7e]", "");
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
 
-                    if (activity.inColor) {
-                        MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEncodingColor.execute(ReadImage());
-                    } else {
-                        MessageEncoding messageEncoding = new MessageEncoding(thisthis, getContext(), inputString, (byte) blockSizeSaved, cropSizeSaved, embeddingPower);
-                        messageEncoding.execute(ReadImage());
-                    }
+                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double)embeddingPower / 100.0f);
+                    messageEncodingColor.execute(ReadImage());
+
                 } else {
                     //Geeez
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
@@ -314,8 +295,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
             @Override
             public void onClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("nothing", signaturePreview.getText().toString());
-                clipboard.setPrimaryClip(clip);
+                //ClipData clip = ClipData.newPlainText("nothing", signaturePreview.getText().toString());
+                //clipboard.setPrimaryClip(clip);
                 Toast.makeText(getContext(), "Signature copied in the clipboard", Toast.LENGTH_SHORT).show();
             }
         });
@@ -340,20 +321,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
         if (outputFileUri != null)
             outState.putString(bundleUri, outputFileUri.toString());
-        if (signBlackWhite != null)
-            outState.putDoubleArray(bundleSignBW, signBlackWhite);
-        if (signR != null)
-            outState.putDoubleArray(bundleSignR, signR);
-        if (signG != null)
-            outState.putDoubleArray(bundleSignG, signG);
-        if (signB != null)
-            outState.putDoubleArray(bundleSignB, signB);
         if (wasTaskRunning) {
             outState.putInt(bundleTaskProgress, taskProgress);
             outState.putString(bundleTaskType, taskType);
         }
-        if (keySignature.length() > 0)
-            outState.putString(bundleKeySignature, keySignature);
 
         super.onSaveInstanceState(outState);
     }
@@ -368,29 +339,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             return false;
         } else
             return true;
-    }
-
-    //Converts a double array into a string, rounding to 4 decimal digits and saving the sign
-    private String SignatureToString(double[] signature) {
-        double z;
-        String key = "";
-        Random caos = new Random(); //Just to confuse things a little bit
-
-        for (double ev : signature) {
-            z = Math.floor(ev * 10000); //Save only first 4 digits
-            if (z > 0) //If positive, insert a number
-                key += caos.nextInt(10);
-            else //Else negative, insert an Uppercase letter
-                key += (char) (caos.nextInt(91 - 65) + 65); //Produces only numbers between 65 and 90, ASCII for uppercase letters
-
-            z = Math.abs(z);
-            //This is a positional encoding
-            key += (int) z % 10;
-            key += ((int) z / 10) % 10;
-            key += ((int) z / 100) % 10;
-            key += ((int) z / 1000) % 10;
-        }
-        return key;
     }
 
     //Returning from the camera app or the gallery
@@ -597,55 +545,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
         taskProgress = progress;
     }
 
-    //This takes the modified photo and saves it
-    @Override //BLACK AND WHITE
-    public void onTaskCompleted(Bitmap bm, double[] signature) {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
-        wasTaskRunning = false;
-        setRetainInstance(false);
-
-        if (CheckPermissions()) {
-            copySignature.setEnabled(true);
-
-            signBlackWhite = signature;
-
-            String key = "";
-            key += SignatureToString(signBlackWhite);
-            keySignature = key;
-            signaturePreview.setText(key);
-
-            FileOutputStream out = null;
-            String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
-            String fileNameResult = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-result-blackwhite.png";
-            try {
-                out = new FileOutputStream(fileNameResult);
-                bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                File f = new File(fileNameResult);
-                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f))); //Scan files to update gallery
-                // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (FileNotFoundException e) {
-                Log.v(TAG, "Invalid saving path.");
-            } catch (NullPointerException e) {
-                Log.v(TAG, "The embedding result is null.");
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } //else {
-//            Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-//        }
-    }
 
     //This takes the modified photo and saves it
     @Override //COLOR
-    public void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+    public void onTaskCompleted(Bitmap bm) {
 
         if (progressDialog != null) {
             progressDialog.dismiss();
@@ -655,17 +558,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
         if (CheckPermissions()) {
             copySignature.setEnabled(true);
-
-            signR = signatureR;
-            signG = signatureG;
-            signB = signatureB;
-
-            String key = "";
-            key += SignatureToString(signR);
-            key += SignatureToString(signG);
-            key += SignatureToString(signB);
-            keySignature = key;
-            signaturePreview.setText(key);
 
             FileOutputStream out = null;
             String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());

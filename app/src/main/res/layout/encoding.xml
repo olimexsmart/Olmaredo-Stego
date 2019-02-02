@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:descendantFocusability="beforeDescendants"
@@ -14,7 +14,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:text="@string/encSelectBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvLargeSelect"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:text="@string/encSelect" />
 
@@ -36,7 +36,7 @@
             android:layout_below="@+id/tvSelect"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="5dp"
-            android:drawableLeft="@drawable/browse"
+            android:drawableStart="@drawable/browse"
             android:text="@string/select" />
 
         <ImageView
@@ -46,8 +46,8 @@
             android:layout_below="@+id/btPhotoEncode"
             android:layout_centerHorizontal="true"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
             android:layout_marginTop="5dp"
+            android:layout_marginRight="20dp"
             android:adjustViewBounds="true" />
 
         <View
@@ -57,7 +57,7 @@
             android:layout_alignLeft="@+id/imPreview"
             android:layout_alignStart="@+id/imPreview"
             android:layout_below="@+id/imPreview"
-            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginTop="20dp"
             android:background="@android:color/darker_gray" />
 
@@ -66,7 +66,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/riga1"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:text="@string/encMessageBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -76,7 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvLargeMessage"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:text="@string/enterMessage" />
 
@@ -86,9 +86,11 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvMessage"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
             android:layout_marginTop="0dp"
+            android:layout_marginRight="10dp"
             android:ems="10"
+            android:hint="@string/tvMessageHint"
+            android:inputType="text"
             android:singleLine="true" />
 
         <TextView
@@ -96,7 +98,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/etMessage"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:text="@string/encOpenFile" />
 
@@ -109,7 +111,7 @@
             android:layout_below="@+id/tvMessageFile"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="0dp"
-            android:drawableLeft="@drawable/browse"
+            android:drawableStart="@drawable/browse"
             android:text="@string/pickFile" />
 
         <View
@@ -119,7 +121,7 @@
             android:layout_alignLeft="@+id/btPickFile"
             android:layout_alignStart="@+id/btPickFile"
             android:layout_below="@+id/btPickFile"
-            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginTop="20dp"
             android:background="@android:color/darker_gray" />
 
@@ -128,7 +130,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/riga2"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:text="@string/encIntensity"
             android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -138,7 +140,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvLargeIntensity"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:text="@string/intensity" />
 
@@ -149,7 +151,7 @@
             android:layout_alignLeft="@+id/tvIntensity"
             android:layout_alignStart="@+id/tvIntensity"
             android:layout_below="@+id/tvIntensity"
-            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginTop="5dp"
             android:layout_toLeftOf="@+id/tvSeekBar"
             android:layout_toStartOf="@+id/tvSeekBar" />
@@ -167,11 +169,13 @@
             android:id="@+id/btEncode"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/sbEmbeddingPower"
+            android:layout_below="@+id/etKey"
             android:layout_alignStart="@+id/sbEmbeddingPower"
-            android:layout_below="@+id/sbEmbeddingPower"
+            android:layout_alignLeft="@+id/sbEmbeddingPower"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
+            android:layout_marginStart="83dp"
+            android:layout_marginLeft="83dp"
+            android:layout_marginTop="14dp"
             android:enabled="false"
             android:text="@string/encode" />
 
@@ -179,23 +183,27 @@
             android:id="@+id/copySignature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/btEncode"
             android:layout_alignEnd="@+id/etMessage"
             android:layout_alignRight="@+id/etMessage"
-            android:layout_below="@+id/btEncode"
+            android:layout_marginTop="-110dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
             android:enabled="false"
             android:text="@string/clipboard" />
 
-        <TextView
-            android:id="@+id/twSignature"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/etKey"
+            android:layout_width="274dp"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/copySignature"
-            android:layout_alignLeft="@+id/sbEmbeddingPower"
-            android:layout_alignStart="@+id/sbEmbeddingPower"
-            android:layout_below="@+id/btEncode"
-            android:layout_toLeftOf="@+id/copySignature"
-            android:text=""
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:layout_below="@+id/sbEmbeddingPower"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="13dp"
+            android:layout_toStartOf="@+id/copySignature"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/tvKeyHint"
+            android:inputType="text" />
 
 
     </RelativeLayout>

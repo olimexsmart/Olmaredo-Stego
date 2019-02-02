@@ -11,9 +11,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,25 +50,22 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskType = "bTT";
     private static final String bundleResultText = "bRT";
 
-    //GUI objects
-    Button photo;
-    ImageView preview;
-    EditText keySignature;
-    Button decode;
-    TextView result;
-    Button toClipboard;
-    Button pasteKey;
+    private ImageView preview;
+    private EditText keySignature;
+    private Button decode;
+    private TextView result;
+    private Button toClipboard;
 
-    DecodeFragment thisthis; //Holt eference of this fragment where "this" keyword isn't enough
-    String fileNameOriginal; //Holds the absolute path of the photo opened
-    String resultText = ""; //Result of decoding
-    Uri outputFileUri = null; //When returning from the gallery this is the result given
+    private DecodeFragment thisthis; //Holt eference of this fragment where "this" keyword isn't enough
+    private String fileNameOriginal; //Holds the absolute path of the photo opened
+    private String resultText = ""; //Result of decoding
+    private Uri outputFileUri = null; //When returning from the gallery this is the result given
 
     //All it needs to manage PrograssDialog of an asyncTask via interface
-    ProgressDialog progressDialog;
-    int taskProgress;
-    String taskType;
-    boolean wasTaskRunning = false;
+    private ProgressDialog progressDialog;
+    private int taskProgress;
+    private String taskType;
+    private boolean wasTaskRunning = false;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -90,13 +89,14 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
         thisthis = this; //this
         //Interface link to XML
-        photo = (Button) view.findViewById(R.id.btBrowseDecode);
-        preview = (ImageView) view.findViewById(R.id.ivPreview);
-        keySignature = (EditText) view.findViewById(R.id.etCustom);
-        decode = (Button) view.findViewById(R.id.btDecode);
-        result = (TextView) view.findViewById(R.id.twShowResult);
-        toClipboard = (Button) view.findViewById(R.id.btClipboardText);
-        pasteKey = (Button) view.findViewById(R.id.btPaste);
+        //GUI objects
+        Button photo = view.findViewById(R.id.btBrowseDecode);
+        preview = view.findViewById(R.id.ivPreview);
+        keySignature = view.findViewById(R.id.etCustom);
+        decode = view.findViewById(R.id.btDecode);
+        result = view.findViewById(R.id.twShowResult);
+        toClipboard = view.findViewById(R.id.btClipboardText);
+        Button pasteKey = view.findViewById(R.id.btPaste);
 
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but doesn't know generally
@@ -140,7 +140,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
         });
 
-        //Starte decoding process
+        //Start decoding process
         decode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,44 +148,15 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 //First thing to do is check if the file is valid
                 if (new File(fileNameOriginal).exists()) {
                     StartActivity activity = (StartActivity) getActivity();
-                    int blockSize = activity.BlockSize; //Not needed but makes the code more readable
                     String customKey = keySignature.getText().toString(); //Get the signature from the GUI
 
-                    if (activity.inColor) {
-                        double[] signR;
-                        double[] signG;
-                        double[] signB;
-                        //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
-                        //But since we are in color mode, we are expecting the same thing three times
-                        if (customKey.length() == blockSize * blockSize * 15) { //960 on standard blocksize, quite a lot
-                            Toast.makeText(getContext(), "Key is valid", Toast.LENGTH_SHORT).show();
-                            //Dividing the string into the respective signature
-                            signR = StringToSignature(customKey.substring(0, blockSize * blockSize * 5));
-                            signG = StringToSignature(customKey.substring(blockSize * blockSize * 5, blockSize * blockSize * 10));
-                            signB = StringToSignature(customKey.substring(blockSize * blockSize * 10, blockSize * blockSize * 15));
+                    if (customKey.length() > 0) {
+                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), customKey.toCharArray(), (byte)activity.BlockSize);
+                        messageDecodingColor.execute(ReadImage());
 
-                            MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), signR, signG, signB);
-                            messageDecodingColor.execute(ReadImage());
-
-                            toClipboard.setEnabled(true); //Make possible copying the text elsewhere
-                        } else { //Ask for another
-                            Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
-                        }
-
-                    } else { //In black and white
-                        //If there is written something and is coherent with the necessary signature, keep in mind that every number takes 5 characters
-                        double[] signatureBW;
-                        if (customKey.length() == blockSize * blockSize * 5) {
-                            Toast.makeText(getContext(), "Key is valid", Toast.LENGTH_SHORT).show();
-
-                            signatureBW = StringToSignature(customKey);
-                            MessageDecoding messageDecoding = new MessageDecoding(getContext(), signatureBW, thisthis);
-                            messageDecoding.execute(ReadImage());
-
-                            toClipboard.setEnabled(true); //Make possible copying the text elsewhere
-                        } else { //Get the default one
-                            Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
-                        }
+                        toClipboard.setEnabled(true); //Make possible copying the text elsewhere
+                    } else { //Ask for another
+                        Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
                     }
                 } else {
                     //Dai belin
@@ -421,13 +392,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
         taskProgress = progress;
     }
 
-    @Override
-    public void onTaskCompleted(Bitmap bm, double[] signature) {
-        //Nothing to do here
-    }
 
     @Override
-    public void onTaskCompleted(Bitmap bm, double[] signatureR, double[] signatureG, double[] signatureB) {
+    public void onTaskCompleted(Bitmap bm) {
         //Nothing to do here
     }
 
