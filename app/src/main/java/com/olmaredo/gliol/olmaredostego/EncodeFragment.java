@@ -265,9 +265,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     int blockSizeSaved = activity.BlockSize;
                     int cropSizeSaved = activity.CropSize;
                     // Checking consistency of input data
-                    if (inputText.getText().length() > 0 || inputString.length() > 0)
+                    if (inputText.getText().length() > 0)
                         inputString = inputText.getText().toString();
-                    else {
+                    else if (!(inputString.length() > 0)) {
                         Toast.makeText(getContext(), "Enter some text to hide", Toast.LENGTH_SHORT).show();
                         return;
                     }

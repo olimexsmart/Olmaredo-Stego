@@ -65,7 +65,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     }
                 }
             }
-            publishProgress((int)((h / (double)H) * 70));
+            publishProgress((int) ((h / (double) H) * 70));
         }
 
         Log.v(TAG, "Created Y matrices.");
@@ -114,7 +114,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     c |= (1 << (i % 8));
 
             }
-            publishProgress((int)((i / (double)I) * 30) + 70);
+            publishProgress((int) ((i / (double) I) * 30) + 70);
         }
 
         publishProgress(100);
@@ -146,7 +146,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private boolean GetSign(byte[] signature, char[] block) {
         double buffer = 0;
         for (int i = 0; i < signature.length; i++) {
-            buffer += (double)signature[i] * block[i] / SCALE;
+            buffer += (double) signature[i] * block[i] / SCALE;
         }
 
         return buffer > 0;
