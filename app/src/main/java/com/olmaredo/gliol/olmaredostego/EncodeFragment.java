@@ -56,7 +56,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //Random numbers to match requests
     private static final int CAMERA_REQUEST_CODE = 4444;
     private static final int PERMISSION_CODE = 14;
-    private static final int DEFAULT_EMBEDDING_POWER = 5;
+    private static final int DEFAULT_EMBEDDING_POWER = 20;
     //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
@@ -65,6 +65,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
+    private static final double SCALE = 100.0f;
 
 
     private Button encode;  //Encode button
@@ -280,7 +281,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
 
-                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double)embeddingPower / 100.0f);
+                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double)embeddingPower / SCALE);
                     messageEncodingColor.execute(ReadImage());
 
                 } else {

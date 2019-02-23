@@ -72,9 +72,11 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int W = params[0].getWidth();
         int Nsqr = N * N;
 
-        byte[] signature = HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
-        Log.v(TAG, "Signature length: " + signature.length);
-        Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
+        byte[] signatureR = HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureG = HashKey(key, "7777".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureB = HashKey(key, "9999".getBytes(), 10000, Nsqr * 8);
+        //Log.v(TAG, "Signature length: " + signature.length);
+        //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
 
         /*
         Encoding message here, the logic is to use all planes consequently following RGB order.
@@ -115,7 +117,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signature[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
 
                         //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                         if (e < 0) e = 0;
@@ -131,7 +133,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signature[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
@@ -146,7 +148,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signature[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 

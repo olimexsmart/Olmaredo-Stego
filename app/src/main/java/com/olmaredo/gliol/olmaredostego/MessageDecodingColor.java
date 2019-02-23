@@ -18,6 +18,7 @@ import javax.crypto.spec.PBEKeySpec;
 */
 public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
+    private static final double SCALE = 1000000.0f;
 
     Context context;
     private TaskManager callerFragment;
@@ -72,9 +73,11 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char[] buffer = new char[Xr.length]; //Used to copy one column
         char c = 0;
         int I = Xr[0].length * 3;
-        byte[] signature = HashKey(key, "4444".getBytes(), 10000, N * N * 8);
-        Log.v(TAG, "Signature length: " + signature.length);
-        Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
+        byte[] signatureR = HashKey(key, "4444".getBytes(), 10000, N * N * 8);
+        byte[] signatureG = HashKey(key, "7777".getBytes(), 10000, N * N * 8);
+        byte[] signatureB = HashKey(key, "9999".getBytes(), 10000, N * N * 8);
+        //Log.v(TAG, "Signature length: " + signature.length);
+        //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
 
         for (int i = 0; i < I; i++) {
             if (i % 8 == 0 && i != 0) //Every eight cycles save the char in the result
@@ -89,7 +92,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xr[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signature, buffer)) //If true set the bit to one
+                if (GetSign(signatureR, buffer)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             } else if (i % 3 == 1) {
@@ -98,7 +101,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xg[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signature, buffer)) //If true set the bit to one
+                if (GetSign(signatureG, buffer)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             } else {
@@ -107,7 +110,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
                     buffer[k] = Xb[k][i / 3];
 
                 //Here assembly each char, bit by bit
-                if (GetSign(signature, buffer)) //If true set the bit to one
+                if (GetSign(signatureB, buffer)) //If true set the bit to one
                     c |= (1 << (i % 8));
 
             }
@@ -143,7 +146,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private boolean GetSign(byte[] signature, char[] block) {
         double buffer = 0;
         for (int i = 0; i < signature.length; i++) {
-            buffer += (double)signature[i] * block[i];
+            buffer += (double)signature[i] * block[i] / SCALE;
         }
 
         return buffer > 0;
