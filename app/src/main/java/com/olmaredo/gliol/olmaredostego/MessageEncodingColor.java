@@ -9,10 +9,16 @@ import android.widget.Toast;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+
+import androidx.core.content.res.TypedArrayUtils;
 
 
 /*
@@ -59,40 +65,38 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         params[0] = ResizeNCrop(params[0], N, finHeight);
         Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
+
         //Checking how much information can contain the image
-
-        int maxLenght = (params[0].getHeight() * params[0].getWidth() * 3) / (N * N * 8);
-        if (message.length() >= maxLenght) {
-            message = message.substring(0, maxLenght - 1);
-            publishProgress(maxLenght + 1000); //To be sure is greater than 100
-        }
-
-
         int H = params[0].getHeight();
         int W = params[0].getWidth();
         int Nsqr = N * N;
+        int Wmax = W / N; //Number of blocks per row
+        int Hmax = H / N; //Number of blocks per row
+        int Nblocks = Hmax * Wmax;
 
+        int maxLength = (Nblocks * 3) / 8;
+        if (message.length() >= maxLength) {
+            message = message.substring(0, maxLength - 5);
+            publishProgress(maxLength + 1000); //To be sure is greater than 100
+        }
+
+        message += "\0\0\0\0\0"; // Hopefully one of these will make it through
+
+        // TODO This takes some time, try to reduce number of iterations
         byte[] signatureR = HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
         byte[] signatureG = HashKey(key, "7777".getBytes(), 10000, Nsqr * 8);
         byte[] signatureB = HashKey(key, "9999".getBytes(), 10000, Nsqr * 8);
-        //Log.v(TAG, "Signature length: " + signature.length);
-        //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
+        // TODO publish progress here
 
-        /*
-        Encoding message here, the logic is to use all planes consequently following RGB order.
-        So the first three bits are coded into the same block on different colors, the second block
-        on the three colors contains the next three bits and so on
-         */
-        int P = (H * W * 3) / Nsqr; //All the same dimensions, but this time we have three times the information
-        //Padding the message
-        char[] c = new char[P / 8 + 1]; //One bit per block: one byte every eight blocks times three colors, adding one for non perfect division
-        for (int k = 0; k < message.length(); k++) {
-            c[k] = message.charAt(k);
-        }
-        // TODO remove this for and understand consequences
-        for (int k = message.length(); k < c.length; k++) {
-            c[k] = '\0';
-        }
+
+        int ML = message.length();
+        int NblocksNeeded = ML * 8;
+        int NblocksRGB = NblocksNeeded / 3; // N blocks needed, RGB planes counting as one
+        int pos[] = RandomArrayNoRepetitions(NblocksRGB + 1, Nblocks, signatureR);
+        int posInd = 0;
+        int w = pos[0] % Wmax;
+        int h = pos[0] / Wmax;
+
 
         //Because immutable, you know
         Bitmap mutableBitmap = params[0].copy(Bitmap.Config.ARGB_8888, true);
@@ -100,15 +104,20 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int sign;
         byte byteCounter = 0;
         double e;
-        int Wmax = W / N; //Number of blocks per row
-        int w = 0;
-        int h = 0;
         int r, g, blu;
-        for (int p = 0; p < P; p++) { //Remember that the P stands for the number of bits to embed in the image
 
-            if ((c[p / 8] & 1 << byteCounter) == 0) sign = -1;
+        /*
+            Encoding message here, the logic is to use all planes consequently following RGB order.
+            So the first three bits are coded into the same block on different colors, the second block
+            on the three colors contains the next three bits and so on
+        */
+
+        for (int p = 0; p < NblocksNeeded; p++) { //Remember that the P stands for the number of bits to embed in the image
+
+            if ((message.charAt(p / 8) & 1 << byteCounter) == 0) sign = -1;
             else sign = 1;
             byteCounter++;
+            // TODO this should be equivalent to byteCounter %= 8;
             if (byteCounter == 8)
                 byteCounter = 0;
 
@@ -160,14 +169,19 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 }
 
                 //At the next p increment we will be again in the top if statement, we need to be in the next block
+                /*
                 w++; //Move one block left
                 if (w == Wmax) {
                     w = 0;
                     h++; //Move on row down
                 }
+                */
+                posInd++;
+                w = pos[posInd] % Wmax;
+                h = pos[posInd] / Wmax;
             }
 
-            publishProgress((int) ((p / (double) P) * 100));
+            publishProgress((int) ((p / (double) NblocksNeeded) * 100));
         }
 
         return mutableBitmap;
@@ -224,6 +238,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     // Hash key, from string to array of bytes
     private byte[] HashKey(final char[] password, final byte[] salt, final int iterations, final int keyLength) {
         try {
+            // TODO try out SHA512, should be available now
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
             SecretKey key = skf.generateSecret(spec);
@@ -231,5 +246,43 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // TODO consider moving these methods into a static public class
+    private int[] RandomArrayNoRepetitions(int numbersNeeded, int max, byte[] signature) {
+
+        long seed = fromBytesToLong(signature);
+
+        if (max < numbersNeeded) {
+            throw new IllegalArgumentException("Can't ask for more numbers than are available");
+        }
+
+        Random rng = new Random(seed); // Ideally just create one instance globally
+        // Note: use LinkedHashSet to maintain insertion order
+        Set<Integer> generated = new LinkedHashSet<Integer>();
+        while (generated.size() < numbersNeeded) {
+            Integer next = rng.nextInt(max);
+            // As we're adding to a set, this will automatically do a containment check
+            generated.add(next);
+        }
+
+        // Conversion to int array, not ideal but it simplifies not using iterators at the upper level
+        // Possibly stupid and wasteful
+        int[] retArray = new int[generated.size()];
+        int i = 0;
+        Iterator<Integer> it = generated.iterator();
+        while(it.hasNext()){
+            retArray[i] = it.next();
+            i++;
+        }
+        return retArray;
+    }
+
+    private long fromBytesToLong(final byte[] b){
+        long value = 0;
+        for (int i = 0; i < b.length; i++) {
+            value += ((long) b[i] & 0xffL) << (8 * i);
+        }
+        return value;
     }
 }

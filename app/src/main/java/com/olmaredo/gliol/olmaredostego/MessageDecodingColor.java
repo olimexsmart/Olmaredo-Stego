@@ -8,6 +8,10 @@ import android.util.Log;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -162,5 +166,42 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private int[] RandomArrayNoRepetitions(int numbersNeeded, int max, byte[] signature) {
+
+        long seed = fromBytesToLong(signature);
+
+        if (max < numbersNeeded) {
+            throw new IllegalArgumentException("Can't ask for more numbers than are available");
+        }
+
+        Random rng = new Random(seed); // Ideally just create one instance globally
+        // Note: use LinkedHashSet to maintain insertion order
+        Set<Integer> generated = new LinkedHashSet<Integer>();
+        while (generated.size() < numbersNeeded) {
+            Integer next = rng.nextInt(max);
+            // As we're adding to a set, this will automatically do a containment check
+            generated.add(next);
+        }
+
+        // Conversion to int array, not ideal but it simplifies not using iterators at the upper level
+        // Possibly stupid and wasteful
+        int[] retArray = new int[generated.size()];
+        int i = 0;
+        Iterator<Integer> it = generated.iterator();
+        while(it.hasNext()){
+            retArray[i] = it.next();
+            i++;
+        }
+        return retArray;
+    }
+
+    private long fromBytesToLong(final byte[] b){
+        long value = 0;
+        for (int i = 0; i < b.length; i++) {
+            value += ((long) b[i] & 0xffL) << (8 * i);
+        }
+        return value;
     }
 }

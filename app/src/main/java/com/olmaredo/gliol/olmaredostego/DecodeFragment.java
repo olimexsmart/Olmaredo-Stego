@@ -56,12 +56,12 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private TextView result;
     private Button toClipboard;
 
-    private DecodeFragment thisthis; //Holt eference of this fragment where "this" keyword isn't enough
+    private DecodeFragment thisthis; //Holds reference of this fragment where "this" keyword isn't enough
     private String fileNameOriginal; //Holds the absolute path of the photo opened
     private String resultText = ""; //Result of decoding
     private Uri outputFileUri = null; //When returning from the gallery this is the result given
 
-    //All it needs to manage PrograssDialog of an asyncTask via interface
+    //All it needs to manage ProgressDialog of an asyncTask via interface
     private ProgressDialog progressDialog;
     private int taskProgress;
     private String taskType;

@@ -131,7 +131,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         percentageText.setText("" + embeddingPower + "%");
 
         //All this if statement basically takes the saved instance and resumes the activity status
-        //Generally after a screen rotation, but doesn't know generally
+        //Generally after a screen rotation, but it is not known generally
         if (savedInstanceState != null) {
             boolean readyToEncode = false; //Determine when restoring the activity if there is all the necessary to start encoding
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
@@ -148,6 +148,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 }
             }
 
+            // TODO simply save the instance of the file and the name file instead of reading it again
             if (new File(fileNameText).exists()) {
                 inputString = ReadTextFile(fileNameText);
                 inputText.setHint(new File(fileNameText).getName() + " correctly opened.");
@@ -188,6 +189,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         });
 
         //TODO complitely rethink flow of input file and edit text string
+        // TODO Use system file picker instead
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
             @Override
