@@ -77,9 +77,9 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char[] buffer = new char[Xr.length]; //Used to copy one column
         char c = 0;
         int I = Xr[0].length * 3;
-        byte[] signatureR = HashKey(key, "4444".getBytes(), 10000, N * N * 8);
-        byte[] signatureG = HashKey(key, "7777".getBytes(), 10000, N * N * 8);
-        byte[] signatureB = HashKey(key, "9999".getBytes(), 10000, N * N * 8);
+        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, N * N * 8);
+        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, N * N * 8);
+        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, N * N * 8);
         //Log.v(TAG, "Signature length: " + signature.length);
         //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
 
@@ -154,54 +154,5 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         }
 
         return buffer > 0;
-    }
-
-    // Hash key, from string to array of bytes
-    private byte[] HashKey(final char[] password, final byte[] salt, final int iterations, final int keyLength) {
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
-            SecretKey key = skf.generateSecret(spec);
-            return key.getEncoded();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private int[] RandomArrayNoRepetitions(int numbersNeeded, int max, byte[] signature) {
-
-        long seed = fromBytesToLong(signature);
-
-        if (max < numbersNeeded) {
-            throw new IllegalArgumentException("Can't ask for more numbers than are available");
-        }
-
-        Random rng = new Random(seed); // Ideally just create one instance globally
-        // Note: use LinkedHashSet to maintain insertion order
-        Set<Integer> generated = new LinkedHashSet<Integer>();
-        while (generated.size() < numbersNeeded) {
-            Integer next = rng.nextInt(max);
-            // As we're adding to a set, this will automatically do a containment check
-            generated.add(next);
-        }
-
-        // Conversion to int array, not ideal but it simplifies not using iterators at the upper level
-        // Possibly stupid and wasteful
-        int[] retArray = new int[generated.size()];
-        int i = 0;
-        Iterator<Integer> it = generated.iterator();
-        while(it.hasNext()){
-            retArray[i] = it.next();
-            i++;
-        }
-        return retArray;
-    }
-
-    private long fromBytesToLong(final byte[] b){
-        long value = 0;
-        for (int i = 0; i < b.length; i++) {
-            value += ((long) b[i] & 0xffL) << (8 * i);
-        }
-        return value;
     }
 }

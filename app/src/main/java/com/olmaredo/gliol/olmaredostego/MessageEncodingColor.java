@@ -7,18 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Random;
-import java.util.Set;
 
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-
-import androidx.core.content.res.TypedArrayUtils;
 
 
 /*
@@ -26,6 +15,7 @@ import androidx.core.content.res.TypedArrayUtils;
  */
 public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
+    private final int ITERATIONS = 10000;
 
     Context context;
     private String message;
@@ -63,7 +53,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     @Override
     protected Bitmap doInBackground(Bitmap... params) {
 
-        params[0] = ResizeNCrop(params[0], N, finHeight);
+        params[0] = OlmaredoUtil.ResizeNCrop(params[0], N, finHeight);
         Log.v(TAG, "Image resized: " + params[0].getHeight() + " " + params[0].getWidth());
 
         //Checking how much information can contain the image
@@ -83,16 +73,16 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         message += "\0\0\0\0\0"; // Hopefully one of these will make it through
 
         // TODO This takes some time, try to reduce number of iterations
-        byte[] signatureR = HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
-        byte[] signatureG = HashKey(key, "7777".getBytes(), 10000, Nsqr * 8);
-        byte[] signatureB = HashKey(key, "9999".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
         // TODO publish progress here
 
 
         int ML = message.length();
         int NblocksNeeded = ML * 8;
         int NblocksRGB = NblocksNeeded / 3; // N blocks needed, RGB planes counting as one
-        int pos[] = RandomArrayNoRepetitions(NblocksRGB + 1, Nblocks, signatureR);
+        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NblocksRGB + 1, Nblocks, signatureR);
         int posInd = 0;
         int w = pos[0] % Wmax;
         int h = pos[0] / Wmax;
@@ -208,81 +198,5 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     }
 
 
-    /*
-        Gets a image and the size of the blocks
-        Returns the image cropped in a way that every dimension
-        is a multiple of the block size.
-     */
-    //TODO put these into a static encoding utility class
-    private Bitmap ResizeNCrop(Bitmap original, int N, int finalDimension) {
 
-        Bitmap resized = original;
-
-        if (original.getHeight() < original.getWidth() && original.getHeight() > finalDimension) { //Image is in landscape and needs to be resized
-            double ratio = (double) finalDimension / original.getHeight();
-            int finalWidth = (int) (original.getWidth() * ratio);
-
-            resized = Bitmap.createScaledBitmap(original, finalWidth, finalDimension, false);
-        } else if (original.getHeight() > original.getWidth() && original.getWidth() > finalDimension) //Image is in portrait and needs to be resized
-        {
-            double ratio = (double) finalDimension / original.getWidth();
-            int finalHeight = (int) (original.getHeight() * ratio);
-
-            resized = Bitmap.createScaledBitmap(original, finalDimension, finalHeight, false);
-        }
-
-        return Bitmap.createBitmap(resized, 0, 0, resized.getWidth() - (resized.getWidth() % N), resized.getHeight() - (resized.getHeight() % N));
-    }
-
-
-    // Hash key, from string to array of bytes
-    private byte[] HashKey(final char[] password, final byte[] salt, final int iterations, final int keyLength) {
-        try {
-            // TODO try out SHA512, should be available now
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
-            SecretKey key = skf.generateSecret(spec);
-            return key.getEncoded();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // TODO consider moving these methods into a static public class
-    private int[] RandomArrayNoRepetitions(int numbersNeeded, int max, byte[] signature) {
-
-        long seed = fromBytesToLong(signature);
-
-        if (max < numbersNeeded) {
-            throw new IllegalArgumentException("Can't ask for more numbers than are available");
-        }
-
-        Random rng = new Random(seed); // Ideally just create one instance globally
-        // Note: use LinkedHashSet to maintain insertion order
-        Set<Integer> generated = new LinkedHashSet<Integer>();
-        while (generated.size() < numbersNeeded) {
-            Integer next = rng.nextInt(max);
-            // As we're adding to a set, this will automatically do a containment check
-            generated.add(next);
-        }
-
-        // Conversion to int array, not ideal but it simplifies not using iterators at the upper level
-        // Possibly stupid and wasteful
-        int[] retArray = new int[generated.size()];
-        int i = 0;
-        Iterator<Integer> it = generated.iterator();
-        while(it.hasNext()){
-            retArray[i] = it.next();
-            i++;
-        }
-        return retArray;
-    }
-
-    private long fromBytesToLong(final byte[] b){
-        long value = 0;
-        for (int i = 0; i < b.length; i++) {
-            value += ((long) b[i] & 0xffL) << (8 * i);
-        }
-        return value;
-    }
 }

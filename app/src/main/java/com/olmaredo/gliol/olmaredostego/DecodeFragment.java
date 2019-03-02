@@ -287,7 +287,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
     }
 
     //Read image from absolute path
-    //TODO all these common utility methods should be written once and shared through a static class
     private Bitmap ReadImage() {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
