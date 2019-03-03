@@ -55,21 +55,33 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char[][] Xg = new char[N * N][(H * W) / (N * N)];
         char[][] Xb = new char[N * N][(H * W) / (N * N)];
 
-        for (int h = 0; h < H; h += N)  //Loop on image's rows (going down)
-        {
-            for (int w = 0; w < W; w += N)  //Loop on image's columns (from left to right for each row)
+        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, N * N * 8);
+        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, N * N * 8);
+        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, N * N * 8);
+
+        int Wmax = W / N; //Number of blocks per row
+        int Hmax = H / N; //Number of blocks per row
+        int Nblocks = Hmax * Wmax;
+        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(Nblocks, Nblocks, signatureR);
+        int w;
+        int h;
+
+        int progress = 0;
+        for (int posInd : pos) {
+            w = posInd % Wmax;
+            h = posInd / Wmax;
+            progress++;
+
+            for (int a = 0; a < N; a++) //Loop on block's rows
             {
-                for (int a = 0; a < N; a++) //Loop on block's rows
+                for (int b = 0; b < N; b++) //Loop on block's columns
                 {
-                    for (int b = 0; b < N; b++) //Loop on block's columns
-                    {
-                        Xr[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.red(params[0].getPixel(w + b, h + a));
-                        Xg[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.green(params[0].getPixel(w + b, h + a));
-                        Xb[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.blue(params[0].getPixel(w + b, h + a));
-                    }
+                    Xr[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.red(params[0].getPixel(w + b, h + a));
+                    Xg[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.green(params[0].getPixel(w + b, h + a));
+                    Xb[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.blue(params[0].getPixel(w + b, h + a));
                 }
             }
-            publishProgress((int) ((h / (double) H) * 70));
+            publishProgress((int) ((progress / (double) pos.length) * 70));
         }
 
         Log.v(TAG, "Created Y matrices.");
@@ -77,9 +89,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char[] buffer = new char[Xr.length]; //Used to copy one column
         char c = 0;
         int I = Xr[0].length * 3;
-        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, N * N * 8);
-        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, N * N * 8);
-        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, N * N * 8);
+
         //Log.v(TAG, "Signature length: " + signature.length);
         //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
 
