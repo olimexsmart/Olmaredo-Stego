@@ -1,21 +1,10 @@
 package com.olmaredo.gliol.olmaredostego;
 
-import android.content.Context;
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Random;
-import java.util.Set;
-
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 /*
 	This activity manges the decoding tab.
@@ -24,16 +13,13 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
     private static final double SCALE = 1000000.0f;
 
-    Context context;
+    @SuppressLint("StaticFieldLeak")
     private TaskManager callerFragment;
     private char[] key;
     private byte N;
 
-    private MessageDecodingColor() {
-    }
 
-    public MessageDecodingColor(TaskManager result, Context c, char[] key, byte blockSize) {
-        context = c;
+    MessageDecodingColor(TaskManager result, char[] key, byte blockSize) {
         callerFragment = result;
         this.key = key;
         this.N = blockSize;
@@ -51,89 +37,65 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         //Getting X matrices
         int H = params[0].getHeight();
         int W = params[0].getWidth();
-        char[][] Xr = new char[N * N][(H * W) / (N * N)];
-        char[][] Xg = new char[N * N][(H * W) / (N * N)];
-        char[][] Xb = new char[N * N][(H * W) / (N * N)];
+        int Wmax = W / N; //Number of blocks per row
+        int Hmax = H / N; //Number of blocks per row
+        int NBlocks = Hmax * Wmax;
+        char[][] Xr = new char[NBlocks][N * N]; // char because we don't want a signed number
+        char[][] Xg = new char[NBlocks][N * N];
+        char[][] Xb = new char[NBlocks][N * N];
 
         byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, N * N * 8);
         byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, N * N * 8);
         byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, N * N * 8);
 
-        int Wmax = W / N; //Number of blocks per row
-        int Hmax = H / N; //Number of blocks per row
-        int Nblocks = Hmax * Wmax;
-        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(Nblocks, Nblocks, signatureR);
+        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureR);
         int w;
         int h;
 
-        int progress = 0;
-        for (int posInd : pos) {
-            w = posInd % Wmax;
-            h = posInd / Wmax;
-            progress++;
+        for (int posInd = 0; posInd < NBlocks; posInd++) {
+            w = pos[posInd] % Wmax;
+            h = pos[posInd] / Wmax;
 
             for (int a = 0; a < N; a++) //Loop on block's rows
             {
                 for (int b = 0; b < N; b++) //Loop on block's columns
                 {
-                    Xr[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.red(params[0].getPixel(w + b, h + a));
-                    Xg[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.green(params[0].getPixel(w + b, h + a));
-                    Xb[(a * N) + b][(W / N) * (h / N) + (w / N)] = (char) Color.blue(params[0].getPixel(w + b, h + a));
+                    Xr[posInd][(a * N) + b] = (char) Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
+                    Xg[posInd][(a * N) + b] = (char) Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
+                    Xb[posInd][(a * N) + b] = (char) Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
                 }
             }
-            publishProgress((int) ((progress / (double) pos.length) * 70));
+            publishProgress((int) ((posInd / (double) pos.length) * 70));
         }
 
         Log.v(TAG, "Created Y matrices.");
-        String result = "";
-        char[] buffer = new char[Xr.length]; //Used to copy one column
+
+        int NBlocksRGB = NBlocks * 3;
         char c = 0;
-        int I = Xr[0].length * 3;
+        StringBuilder result = new StringBuilder(NBlocksRGB / 8);
 
-        //Log.v(TAG, "Signature length: " + signature.length);
-        //Log.v(TAG, "Signature values: " + signature[0] + " " + signature[32] + " " + signature[63]);
-
-        for (int i = 0; i < I; i++) {
-            if (i % 8 == 0 && i != 0) //Every eight cycles save the char in the result
-            {
-                result += c;
+        for (int p = 0; p < NBlocksRGB; p++) {
+            if (p % 8 == 0 && p != 0) { //Every eight cycles save the char in the result
+                result.append(c);
                 c = 0;
             }
             //Same logic as in the encoding
-            if (i % 3 == 0) {
-                //This should be avoided creating Y transposed
-                for (int k = 0; k < Xr.length; k++)
-                    buffer[k] = Xr[k][i / 3];
-
-                //Here assembly each char, bit by bit
-                if (GetSign(signatureR, buffer)) //If true set the bit to one
-                    c |= (1 << (i % 8));
-
-            } else if (i % 3 == 1) {
-                //This should be avoided creating Y transposed
-                for (int k = 0; k < Xg.length; k++)
-                    buffer[k] = Xg[k][i / 3];
-
-                //Here assembly each char, bit by bit
-                if (GetSign(signatureG, buffer)) //If true set the bit to one
-                    c |= (1 << (i % 8));
-
+            if (p % 3 == 0) {
+                if (GetSign(signatureR, Xr[p / 3])) //If true set the bit to one
+                    c |= (1 << (p % 8));
+            } else if (p % 3 == 1) {
+                if (GetSign(signatureG, Xg[p / 3])) //If true set the bit to one
+                    c |= (1 << (p % 8));
             } else {
-                //This should be avoided creating Y transposed
-                for (int k = 0; k < Xb.length; k++)
-                    buffer[k] = Xb[k][i / 3];
-
-                //Here assembly each char, bit by bit
-                if (GetSign(signatureB, buffer)) //If true set the bit to one
-                    c |= (1 << (i % 8));
-
+                if (GetSign(signatureB, Xb[p / 3])) //If true set the bit to one
+                    c |= (1 << (p % 8));
             }
-            publishProgress((int) ((i / (double) I) * 30) + 70);
+            publishProgress((int) ((p / (double) NBlocksRGB) * 30) + 70);
         }
 
         publishProgress(100);
         Log.v(TAG, "Giving back the result string");
-        return result;
+        return result.toString();
 
     }
 

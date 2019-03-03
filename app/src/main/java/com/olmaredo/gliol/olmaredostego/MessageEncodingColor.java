@@ -62,9 +62,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int Nsqr = N * N;
         int Wmax = W / N; //Number of blocks per row
         int Hmax = H / N; //Number of blocks per row
-        int Nblocks = Hmax * Wmax;
+        int NBlocks = Hmax * Wmax;
 
-        int maxLength = (Nblocks * 3) / 8;
+        int maxLength = (NBlocks * 3) / 8;
         if (message.length() >= maxLength) {
             message = message.substring(0, maxLength - 5);
             publishProgress(maxLength + 1000); //To be sure is greater than 100
@@ -80,9 +80,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
 
         int ML = message.length();
-        int NblocksNeeded = ML * 8;
-        int NblocksRGB = NblocksNeeded / 3; // N blocks needed, RGB planes counting as one
-        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NblocksRGB + 1, Nblocks, signatureR);
+        int NBlocksNeeded = ML * 8;
+        int NBlocksNeededRGB = NBlocksNeeded / 3; // N blocks needed, RGB planes counting as one
+        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureR);
         int posInd = 0;
         int w = pos[0] % Wmax;
         int h = pos[0] / Wmax;
@@ -92,7 +92,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         Bitmap mutableBitmap = params[0].copy(Bitmap.Config.ARGB_8888, true);
         params[0].recycle();
         int sign;
-        byte byteCounter = 0;
+        byte bitCounter = 0;
         double e;
         int r, g, blu;
 
@@ -102,14 +102,14 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             on the three colors contains the next three bits and so on
         */
 
-        for (int p = 0; p < NblocksNeeded; p++) { //Remember that the P stands for the number of bits to embed in the image
+        for (int p = 0; p < NBlocksNeeded; p++) { //Remember that the P stands for the number of bits to embed in the image
 
-            if ((message.charAt(p / 8) & 1 << byteCounter) == 0) sign = -1;
+            if ((message.charAt(p / 8) & 1 << bitCounter) == 0) sign = -1;
             else sign = 1;
-            byteCounter++;
-            // TODO this should be equivalent to byteCounter %= 8;
-            if (byteCounter == 8)
-                byteCounter = 0;
+            bitCounter++;
+            // TODO this should be equivalent to bitCounter %= 8;
+            if (bitCounter == 8)
+                bitCounter = 0;
 
             if (p % 3 == 0) {
                 //Applying the bit to the block
@@ -158,20 +158,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                     }
                 }
 
-                //At the next p increment we will be again in the top if statement, we need to be in the next block
-                /*
-                w++; //Move one block left
-                if (w == Wmax) {
-                    w = 0;
-                    h++; //Move on row down
-                }
-                */
+                //At the next p increment we will be again in the first if statement, we need to be in the next block
                 posInd++;
                 w = pos[posInd] % Wmax;
                 h = pos[posInd] / Wmax;
             }
 
-            publishProgress((int) ((p / (double) NblocksNeeded) * 100));
+            publishProgress((int) ((p / (double) NBlocksNeeded) * 100));
         }
 
         return mutableBitmap;

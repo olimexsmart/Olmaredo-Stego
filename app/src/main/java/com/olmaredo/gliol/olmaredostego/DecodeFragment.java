@@ -151,7 +151,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
                     String customKey = keySignature.getText().toString(); //Get the signature from the GUI
 
                     if (customKey.length() > 0) {
-                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, getContext(), customKey.toCharArray(), (byte)activity.BlockSize);
+                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, customKey.toCharArray(), (byte) activity.BlockSize);
                         messageDecodingColor.execute(ReadImage());
 
                         toClipboard.setEnabled(true); //Make possible copying the text elsewhere
