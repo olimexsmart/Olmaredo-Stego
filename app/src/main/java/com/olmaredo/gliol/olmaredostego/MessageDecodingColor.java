@@ -40,32 +40,41 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         int Wmax = W / N; //Number of blocks per row
         int Hmax = H / N; //Number of blocks per row
         int NBlocks = Hmax * Wmax;
-        char[][] Xr = new char[NBlocks][N * N]; // char because we don't want a signed number
-        char[][] Xg = new char[NBlocks][N * N];
-        char[][] Xb = new char[NBlocks][N * N];
+        int Nsqr = N * N;
+        char[][] Xr = new char[NBlocks][Nsqr]; // char because we don't want a signed number
+        char[][] Xg = new char[NBlocks][Nsqr];
+        char[][] Xb = new char[NBlocks][Nsqr];
 
-        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, N * N * 8);
-        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, N * N * 8);
-        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, N * N * 8);
+        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, Nsqr * 8);
 
-        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureR);
-        int w;
-        int h;
+        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureR);
+        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureG);
+        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureB);
+        int wR, wG, wB;
+        int hR, hG, hB;
+
 
         for (int posInd = 0; posInd < NBlocks; posInd++) {
-            w = pos[posInd] % Wmax;
-            h = pos[posInd] / Wmax;
+            wR = posR[posInd] % Wmax;
+            wG = posG[posInd] % Wmax;
+            wB = posB[posInd] % Wmax;
+
+            hR = posR[posInd] / Wmax;
+            hG = posG[posInd] / Wmax;
+            hB = posB[posInd] / Wmax;
 
             for (int a = 0; a < N; a++) //Loop on block's rows
             {
                 for (int b = 0; b < N; b++) //Loop on block's columns
                 {
-                    Xr[posInd][(a * N) + b] = (char) Color.red(params[0].getPixel((w * N) + b, (h * N) + a));
-                    Xg[posInd][(a * N) + b] = (char) Color.green(params[0].getPixel((w * N) + b, (h * N) + a));
-                    Xb[posInd][(a * N) + b] = (char) Color.blue(params[0].getPixel((w * N) + b, (h * N) + a));
+                    Xr[posInd][(a * N) + b] = (char) Color.red(params[0].getPixel((wR * N) + b, (hR * N) + a));
+                    Xg[posInd][(a * N) + b] = (char) Color.green(params[0].getPixel((wG * N) + b, (hG * N) + a));
+                    Xb[posInd][(a * N) + b] = (char) Color.blue(params[0].getPixel((wB * N) + b, (hB * N) + a));
                 }
             }
-            publishProgress((int) ((posInd / (double) pos.length) * 70));
+            publishProgress((int) ((posInd / (double) posR.length) * 70));
         }
 
         Log.v(TAG, "Created Y matrices.");

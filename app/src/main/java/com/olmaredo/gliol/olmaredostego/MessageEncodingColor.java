@@ -82,10 +82,16 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int ML = message.length();
         int NBlocksNeeded = ML * 8;
         int NBlocksNeededRGB = NBlocksNeeded / 3; // N blocks needed, RGB planes counting as one
-        int pos[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureR);
+        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureR);
+        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureG);
+        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureB);
         int posInd = 0;
-        int w = pos[0] % Wmax;
-        int h = pos[0] / Wmax;
+        int wR = posR[0] % Wmax;
+        int wG = posG[0] % Wmax;
+        int wB = posB[0] % Wmax;
+        int hR = posR[0] / Wmax;
+        int hG = posG[0] / Wmax;
+        int hB = posB[0] / Wmax;
 
 
         //Because immutable, you know
@@ -116,30 +122,30 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureR[(a * N) + b] + Color.red(mutableBitmap.getPixel((wR * N) + b, (hR * N) + a)));
 
                         //Clipping to avoid over/under flow, good idea could be reducing the dynamic range instead.
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
                         r = (int) Math.round(e);
-                        g = Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
-                        blu = Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
-                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
+                        g = Color.green(mutableBitmap.getPixel((wR * N) + b, (hR * N) + a));
+                        blu = Color.blue(mutableBitmap.getPixel((wR * N) + b, (hR * N) + a));
+                        mutableBitmap.setPixel((wR * N) + b, (hR * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
             } else if (p % 3 == 1) {   //Applying the bit to the block
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureG[(a * N) + b] + Color.green(mutableBitmap.getPixel((wG * N) + b, (hG * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
-                        r = Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
+                        r = Color.red(mutableBitmap.getPixel((wG * N) + b, (hG * N) + a));
                         g = (int) Math.round(e);
-                        blu = Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
-                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
+                        blu = Color.blue(mutableBitmap.getPixel((wG * N) + b, (hG * N) + a));
+                        mutableBitmap.setPixel((wG * N) + b, (hG * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
             } else //p % 3 == 2
@@ -147,21 +153,26 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
                 for (int a = 0; a < N; a++) {
                     for (int b = 0; b < N; b++) //Loop on block's columns
                     {
-                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((w * N) + b, (h * N) + a)));
+                        e = (sign * strength * signatureB[(a * N) + b] + Color.blue(mutableBitmap.getPixel((wB * N) + b, (hB * N) + a)));
                         if (e < 0) e = 0;
                         else if (e > 255) e = 255;
 
-                        r = Color.red(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
-                        g = Color.green(mutableBitmap.getPixel((w * N) + b, (h * N) + a));
+                        r = Color.red(mutableBitmap.getPixel((wB * N) + b, (hB * N) + a));
+                        g = Color.green(mutableBitmap.getPixel((wB * N) + b, (hB * N) + a));
                         blu = (int) Math.round(e);
-                        mutableBitmap.setPixel((w * N) + b, (h * N) + a, Color.argb(255, r, g, blu));
+                        mutableBitmap.setPixel((wB * N) + b, (hB * N) + a, Color.argb(255, r, g, blu));
                     }
                 }
 
                 //At the next p increment we will be again in the first if statement, we need to be in the next block
                 posInd++;
-                w = pos[posInd] % Wmax;
-                h = pos[posInd] / Wmax;
+                wR = posR[posInd] % Wmax;
+                wG = posG[posInd] % Wmax;
+                wB = posB[posInd] % Wmax;
+
+                hR = posR[posInd] / Wmax;
+                hG = posG[posInd] / Wmax;
+                hB = posB[posInd] / Wmax;
             }
 
             publishProgress((int) ((p / (double) NBlocksNeeded) * 100));
