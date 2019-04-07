@@ -8,14 +8,14 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-
-
 /*
 
  */
 public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
     private final int ITERATIONS = 10000;
+    private final float VARIANCE = 10.0f;
+
 
     Context context;
     private String message;
@@ -64,7 +64,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int Hmax = H / N; //Number of blocks per row
         int NBlocks = Hmax * Wmax;
 
-        int maxLength = (NBlocks * 3) / 8;
+        int maxLength = ((NBlocks * 3) / 8) - 3; // Safe from border conditions
         if (message.length() >= maxLength) {
             message = message.substring(0, maxLength - 5);
             publishProgress(maxLength + 1000); //To be sure is greater than 100
@@ -73,18 +73,26 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         message += "\0\0\0\0\0"; // Hopefully one of these will make it through
 
         // TODO This takes some time, try to reduce number of iterations
-        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
         // TODO publish progress here
 
+        // Generating gaussian-noise signatures, which seems to have better performance
+        double[] signatureR = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureRf);
+        double[] signatureG = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureGf);
+        double[] signatureB = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureBf);
+        //Log.v(TAG, "Encoding Gaussian: " + signatureR[0] + signatureG[12] + signatureB[20]);
 
         int ML = message.length();
         int NBlocksNeeded = ML * 8;
         int NBlocksNeededRGB = NBlocksNeeded / 3; // N blocks needed, RGB planes counting as one
-        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureR);
-        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureG);
-        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB + 1, NBlocks, signatureB);
+        NBlocksNeededRGB += NBlocksNeededRGB % 3; // Need to make it divisible by 3 because of how the next for loop is structured
+
+        // Preparing scattering indexes - bits are shuffled on the image
+        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureRf);
+        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureGf);
+        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureBf);
         int posInd = 0;
         int wR = posR[0] % Wmax;
         int wG = posG[0] % Wmax;
@@ -113,9 +121,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
             if ((message.charAt(p / 8) & 1 << bitCounter) == 0) sign = -1;
             else sign = 1;
             bitCounter++;
-            // TODO this should be equivalent to bitCounter %= 8;
-            if (bitCounter == 8)
-                bitCounter = 0;
+            bitCounter %= 8;
 
             if (p % 3 == 0) {
                 //Applying the bit to the block
@@ -200,7 +206,6 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         callerFragment.onTaskCompleted(bitmap);
     }
-
 
 
 }

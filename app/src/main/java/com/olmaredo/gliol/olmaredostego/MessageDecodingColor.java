@@ -12,6 +12,8 @@ import android.util.Log;
 public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
     private static final double SCALE = 1000000.0f;
+    private final int ITERATIONS = 10000;
+    private final float VARIANCE = 1.0f;
 
     @SuppressLint("StaticFieldLeak")
     private TaskManager callerFragment;
@@ -45,13 +47,20 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         char[][] Xg = new char[NBlocks][Nsqr];
         char[][] Xb = new char[NBlocks][Nsqr];
 
-        byte[] signatureR = OlmaredoUtil.HashKey(key, "4444".getBytes(), 10000, Nsqr * 8);
-        byte[] signatureG = OlmaredoUtil.HashKey(key, "7777".getBytes(), 10000, Nsqr * 8);
-        byte[] signatureB = OlmaredoUtil.HashKey(key, "9999".getBytes(), 10000, Nsqr * 8);
+        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
+        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
+        // TODO publish progress here
 
-        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureR);
-        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureG);
-        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureB);
+        double[] signatureR = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureRf);
+        double[] signatureG = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureGf);
+        double[] signatureB = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureBf);
+        //Log.v(TAG, "Decoding Gaussian: " + signatureR[0] + signatureG[12] + signatureB[20]);
+
+
+        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureRf);
+        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureGf);
+        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureBf);
         int wR, wG, wB;
         int hR, hG, hB;
 
@@ -81,10 +90,15 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
 
         int NBlocksRGB = NBlocks * 3;
         char c = 0;
+        char terminators = 0;
         StringBuilder result = new StringBuilder(NBlocksRGB / 8);
 
         for (int p = 0; p < NBlocksRGB; p++) {
             if (p % 8 == 0 && p != 0) { //Every eight cycles save the char in the result
+                // Detecting end of string
+                if (c == '\0') terminators++;
+                if (terminators == 3) break;
+                // Appending decoded character
                 result.append(c);
                 c = 0;
             }
@@ -128,10 +142,10 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         Returns the value of the bit assigned to the
         block.
      */
-    private boolean GetSign(byte[] signature, char[] block) {
+    private boolean GetSign(double[] signature, char[] block) {
         double buffer = 0;
         for (int i = 0; i < signature.length; i++) {
-            buffer += (double) signature[i] * block[i] / SCALE;
+            buffer += signature[i] * block[i];
         }
 
         return buffer > 0;

@@ -65,7 +65,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
-    private static final double SCALE = 100.0f;
+    private static final double SCALE = 10.0f;
 
 
     private Button encode;  //Encode button
@@ -283,7 +283,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
 
-                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double)embeddingPower / SCALE);
+                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
                     messageEncodingColor.execute(ReadImage());
 
                 } else {

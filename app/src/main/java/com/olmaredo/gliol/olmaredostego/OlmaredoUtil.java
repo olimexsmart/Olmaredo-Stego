@@ -46,7 +46,6 @@ class OlmaredoUtil {
     // Hash key, from string to array of bytes
     static byte[] HashKey(final char[] password, final byte[] salt, final int iterations, final int keyLength) {
         try {
-            // TODO try out SHA512, should be available now
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
             SecretKey key = skf.generateSecret(spec);
@@ -62,10 +61,10 @@ class OlmaredoUtil {
         long seed = fromBytesToLong(signature);
 
         if (max < numbersNeeded) {
-            throw new IllegalArgumentException("Can't ask for more numbers than are available");
+            throw new IllegalArgumentException("Can't ask for more numbers (" + numbersNeeded + ") than are available (" + max + ")");
         }
 
-        Random rng = new Random(seed); // Ideally just create one instance globally
+        Random rng = new Random(seed);
         // Note: use LinkedHashSet to maintain insertion order
         Set<Integer> generated = new LinkedHashSet<>();
         while (generated.size() < numbersNeeded) {
@@ -91,5 +90,18 @@ class OlmaredoUtil {
             value += ((long) b[i] & 0xffL) << (8 * i);
         }
         return value;
+    }
+
+    static double[] gaussianNoise(int howMuch, double variance, double mean, byte[] signature) {
+
+        long seed = fromBytesToLong(signature);
+        Random caos = new Random(seed);
+
+        double[] noise = new double[howMuch];
+
+        for (int i = 0; i < noise.length; i++) {
+            noise[i] = caos.nextGaussian() * Math.sqrt(variance) + mean;
+        }
+        return noise;
     }
 }
