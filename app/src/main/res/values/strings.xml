@@ -3,7 +3,7 @@
     <string name="decodebt">Decode</string>
     <string name="photo">Photo</string>
     <string name="encodePick">Enter the message you want to hide or </string>
-    <string name="pickFile">Open File</string>
+    <string name="pickFile">Open Text File</string>
     <string name="intensity">Set intensity of embedding.\nThe higher you choose, the worse it will be.</string>
     <string name="encode">Encode</string>
     <string name="select">Select image</string>
@@ -50,7 +50,7 @@ The work is completely open source, you can find the source code following the l
     <string name="enterMessage">Enter the message you want to hide.\nYou can write it here:</string>
     <string name="radioOriginal">Original</string>
     <string name="radioStandard">Generic</string>
-    <string name="hintSignture">Insert signature</string>
+    <string name="hintSignture">Insert key</string>
     <string name="px4">4 pixel</string>
     <string name="px8">8 pixel</string>
     <string name="px16">16 pixel</string>

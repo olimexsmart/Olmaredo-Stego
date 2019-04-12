@@ -90,7 +90,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
         thisthis = this; //this
         //Interface link to XML
         //GUI objects
-        Button photo = view.findViewById(R.id.btBrowseDecode);
         preview = view.findViewById(R.id.ivPreview);
         keySignature = view.findViewById(R.id.etCustom);
         decode = view.findViewById(R.id.btDecode);
@@ -127,7 +126,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
         }
 
         //Pick photo from gallery
-        photo.setOnClickListener(new View.OnClickListener() {
+        preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (CheckPermissions()) {

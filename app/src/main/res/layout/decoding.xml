@@ -1,136 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:descendantFocusability="beforeDescendants"
         android:focusableInTouchMode="true">
 
-        <TextView
-            android:id="@+id/tvLargeSelectDec"
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btDecode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="20dp"
+            android:layout_below="@+id/twShowResult"
+            android:layout_alignParentEnd="true"
             android:layout_marginTop="20dp"
-            android:text="@string/decSelectBig"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/tvSelectDec"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvLargeSelectDec"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/selectimagehides" />
-
-
-        <Button
-            android:id="@+id/btBrowseDecode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvSelectDec"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="0dp"
-            android:drawableLeft="@drawable/browse"
-            android:text="@string/decSelect" />
+            android:layout_marginEnd="20dp"
+            android:clickable="true"
+            app:srcCompat="@android:drawable/stat_sys_download" />
 
         <ImageView
             android:id="@+id/ivPreview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="175dp"
+            android:layout_height="175dp"
             android:layout_below="@+id/btBrowseDecode"
-            android:layout_centerHorizontal="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="20dp"
             android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="5dp"
-            android:adjustViewBounds="true" />
-
-        <View
-            android:id="@+id/riga1"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@+id/ivPreview"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@android:color/darker_gray" />
-
-        <TextView
-            android:id="@+id/tvLargeSignature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/riga1"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp"
-            android:text="@string/decSignatureBig"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/tvSignature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvLargeSignature"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/selectwichsignature"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:adjustViewBounds="true"
+            android:background="@android:drawable/ic_menu_camera" />
 
         <EditText
             android:id="@+id/etCustom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/tvSignature"
-            android:layout_alignStart="@+id/tvSignature"
-            android:layout_below="@+id/tvSignature"
-            android:layout_toLeftOf="@+id/btPaste"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
+            android:layout_toLeftOf="@+id/btPaste"
+            android:layout_toEndOf="@+id/ivPreview"
             android:hint="@string/hintSignture"
             android:singleLine="true" />
 
-        <View
-            android:id="@+id/riga2"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignBottom="@+id/btPaste"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:color/darker_gray" />
-
-        <Button
-            android:id="@+id/btDecode"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/riga2"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
-            android:enabled="false"
-            android:text="@string/decodebt" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/riga2"
-            android:layout_alignStart="@+id/riga2"
-            android:layout_below="@+id/btDecode"
-            android:layout_marginTop="24dp"
-            android:text="@string/result"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
         <TextView
             android:id="@+id/twShowResult"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="213dp"
+            android:layout_height="58dp"
+            android:layout_below="@+id/ivPreview"
             android:layout_alignLeft="@+id/textView"
-            android:layout_alignStart="@+id/textView"
-            android:layout_below="@+id/textView"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
             android:layout_marginRight="20dp"
             android:textColor="@color/abc_input_method_navigation_guard" />
 
@@ -138,19 +67,12 @@
             android:id="@+id/btClipboardText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/twShowResult"
-            android:layout_centerHorizontal="true"
+            android:layout_alignTop="@+id/twShowResult"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="4dp"
+            android:layout_toEndOf="@+id/twShowResult"
             android:enabled="false"
             android:text="@string/clipboardText" />
-
-        <Button
-            android:id="@+id/btPaste"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/etCustom"
-            android:layout_alignEnd="@+id/riga1"
-            android:layout_alignRight="@+id/riga1"
-            android:text="@string/paste" />
 
     </RelativeLayout>
 </ScrollView>

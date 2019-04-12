@@ -69,7 +69,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
 
     private Button encode;  //Encode button
-    private Button copySignature; //Put in the clipboard the signature used
     private ImageView preview;  //Preview the image selected
     private EditText inputText; //Box to type the hidden text manually
     private TextView percentageText; //Shows the embedding power strength
@@ -115,7 +114,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         thisthis = this; //this
         //Interface link to XML
         //Pick photo button handler
-        Button photo = view.findViewById(R.id.btPhotoEncode);
         encode = view.findViewById(R.id.btEncode);
         preview = view.findViewById(R.id.imPreview);
         //To open text file from file manager
@@ -124,7 +122,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         //Cursor that selects the embedding power
         SeekBar seekPower = view.findViewById(R.id.sbEmbeddingPower);
         percentageText = view.findViewById(R.id.tvSeekBar);
-        copySignature = view.findViewById(R.id.copySignature);
         keyField = view.findViewById(R.id.etKey);
         //Some GUI changes
         seekPower.setProgress(embeddingPower);
@@ -171,7 +168,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
 
         //Choose photo from gallery or take a photo
-        photo.setOnClickListener(new View.OnClickListener() {
+        preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (CheckPermissions()) {
@@ -290,17 +287,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     //Geeez
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
                 }
-            }
-        });
-
-        //Transform the signature into a string and copy it to the clipboard
-        copySignature.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
-                //ClipData clip = ClipData.newPlainText("nothing", signaturePreview.getText().toString());
-                //clipboard.setPrimaryClip(clip);
-                Toast.makeText(getContext(), "Signature copied in the clipboard", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -560,7 +546,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         setRetainInstance(false);
 
         if (CheckPermissions()) {
-            copySignature.setEnabled(true);
 
             FileOutputStream out = null;
             String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
