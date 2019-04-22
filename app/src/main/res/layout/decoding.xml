@@ -26,7 +26,6 @@
             android:id="@+id/ivPreview"
             android:layout_width="175dp"
             android:layout_height="175dp"
-            android:layout_below="@+id/btBrowseDecode"
             android:layout_alignParentStart="true"
             android:layout_marginStart="20dp"
             android:layout_marginLeft="20dp"
@@ -35,28 +34,33 @@
             android:adjustViewBounds="true"
             android:background="@android:drawable/ic_menu_camera" />
 
-        <EditText
+
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/etCustom"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/tvSignature"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
-            android:layout_toLeftOf="@+id/btPaste"
             android:layout_toEndOf="@+id/ivPreview"
-            android:hint="@string/hintSignture"
-            android:singleLine="true" />
+            android:hint="@string/hintSignature"
+            android:singleLine="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/twShowResult"
             android:layout_width="213dp"
             android:layout_height="58dp"
             android:layout_below="@+id/ivPreview"
-            android:layout_alignLeft="@+id/textView"
             android:layout_alignParentStart="true"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
@@ -68,7 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/twShowResult"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="4dp"
             android:layout_toEndOf="@+id/twShowResult"
             android:enabled="false"

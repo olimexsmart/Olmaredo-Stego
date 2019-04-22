@@ -50,7 +50,7 @@ The work is completely open source, you can find the source code following the l
     <string name="enterMessage">Enter the message you want to hide.\nYou can write it here:</string>
     <string name="radioOriginal">Original</string>
     <string name="radioStandard">Generic</string>
-    <string name="hintSignture">Insert key</string>
+    <string name="hintSignature">Password</string>
     <string name="px4">4 pixel</string>
     <string name="px8">8 pixel</string>
     <string name="px16">16 pixel</string>
@@ -62,13 +62,12 @@ The work is completely open source, you can find the source code following the l
     <string name="encSelect">Select the image.\nYou can choose an existing file or make a new photograph.</string>
     <string name="encSelectBig">Image</string>
     <string name="encMessageBig">Message</string>
-    <string name="encOpenFile">... or open a text file</string>
+    <string name="encOpenFile">… or open a text file</string>
     <string name="encIntensity">Intensity</string>
     <string name="encPercentage">0%</string>
     <string name="decSignatureBig">Signature</string>
     <string name="decSelect">Select image</string>
     <string name="decSelectBig">Image</string>
-    <string name="paste">Paste key</string>
     <string name="tvKeyHint">Create a key</string>
     <string name="tvMessageHint">Enter text to hide</string>
 

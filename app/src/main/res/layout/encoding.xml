@@ -29,8 +29,9 @@
             android:minWidth="50dp"
             android:minHeight="50dp" />
 
-        <EditText
-            android:id="@+id/etMessage"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/etMessageLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="184dp"
             android:layout_below="@+id/sbEmbeddingPower"
@@ -43,14 +44,21 @@
             android:layout_marginRight="20dp"
             android:ems="10"
             android:hint="@string/tvMessageHint"
-            android:inputType="text"
-            android:singleLine="true" />
+            android:inputType="textMultiLine"
+            android:lines="8">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:gravity="top"
+                android:id="@+id/etMessage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/btPickFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/etMessage"
+            android:layout_below="@+id/etMessageLayout"
             android:layout_alignParentStart="true"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
@@ -80,31 +88,34 @@
             android:layout_marginEnd="20dp"
             android:text="@string/encPercentage" />
 
-        <EditText
-            android:id="@+id/etKey"
-            android:layout_width="186dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_toEndOf="@+id/imPreview"
-            android:autofillHints=""
-            android:ems="10"
-            android:hint="@string/tvKeyHint"
-            android:inputType="text" />
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btEncode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/etMessage"
+            android:layout_below="@+id/etMessageLayout"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="21dp"
             android:layout_marginEnd="20dp"
             android:clickable="false"
             app:srcCompat="@android:drawable/stat_sys_download" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="191dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_toEndOf="@+id/imPreview"
+            android:hint="@string/hintSignature">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
     </RelativeLayout>

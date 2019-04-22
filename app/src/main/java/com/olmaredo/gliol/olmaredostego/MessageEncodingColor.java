@@ -87,7 +87,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int ML = message.length();
         int NBlocksNeeded = ML * 8;
         int NBlocksNeededRGB = NBlocksNeeded / 3; // N blocks needed, RGB planes counting as one
-        NBlocksNeededRGB += NBlocksNeededRGB % 3; // Need to make it divisible by 3 because of how the next for loop is structured
+        NBlocksNeededRGB += (NBlocksNeeded % 3) + 1; // Need to make it divisible by 3 because of how the next for loop is structured
 
         // Preparing scattering indexes - bits are shuffled on the image
         int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureRf);

@@ -3,15 +3,14 @@ package com.olmaredo.gliol.olmaredostego;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
@@ -22,17 +21,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
-import static java.lang.Character.isLetter;
 
 /*
     Tab that manages message decoding
@@ -41,7 +42,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private final String TAG = "DecodeFragment";
     //Random numbers to match requests
     private final int REQ_CODE_GALLERY = 2222;
-    private final int PERMISSION_CODE = 14;
     //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
@@ -51,12 +51,12 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private static final String bundleResultText = "bRT";
 
     private ImageView preview;
-    private EditText keySignature;
-    private Button decode;
+    private TextInputEditText keySignature;
+    private FloatingActionButton decode;
     private TextView result;
     private Button toClipboard;
 
-    private DecodeFragment thisthis; //Holds reference of this fragment where "this" keyword isn't enough
+    private DecodeFragment thisThis; //Holds reference of this fragment where "this" keyword isn't enough
     private String fileNameOriginal; //Holds the absolute path of the photo opened
     private String resultText = ""; //Result of decoding
     private Uri outputFileUri = null; //When returning from the gallery this is the result given
@@ -79,23 +79,22 @@ public class DecodeFragment extends Fragment implements TaskManager {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.decoding, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        thisthis = this; //this
+        thisThis = this; //this
         //Interface link to XML
         //GUI objects
         preview = view.findViewById(R.id.ivPreview);
-        keySignature = view.findViewById(R.id.etCustom);
+        keySignature = view.findViewById(R.id.etKey);
         decode = view.findViewById(R.id.btDecode);
         result = view.findViewById(R.id.twShowResult);
         toClipboard = view.findViewById(R.id.btClipboardText);
-        Button pasteKey = view.findViewById(R.id.btPaste);
 
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but doesn't know generally
@@ -147,10 +146,10 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 //First thing to do is check if the file is valid
                 if (new File(fileNameOriginal).exists()) {
                     StartActivity activity = (StartActivity) getActivity();
-                    String customKey = keySignature.getText().toString(); //Get the signature from the GUI
+                    String customKey = Objects.requireNonNull(keySignature.getText()).toString(); //Get the signature from the GUI
 
                     if (customKey.length() > 0) {
-                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisthis, customKey.toCharArray(), (byte) activity.BlockSize);
+                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisThis, customKey.toCharArray(), (byte) Objects.requireNonNull(activity).BlockSize);
                         messageDecodingColor.execute(ReadImage());
 
                         toClipboard.setEnabled(true); //Make possible copying the text elsewhere
@@ -168,37 +167,13 @@ public class DecodeFragment extends Fragment implements TaskManager {
         toClipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
+                ClipboardManager clipboard = (ClipboardManager) Objects.requireNonNull(getActivity()).getSystemService(Activity.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("nothing", result.getText().toString());
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(getContext(), "Message copied in the clipboard", Toast.LENGTH_SHORT).show();
             }
         });
 
-        //Lets you paste the enormous signature
-        pasteKey.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
-
-                if (clipboard.hasPrimaryClip() || clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                    ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-
-                    // Gets the clipboard as text.
-                    CharSequence pasteData = item.getText();
-
-                    // If the string contains data, then the paste operation is done
-                    if (pasteData != null) {
-                        keySignature.setText(pasteData);
-                        decode.setEnabled(true);
-                    } else {
-                        Toast.makeText(getContext(), "Nothing to paste from the clipboard", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(getContext(), "Nothing to paste from the clipboard", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
 
@@ -208,24 +183,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
       `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
      */
 
-    //Converts a string into a double array
-    private double[] StringToSignature(String key) {
-        double[] signature = new double[key.length() / 5];
-        //Quel momento in cui vorresti scrivere una bestemmia nel codice ma poi sai che c'è Martino che legge e non vuoi offenderlo
-        char[] keyChar = key.toCharArray();
-        for (int i = 0; i < signature.length; i++) {   //Bit level ascii hack, from char to int and at the correct position. 48 is a magic number, number zero I guess
-            signature[i] = (keyChar[i * 5 + 1] - 48) / 10000.0 + (keyChar[i * 5 + 2] - 48) / 1000.0 + (keyChar[i * 5 + 3] - 48) / 100.0 + (keyChar[i * 5 + 4] - 48) / 10.0;
-            //Change sign if the prefix is a letter
-            if (isLetter(keyChar[i * 5]))
-                signature[i] *= -1;
-        }
-
-        return signature;
-    }
-
-
     @Override //Save the state of the fragment prior to destruction
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString(bundleNameOriginal, fileNameOriginal);
         outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
         if (outputFileUri != null)
@@ -242,9 +201,10 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
     //Android 6.0 and above permission check
     private boolean CheckPermissions() {
-        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            int PERMISSION_CODE = 14; // Otherwise if class final private it's a warning
             requestPermissions(permissions, PERMISSION_CODE);
 
             return false;
@@ -261,23 +221,13 @@ public class DecodeFragment extends Fragment implements TaskManager {
             //At this point we have the image selected Uri
             //Now get the absolute path into a nice String
 
-            // SDK < API11
-            if (Build.VERSION.SDK_INT < 11)
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
-
-                // SDK >= 11 && SDK < 19
-            else if (Build.VERSION.SDK_INT < 19)
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
-
-                // SDK > 19 (Android 4.4)
-            else
-                fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
+            fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
 
             Bitmap im = ReadImageScaled(); //Read a smaller version of the image and load it into the GUI
             if (im != null) {
                 preview.setImageBitmap(im);
                 decode.setEnabled(true);
-                Log.v(TAG, "Choosen photo.");
+                Log.v(TAG, "Chosen photo.");
             } else {
                 decode.setEnabled(false);
                 Log.v(TAG, "Image is null");
@@ -294,7 +244,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
         options.inJustDecodeBounds = false;
 
         try {
-            InputStream imageStream = getActivity().getContentResolver().openInputStream(outputFileUri);
+            InputStream imageStream = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
             Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
             Log.v(TAG, outputFileUri.toString());
             return ExifUtil.rotateBitmap(fileNameOriginal, bitmap);
@@ -306,16 +256,16 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
     //http://stackoverflow.com/questions/3331527/android-resize-a-large-bitmap-file-to-scaled-output-file
     private Bitmap ReadImageScaled() {
-        InputStream in = null;
+        InputStream in;
         try {
             final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-            in = getActivity().getContentResolver().openInputStream(outputFileUri);
+            in = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
 
             // Decode image size
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(in, null, o);
-            in.close();
+            Objects.requireNonNull(in).close();
 
             int scale = 1;
             while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
@@ -324,7 +274,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
             Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
 
-            Bitmap b = null;
+            Bitmap b;
             in = getActivity().getContentResolver().openInputStream(outputFileUri);
             if (scale > 1) {
                 scale--;
@@ -335,9 +285,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 b = BitmapFactory.decodeStream(in, null, o);
 
                 // resize to desired dimensions
-                int height = b.getHeight();
+                int height = Objects.requireNonNull(b).getHeight();
                 int width = b.getWidth();
-                Log.d(TAG, "1th scale operation dimenions - width: " + width + ", height: " + height);
+                Log.d(TAG, "1th scale operation dimensions - width: " + width + ", height: " + height);
 
                 double y = Math.sqrt(IMAGE_MAX_SIZE
                         / (((double) width) / height));
@@ -352,10 +302,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
             } else {
                 b = BitmapFactory.decodeStream(in);
             }
-            in.close();
+            Objects.requireNonNull(in).close();
 
-            Log.d(TAG, "bitmap size - width: " + b.getWidth() + ", height: " +
-                    b.getHeight());
+            Log.d(TAG, "bitmap size - width: " + b.getWidth() + ", height: " + b.getHeight());
             return ExifUtil.rotateBitmap(fileNameOriginal, b);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);

@@ -2,8 +2,6 @@ package com.olmaredo.gliol.olmaredostego;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,11 +9,11 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
@@ -28,11 +26,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -46,6 +46,7 @@ import java.util.Date;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /*
     TODO allow something more then mere ASCII chars, è in example
@@ -65,14 +66,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
     private static final String bundleTaskType = "bTT";
-    private static final double SCALE = 10.0f;
 
 
-    private Button encode;  //Encode button
+    private FloatingActionButton encode;  //Encode button
     private ImageView preview;  //Preview the image selected
-    private EditText inputText; //Box to type the hidden text manually
+    private TextInputEditText inputText; //Box to type the hidden text manually
     private TextView percentageText; //Shows the embedding power strength
-    private EditText keyField; // Enter encoding key
+    private TextInputEditText keyField; // Enter encoding key
 
     private String fileNameOriginal;    //Name of the original photo file
     private String fileNameText;    //Hold the path of the input text file
@@ -81,7 +81,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
 
     //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
-    private EncodeFragment thisthis;
+    private EncodeFragment thisThis;
 
     //All it needs to manage destruction and creation of the ProgressDialog
     private ProgressDialog progressDialog;
@@ -103,15 +103,15 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     //Tab layout manager
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.encoding, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        thisthis = this; //this
+        thisThis = this; //this
         //Interface link to XML
         //Pick photo button handler
         encode = view.findViewById(R.id.btEncode);
@@ -125,7 +125,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         keyField = view.findViewById(R.id.etKey);
         //Some GUI changes
         seekPower.setProgress(embeddingPower);
-        percentageText.setText("" + embeddingPower + "%");
+        percentageText.setText(String.format(Locale.ITALIAN, "%d%%", embeddingPower));
 
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but it is not known generally
@@ -178,14 +178,14 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
                     //Opens a dialog that let you choose if open the gallery or the camera app
                     openImageIntent();
-                } /*else {
+                } else {
                     //If some tin-foil-hat didn't give the permissions
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }*/
+                }
             }
         });
 
-        //TODO complitely rethink flow of input file and edit text string
+        //TODO completely rethink flow of input file and edit text string
         // TODO Use system file picker instead
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
@@ -209,10 +209,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
                         }
                     });
                     fileChooser.showDialog();
-                } /*else {
+                } else {
                     //I hate those smart ass motherfuckers
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }*/
+                }
             }
         });
 
@@ -232,7 +232,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             @Override
             public void afterTextChanged(Editable s) {
                 //Basically if there if some text somewhere, from GUI or from file
-                if (inputText.getText().length() > 0 || inputString.length() > 0) {
+                if (Objects.requireNonNull(inputText.getText()).length() > 0 || inputString.length() > 0) {
                     encode.setEnabled(true);
                 } else
                     encode.setEnabled(false);
@@ -250,7 +250,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
 
             public void onProgressChanged(SeekBar bar, int paramInt, boolean paramBoolean) {
-                percentageText.setText("" + paramInt + "%"); // here in textView the percent will be shown
+                percentageText.setText(String.format(Locale.ITALIAN, "%d%%", paramInt)); // here in textView the percent will be shown
             }
         });
 
@@ -258,19 +258,20 @@ public class EncodeFragment extends Fragment implements TaskManager {
         encode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (new File(fileNameOriginal).exists()) {
                     //Retrieving the encoding settings
                     StartActivity activity = (StartActivity) getActivity();
-                    int blockSizeSaved = activity.BlockSize;
+                    int blockSizeSaved = Objects.requireNonNull(activity).BlockSize;
                     int cropSizeSaved = activity.CropSize;
                     // Checking consistency of input data
-                    if (inputText.getText().length() > 0)
+                    if (Objects.requireNonNull(inputText.getText()).length() > 0)
                         inputString = inputText.getText().toString();
                     else if (!(inputString.length() > 0)) {
                         Toast.makeText(getContext(), "Enter some text to hide", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (keyField.getText().length() < 4) {
+                    if (Objects.requireNonNull(keyField.getText()).length() < 4) {
                         Toast.makeText(getContext(), "Enter key at least 4 characters long", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -280,13 +281,14 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
                     //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
 
-                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisthis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
+                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisThis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
                     messageEncodingColor.execute(ReadImage());
 
                 } else {
                     //Geeez
                     Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
                 }
+
             }
         });
 
@@ -301,7 +303,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     //Saves the state of the activity before is destroyed, orientation change and such
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
 
         outState.putString(bundleNameOriginal, fileNameOriginal);
         outState.putInt(bundleEmbedPow, embeddingPower);
@@ -320,7 +322,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     //Necessary to Android 6.0 and above for run time permissions
     private boolean CheckPermissions() {
-        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
             requestPermissions(permissions, PERMISSION_CODE);
@@ -356,23 +358,15 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 outputFileUri = data.getData();
                 //At this point we have the image selected Uri
                 //Now get the absolute path into a nice String
-                // SDK < API11
-                if (Build.VERSION.SDK_INT < 11)
-                    fileNameOriginal = RealPathUtil.getRealPathFromURI_BelowAPI11(getContext(), outputFileUri);
-                    // SDK >= 11 && SDK < 19
-                else if (Build.VERSION.SDK_INT < 19)
-                    fileNameOriginal = RealPathUtil.getRealPathFromURI_API11to18(getContext(), outputFileUri);
-                    // SDK > 19 (Android 4.4)
-                else
-                    fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
+                fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
             } else //Force media update if we added a new photo
-                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, outputFileUri));
+                Objects.requireNonNull(getActivity()).sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, outputFileUri));
 
             //Loading a scaled image in the GUI, saving RAM
             Bitmap im = ReadImageScaled();
             if (im != null) {
                 preview.setImageBitmap(im);
-                Log.v(TAG, "Choosen photo.");
+                Log.v(TAG, "Chosen photo.");
             } else {
                 Log.v(TAG, "Image is null");
             }
@@ -388,7 +382,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         options.inJustDecodeBounds = false;
 
         try {
-            InputStream imageStream = getActivity().getContentResolver().openInputStream(outputFileUri);
+            InputStream imageStream = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
             Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
             Log.v(TAG, outputFileUri.toString());
             return ExifUtil.rotateBitmap(fileNameOriginal, bitmap);
@@ -401,16 +395,16 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //http://stackoverflow.com/questions/3331527/android-resize-a-large-bitmap-file-to-scaled-output-file
     //Useful to save RAM for a GUI preview
     private Bitmap ReadImageScaled() {
-        InputStream in = null;
+        InputStream in;
         try {
             final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-            in = getActivity().getContentResolver().openInputStream(outputFileUri);
+            in = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
 
             // Decode image size
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(in, null, o);
-            in.close();
+            Objects.requireNonNull(in).close();
 
             int scale = 1;
             while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
@@ -419,7 +413,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
             Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
 
-            Bitmap b = null;
+            Bitmap b;
             in = getActivity().getContentResolver().openInputStream(outputFileUri);
             if (scale > 1) {
                 scale--;
@@ -430,9 +424,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 b = BitmapFactory.decodeStream(in, null, o);
 
                 // resize to desired dimensions
-                int height = b.getHeight();
+                int height = Objects.requireNonNull(b).getHeight();
                 int width = b.getWidth();
-                Log.d(TAG, "1th scale operation dimenions - width: " + width + ", height: " + height);
+                Log.d(TAG, "1th scale operation dimensions - width: " + width + ", height: " + height);
 
                 double y = Math.sqrt(IMAGE_MAX_SIZE
                         / (((double) width) / height));
@@ -447,7 +441,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
             } else {
                 b = BitmapFactory.decodeStream(in);
             }
-            in.close();
+            Objects.requireNonNull(in).close();
 
             Log.d(TAG, "bitmap size - width: " + b.getWidth() + ", height: " +
                     b.getHeight());
@@ -486,9 +480,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
         outputFileUri = Uri.fromFile(fromCamera);
 
         // Camera.
-        final List<Intent> cameraIntents = new ArrayList<Intent>();
+        final List<Intent> cameraIntents = new ArrayList<>();
         final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        final PackageManager packageManager = getActivity().getPackageManager();
+        final PackageManager packageManager = Objects.requireNonNull(getActivity()).getPackageManager();
         final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
         for (ResolveInfo res : listCam) {
             final String packageName = res.activityInfo.packageName;
@@ -506,7 +500,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         final Intent chooserIntent = Intent.createChooser(pickIntent, "Select Source");
 
         // Add the camera options.
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[cameraIntents.size()]));
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[0]));
 
         startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
     }
@@ -554,8 +548,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 out = new FileOutputStream(fileNameResult);
                 bm.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
                 File f = new File(fileNameResult);
-                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
-                // PNG is a lossless format, the compression factor (100) is ignored
+                Objects.requireNonNull(getActivity()).sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+                // PNG is a loss less format, the compression factor (100) is ignored
             } catch (FileNotFoundException e) {
                 Log.v(TAG, "Invalid saving path.");
             } catch (NullPointerException e) {
