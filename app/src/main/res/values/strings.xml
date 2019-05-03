@@ -70,5 +70,6 @@ The work is completely open source, you can find the source code following the l
     <string name="decSelectBig">Image</string>
     <string name="tvKeyHint">Create a key</string>
     <string name="tvMessageHint">Enter text to hide</string>
+    <string name="imageContext">image picker choose image from gallery or take a photo</string>
 
 </resources>

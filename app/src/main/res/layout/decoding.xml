@@ -15,11 +15,12 @@
             android:id="@+id/btDecode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/twShowResult"
+            android:layout_above="@+id/twShowResult"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
             android:clickable="true"
+            android:focusable="true"
             app:srcCompat="@android:drawable/stat_sys_download" />
 
         <ImageView
@@ -27,12 +28,12 @@
             android:layout_width="175dp"
             android:layout_height="175dp"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
-            android:background="@android:drawable/ic_menu_camera" />
+            android:contentDescription="@string/imageContext"
+            android:src="@drawable/image_pick" />
 
 
         <com.google.android.material.textfield.TextInputLayout
@@ -42,10 +43,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
             android:layout_toEndOf="@+id/ivPreview"
             android:hint="@string/hintSignature"
             android:singleLine="true">
@@ -59,22 +60,22 @@
         <TextView
             android:id="@+id/twShowResult"
             android:layout_width="213dp"
-            android:layout_height="58dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/ivPreview"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="20dp"
-            android:textColor="@color/abc_input_method_navigation_guard" />
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp" />
 
         <Button
             android:id="@+id/btClipboardText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/twShowResult"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="4dp"
-            android:layout_toEndOf="@+id/twShowResult"
+            android:layout_below="@+id/twShowResult"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
             android:enabled="false"
             android:text="@string/clipboardText" />
 
