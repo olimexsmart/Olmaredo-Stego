@@ -31,7 +31,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        callerFragment.onTaskStarted("Decoding message in RGB");
+        callerFragment.onTaskStarted("Decoding message");
     }
 
     @Override

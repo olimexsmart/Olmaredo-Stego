@@ -46,7 +46,7 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         encode.setText("Encode");
         decode.setText("Decode");
         info.setText("Info");
-        settings.setText("Setup");
+        settings.setText("Settings");
 		//Position of tabs
         tabLayout.addTab(info, 0);
         tabLayout.addTab(encode, 1);
@@ -64,7 +64,8 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
         tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         //Create the app directory
-        File dir = new File(Environment.getExternalStorageDirectory() + "/PicturesTest/");
+        String pathToPictureFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+        File dir = new File(pathToPictureFolder + "/Olmaredo/");
         dir.mkdir();
 		//As always activity information needs to be saved and restored
         if (savedInstanceState != null) {

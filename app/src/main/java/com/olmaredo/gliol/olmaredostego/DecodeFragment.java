@@ -5,15 +5,12 @@ import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -26,12 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 
 
@@ -103,10 +98,9 @@ public class DecodeFragment extends Fragment implements TaskManager {
             wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
             if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
-                Bitmap im = ReadImageScaled();
+                Bitmap im = OlmaredoUtil.ReadImageScaled(getActivity(), fileNameOriginal, outputFileUri);
                 if (im != null) {
                     preview.setImageBitmap(im);
-                    decode.setEnabled(true);
                 }
             }
             if (savedInstanceState.containsKey(bundleTaskProgress))
@@ -116,7 +110,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
             if (savedInstanceState.containsKey(bundleResultText)) {
                 resultText = savedInstanceState.getString(bundleResultText);
                 result.setText(resultText);
-                toClipboard.setEnabled(true);
+                if (resultText.length() > 0)
+                    toClipboard.setEnabled(true);
             }
             Log.v(TAG, "Activity restored.");
         } else {
@@ -128,13 +123,13 @@ public class DecodeFragment extends Fragment implements TaskManager {
         preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (CheckPermissions()) {
+                if (OlmaredoUtil.CheckPermissions(thisThis, getContext(), REQ_CODE_GALLERY)) {
                     Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(i, REQ_CODE_GALLERY); //Actually opens te gallery
-                } /*else {
+                } else {
                     //Com'on
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }*/
+                }
             }
         });
 
@@ -142,24 +137,24 @@ public class DecodeFragment extends Fragment implements TaskManager {
         decode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO erase blank spaces and other non printable chars from the signature
-                //First thing to do is check if the file is valid
-                if (new File(fileNameOriginal).exists()) {
-                    StartActivity activity = (StartActivity) getActivity();
-                    String customKey = Objects.requireNonNull(keySignature.getText()).toString(); //Get the signature from the GUI
-
-                    if (customKey.length() > 0) {
-                        MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisThis, customKey.toCharArray(), (byte) Objects.requireNonNull(activity).BlockSize);
-                        messageDecodingColor.execute(ReadImage());
-
-                        toClipboard.setEnabled(true); //Make possible copying the text elsewhere
-                    } else { //Ask for another
-                        Toast.makeText(getContext(), "Invalid key!", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    //Dai belin
-                    Toast.makeText(getContext(), "Choose a valid image.", Toast.LENGTH_LONG).show();
+                // Checking consistency of input data
+                if (!new File(fileNameOriginal).exists()) {
+                    Snackbar.make(decode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
+                    return;
                 }
+                // Reading key and trimming whitespaces
+                String key = Objects.requireNonNull(keySignature.getText()).toString().trim(); //Get the signature from the GUI
+                if (key.length() < 4) {
+                    Snackbar.make(decode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+
+                // Retrieving app settings and
+                StartActivity activity = (StartActivity) getActivity();
+                MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisThis, key.toCharArray(), (byte) Objects.requireNonNull(activity).BlockSize);
+                messageDecodingColor.execute(OlmaredoUtil.ReadImage(getActivity(), fileNameOriginal, outputFileUri));
+
+                toClipboard.setEnabled(true); //Make possible copying the text elsewhere
             }
         });
 
@@ -199,19 +194,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
         super.onSaveInstanceState(outState);
     }
 
-    //Android 6.0 and above permission check
-    private boolean CheckPermissions() {
-        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
-            int PERMISSION_CODE = 14; // Otherwise if class final private it's a warning
-            requestPermissions(permissions, PERMISSION_CODE);
-
-            return false;
-        } else
-            return true;
-    }
-
     @Override //Flow ends up here when returning from the pick photo from gallery intent
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -223,7 +205,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
 
             fileNameOriginal = RealPathUtil.getRealPathFromURI_API19(getContext(), outputFileUri);
 
-            Bitmap im = ReadImageScaled(); //Read a smaller version of the image and load it into the GUI
+            Bitmap im = OlmaredoUtil.ReadImageScaled(getActivity(), fileNameOriginal, outputFileUri); //Read a smaller version of the image and load it into the GUI
             if (im != null) {
                 preview.setImageBitmap(im);
                 decode.setEnabled(true);
@@ -234,84 +216,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
             }
         }
     }
-
-    //Read image from absolute path
-    private Bitmap ReadImage() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        options.inSampleSize = 1; //Set as you want but bigger than one
-        options.inJustDecodeBounds = false;
-
-        try {
-            InputStream imageStream = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
-            Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-            Log.v(TAG, outputFileUri.toString());
-            return ExifUtil.rotateBitmap(fileNameOriginal, bitmap);
-        } catch (FileNotFoundException e) {
-            Log.v(TAG, "File not found.");
-        }
-        return null;
-    }
-
-    //http://stackoverflow.com/questions/3331527/android-resize-a-large-bitmap-file-to-scaled-output-file
-    private Bitmap ReadImageScaled() {
-        InputStream in;
-        try {
-            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-            in = Objects.requireNonNull(getActivity()).getContentResolver().openInputStream(outputFileUri);
-
-            // Decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(in, null, o);
-            Objects.requireNonNull(in).close();
-
-            int scale = 1;
-            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
-                    IMAGE_MAX_SIZE) {
-                scale++;
-            }
-            Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
-
-            Bitmap b;
-            in = getActivity().getContentResolver().openInputStream(outputFileUri);
-            if (scale > 1) {
-                scale--;
-                // scale to max possible inSampleSize that still yields an image
-                // larger than target
-                o = new BitmapFactory.Options();
-                o.inSampleSize = scale;
-                b = BitmapFactory.decodeStream(in, null, o);
-
-                // resize to desired dimensions
-                int height = Objects.requireNonNull(b).getHeight();
-                int width = b.getWidth();
-                Log.d(TAG, "1th scale operation dimensions - width: " + width + ", height: " + height);
-
-                double y = Math.sqrt(IMAGE_MAX_SIZE
-                        / (((double) width) / height));
-                double x = (y / height) * width;
-
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, (int) x,
-                        (int) y, true);
-                b.recycle();
-                b = scaledBitmap;
-
-                System.gc();
-            } else {
-                b = BitmapFactory.decodeStream(in);
-            }
-            Objects.requireNonNull(in).close();
-
-            Log.d(TAG, "bitmap size - width: " + b.getWidth() + ", height: " + b.getHeight());
-            return ExifUtil.rotateBitmap(fileNameOriginal, b);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-            return null;
-        }
-    }
-
 
     @Override
     public void onTaskStarted(String type) {
@@ -343,6 +247,7 @@ public class DecodeFragment extends Fragment implements TaskManager {
     @Override
     public void onTaskCompleted(Bitmap bm) {
         //Nothing to do here
+        Log.v(TAG, "In on task completed but nothing to do here");
     }
 
     @Override
@@ -367,6 +272,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
             progressDialog.dismiss();
         }
         super.onDetach();
+
+        Log.v(TAG, "In onDetached and already detached");
     }
 
 

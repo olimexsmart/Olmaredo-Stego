@@ -44,7 +44,7 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        callerFragment.onTaskStarted("Embedding message in RGB");
+        callerFragment.onTaskStarted("Encoding message");
 
         Log.v(TAG, "PreExecute terminated");
     }
