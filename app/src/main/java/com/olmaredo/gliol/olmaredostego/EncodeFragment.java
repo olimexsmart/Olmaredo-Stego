@@ -211,16 +211,20 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 // Checking consistency of input data
                 if (!new File(fileNameOriginal).exists()) {
                     Snackbar.make(encode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
+                    // Open dialog as if user user clicked on it
+                    preview.callOnClick();
                     return;
                 }
                 // Reading key and trimming whitespaces
                 String key = Objects.requireNonNull(keyField.getText()).toString().trim();
                 if (key.length() < 4) {
                     Snackbar.make(encode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    keyField.requestFocus();
                     return;
                 }
                 if (Objects.requireNonNull(inputText.getText()).length() < 1) {
                     Snackbar.make(encode, "Enter some text to hide!", Snackbar.LENGTH_LONG).show();
+                    inputText.requestFocus();
                     return;
                 }
 
@@ -271,7 +275,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
 
-
     //Returning from the camera app or the gallery
     //Save, resize, load in GUI
     @Override
@@ -306,14 +309,14 @@ public class EncodeFragment extends Fragment implements TaskManager {
             Bitmap im = OlmaredoUtil.ReadImageScaled(getActivity(), fileNameOriginal, outputFileUri);
             if (im != null) {
                 preview.setImageBitmap(im);
+                keyField.requestFocus();
+
                 Log.v(TAG, "Chosen photo.");
             } else {
                 Log.v(TAG, "Image is null");
             }
         }
     }
-
-
 
 
     //From now on there is all the methods from the TaskManager, managing asyncTasks

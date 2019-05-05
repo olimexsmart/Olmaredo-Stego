@@ -1,5 +1,6 @@
 package com.olmaredo.gliol.olmaredostego;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,21 +14,18 @@ import android.widget.Toast;
  */
 public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
     private final String TAG = "MessageEncodingColor";
-    private final int ITERATIONS = 10000;
-    private final float VARIANCE = 10.0f;
+    private static final int ITERATIONS = 1000;
+    private static final float VARIANCE = 10.0f;
 
 
-    Context context;
+    @SuppressLint("StaticFieldLeak")
+    private Context context;
     private String message;
     private char[] key;
     private byte N; //Block size
     private int finHeight;
     private double strength;
     private TaskManager callerFragment;
-
-    //We don't wont this to be called without a message specified.
-    private MessageEncodingColor() {
-    }
 
     MessageEncodingColor(TaskManager result, Context c, String message, char[] key, byte blockSize, int cropSize, double strength) {
         context = c;
@@ -90,9 +88,9 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         NBlocksNeededRGB += (NBlocksNeeded % 3) + 1; // Need to make it divisible by 3 because of how the next for loop is structured
 
         // Preparing scattering indexes - bits are shuffled on the image
-        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureRf);
-        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureGf);
-        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureBf);
+        int[] posR = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureRf);
+        int[] posG = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureGf);
+        int[] posB = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureBf);
         int posInd = 0;
         int wR = posR[0] % Wmax;
         int wG = posG[0] % Wmax;

@@ -140,12 +140,14 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 // Checking consistency of input data
                 if (!new File(fileNameOriginal).exists()) {
                     Snackbar.make(decode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
+                    preview.callOnClick();
                     return;
                 }
                 // Reading key and trimming whitespaces
                 String key = Objects.requireNonNull(keySignature.getText()).toString().trim(); //Get the signature from the GUI
                 if (key.length() < 4) {
                     Snackbar.make(decode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    keySignature.requestFocus();
                     return;
                 }
 
@@ -209,6 +211,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
             if (im != null) {
                 preview.setImageBitmap(im);
                 decode.setEnabled(true);
+                keySignature.requestFocus();
+
                 Log.v(TAG, "Chosen photo.");
             } else {
                 decode.setEnabled(false);

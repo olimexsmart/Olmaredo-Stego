@@ -11,9 +11,8 @@ import android.util.Log;
 */
 public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
     private static final String TAG = "MessageDecodingColor";
-    private static final double SCALE = 1000000.0f;
-    private final int ITERATIONS = 10000;
-    private final float VARIANCE = 1.0f;
+    private static final int ITERATIONS = 1000;
+    private static final float VARIANCE = 1.0f;
 
     @SuppressLint("StaticFieldLeak")
     private TaskManager callerFragment;
@@ -58,9 +57,9 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         //Log.v(TAG, "Decoding Gaussian: " + signatureR[0] + signatureG[12] + signatureB[20]);
 
 
-        int posR[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureRf);
-        int posG[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureGf);
-        int posB[] = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureBf);
+        int[] posR = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureRf);
+        int[] posG = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureGf);
+        int[] posB = OlmaredoUtil.RandomArrayNoRepetitions(NBlocks, NBlocks, signatureBf);
         int wR, wG, wB;
         int hR, hG, hB;
 
