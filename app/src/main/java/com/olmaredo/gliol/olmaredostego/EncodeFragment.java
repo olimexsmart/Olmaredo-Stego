@@ -19,8 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.BufferedReader;
@@ -40,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,9 +48,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-/*
-    TODO allow something more then mere ASCII chars, è in example
- */
 
 public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
@@ -76,7 +73,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
     private String fileNameOriginal;    //Name of the original photo file
     private String fileNameText;    //Hold the path of the input text file
-    private String inputString = "not from file";   //Input text, also used in logic flux
     private Uri outputFileUri = null; //Camera output file path, stupid URI thing
     private int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
 
@@ -86,7 +82,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //All it needs to manage destruction and creation of the ProgressDialog
     private ProgressDialog progressDialog;
     private int taskProgress;
-    private String taskType;
+    private String taskType; // Saving the title of the progressDialog
     private boolean wasTaskRunning = false;
 
     //In order to have smoothest transition possible, immediately create the new Dialog
@@ -130,30 +126,24 @@ public class EncodeFragment extends Fragment implements TaskManager {
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but it is not known generally
         if (savedInstanceState != null) {
-            boolean readyToEncode = false; //Determine when restoring the activity if there is all the necessary to start encoding
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
             embeddingPower = savedInstanceState.getInt(bundleEmbedPow);
             fileNameText = savedInstanceState.getString(bundleNameText);
             wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
 
+            // Restoring image preview
             if (savedInstanceState.containsKey(bundleUri)) {
                 outputFileUri = Uri.parse(savedInstanceState.getString(bundleUri));
                 Bitmap im = ReadImageScaled();
                 if (im != null) {
                     preview.setImageBitmap(im);
-                    readyToEncode = true;
                 }
             }
 
-            // TODO simply save the instance of the file and the name file instead of reading it again
+            // Reading the file again because saving it in memory could be a problem for large files
             if (new File(fileNameText).exists()) {
-                inputString = ReadTextFile(fileNameText);
-                inputText.setHint(new File(fileNameText).getName() + " correctly opened.");
-
-                if (readyToEncode)
-                    encode.setEnabled(true);
+                inputText.setText(ReadTextFile(fileNameText));
             }
-
 
             if (savedInstanceState.containsKey(bundleTaskProgress))
                 taskProgress = savedInstanceState.getInt(bundleTaskProgress);
@@ -185,8 +175,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
         });
 
-        //TODO completely rethink flow of input file and edit text string
-        // TODO Use system file picker instead
         //Opens a dialog that selects a txt file and loads it
         pickFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,10 +190,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                             fileNameText = file.getAbsolutePath();
                             Log.v(TAG, "Opened text file: " + fileNameText);
 
-                            inputString = ReadTextFile(fileNameText);
-                            inputText.setText("");
-                            inputText.setHint(file.getName() + " correctly opened."); //Give a confirmation of the operation
-                            encode.setEnabled(true);
+                            inputText.setText(ReadTextFile(fileNameText));
                         }
                     });
                     fileChooser.showDialog();
@@ -216,28 +201,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
         });
 
-
-        //This makes sure that is impossible to choose a file once a single character is written in the field
-        inputText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                //Bah...
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //Meh...
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                //Basically if there if some text somewhere, from GUI or from file
-                if (Objects.requireNonNull(inputText.getText()).length() > 0 || inputString.length() > 0) {
-                    encode.setEnabled(true);
-                } else
-                    encode.setEnabled(false);
-            }
-        });
 
         //Updates the embedding power value
         seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -258,37 +221,35 @@ public class EncodeFragment extends Fragment implements TaskManager {
         encode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (new File(fileNameOriginal).exists()) {
-                    //Retrieving the encoding settings
-                    StartActivity activity = (StartActivity) getActivity();
-                    int blockSizeSaved = Objects.requireNonNull(activity).BlockSize;
-                    int cropSizeSaved = activity.CropSize;
-                    // Checking consistency of input data
-                    if (Objects.requireNonNull(inputText.getText()).length() > 0)
-                        inputString = inputText.getText().toString();
-                    else if (!(inputString.length() > 0)) {
-                        Toast.makeText(getContext(), "Enter some text to hide", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (Objects.requireNonNull(keyField.getText()).length() < 4) {
-                        Toast.makeText(getContext(), "Enter key at least 4 characters long", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Log.v(TAG, "Entered key: " + keyField.getText());
-                    //Strip all non ASCII characters
-                    inputString = inputString.replaceAll("[^\\x20-\\x7e]", "");
-                    Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
-                    //copySignature.setEnabled(true); debug purposes, I keep it here for a remainder
-
-                    MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisThis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
-                    messageEncodingColor.execute(ReadImage());
-
-                } else {
-                    //Geeez
-                    Toast.makeText(getContext(), "Open a valid image!", Toast.LENGTH_LONG).show();
+                // Checking consistency of input data
+                if (!new File(fileNameOriginal).exists()) {
+                    Snackbar.make(encode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                if (Objects.requireNonNull(keyField.getText()).length() < 4) {
+                    Snackbar.make(encode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                if (Objects.requireNonNull(inputText.getText()).length() < 1) {
+                    Snackbar.make(encode, "Enter some text to hide!", Snackbar.LENGTH_LONG).show();
+                    return;
                 }
 
+                //Retrieving the encoding settings
+                StartActivity activity = (StartActivity) getActivity();
+                int blockSizeSaved = Objects.requireNonNull(activity).BlockSize;
+                int cropSizeSaved = activity.CropSize;
+                String inputString = inputText.getText().toString();
+
+                // Basically compressing the charset into 8 bits
+                inputString = new String(inputString.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.ISO_8859_1);
+
+                Log.v(TAG, "Entered key: " + keyField.getText());
+                Log.v(TAG, "Starting encoding: " + blockSizeSaved + " " + cropSizeSaved);
+
+                // Starting the background task
+                MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisThis, getContext(), inputString, keyField.getText().toString().toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
+                messageEncodingColor.execute(ReadImage());
             }
         });
 
