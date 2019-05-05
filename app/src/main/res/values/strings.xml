@@ -64,6 +64,7 @@ The work is completely open source, you can find the source code following the l
     <string name="encMessageBig">Message</string>
     <string name="encOpenFile">… or open a text file</string>
     <string name="encIntensity">Intensity</string>
+    <string name="encIntensitySettings">A higher encoding intensity ensures less errors, but the encoding artifacts become noticeable</string>
     <string name="encPercentage">0%</string>
     <string name="decSignatureBig">Signature</string>
     <string name="decSelect">Select image</string>

@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:descendantFocusability="beforeDescendants"
@@ -13,12 +13,10 @@
             android:id="@+id/tvBlockDimension"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="0dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
             android:text="@string/blockSettingBig"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -27,8 +25,11 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvBlockDimension"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="5dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_toStartOf="@+id/rgSignatureSource"
             android:text="@string/blockSetting"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -36,33 +37,59 @@
             android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/tvBlockDimension"
-            android:layout_alignStart="@+id/tvBlockDimension"
             android:layout_below="@+id/rgSignatureSource"
-            android:layout_marginRight="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@android:color/darker_gray" />
 
         <TextView
             android:id="@+id/tvCropped"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/view"
-            android:layout_alignStart="@+id/view"
             android:layout_below="@+id/view"
-            android:layout_marginTop="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
             android:text="@string/heightImageBig"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/tvCropped2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/view2"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/encIntensity"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/tvCroppedDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/tvCropped"
-            android:layout_alignStart="@+id/tvCropped"
             android:layout_below="@+id/tvCropped"
-            android:layout_marginRight="80dp"
-            android:layout_marginTop="5dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/heightImage"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/tvCroppedDescription2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvCropped"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:text="@string/heightImage"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -70,39 +97,32 @@
             android:id="@+id/etCropped"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/view"
-            android:layout_alignRight="@+id/view"
             android:layout_alignTop="@+id/tvCropped"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"
             android:ems="10"
             android:inputType="number" />
-
-        <Button
-            android:id="@+id/btSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/view2"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="144dp"
-            android:layout_marginTop="1dp"
-            android:text="@string/buttonSaveSetting" />
 
         <View
             android:id="@+id/view2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_alignLeft="@+id/tvCroppedDescription"
             android:layout_below="@+id/tvCroppedDescription"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@android:color/darker_gray" />
 
         <RadioGroup
             android:id="@id/rgSignatureSource"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignTop="@+id/tvBlockDimension"
-            android:layout_toEndOf="@+id/tvBlockDescription"
-            android:layout_toRightOf="@+id/tvBlockDescription">
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp">
 
             <RadioButton
                 android:id="@+id/block4px"
@@ -123,6 +143,39 @@
                 android:layout_height="wrap_content"
                 android:text="@string/px16" />
         </RadioGroup>
+
+        <SeekBar
+            android:id="@+id/sbEmbeddingPower"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_toStartOf="@+id/tvSeekBar" />
+
+        <TextView
+            android:id="@+id/tvSeekBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/encPercentage" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvCropped2"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/encIntensitySettings" />
 
     </RelativeLayout>
 </ScrollView>

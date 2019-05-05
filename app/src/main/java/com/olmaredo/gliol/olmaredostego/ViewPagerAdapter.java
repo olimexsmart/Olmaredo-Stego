@@ -3,28 +3,29 @@ package com.olmaredo.gliol.olmaredostego;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+
 import android.util.Log;
 
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
+    private static final String TAG = "ViewPagerBlaBla";
 
-    private int numberOfTabs = 0;
-    public ViewPagerAdapter(FragmentManager fm, int NumberOfTabs) {
+    private int numberOfTabs;
+
+    ViewPagerAdapter(FragmentManager fm, int NumberOfTabs) {
         super(fm);
         numberOfTabs = NumberOfTabs;
     }
 
     @Override
     public Fragment getItem(int position) {
-        Log.v("Viewpagerblabla", position + "selected");
+        Log.v(TAG, "Tab number " + position + " selected");
 
         switch (position) {
-            case 1:
-                return new EncodeFragment();
-            case 2:
-                return new DecodeFragment();
             case 0:
-                return new InfoFragment();
-            case 3:
+                return new EncodeFragment();
+            case 1:
+                return new DecodeFragment();
+            case 2:
                 return new SettingsFragment();
             default:
                 return null;

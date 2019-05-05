@@ -13,8 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,11 +39,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
     //Random numbers to match requests
     private static final int CAMERA_REQUEST_CODE = 4444;
     private static final int PERMISSION_CODE = 14;
-    private static final int DEFAULT_EMBEDDING_POWER = 20;
     //Strings used to index data in the save instance object
     private static final String bundleNameOriginal = "bNO";
     private static final String bundleUri = "bU";
-    private static final String bundleEmbedPow = "bEP";
     private static final String bundleNameText = "bNT";
     private static final String bundleTaskProgress = "bTP";
     private static final String bundleWasTaskRunning = "bWTR";
@@ -55,13 +51,11 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private FloatingActionButton encode;  //Encode button
     private ImageView preview;  //Preview the image selected
     private TextInputEditText inputText; //Box to type the hidden text manually
-    private TextView percentageText; //Shows the embedding power strength
     private TextInputEditText keyField; // Enter encoding key
 
     private String fileNameOriginal;    //Name of the original photo file
     private String fileNameText;    //Hold the path of the input text file
     private Uri outputFileUri = null; //Camera output file path, stupid URI thing
-    private int embeddingPower = DEFAULT_EMBEDDING_POWER; //Default embedding power
 
     //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
     private EncodeFragment thisThis;
@@ -103,18 +97,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
         Button pickFile = view.findViewById(R.id.btPickFile);
         inputText = view.findViewById(R.id.etMessage);
         //Cursor that selects the embedding power
-        SeekBar seekPower = view.findViewById(R.id.sbEmbeddingPower);
-        percentageText = view.findViewById(R.id.tvSeekBar);
         keyField = view.findViewById(R.id.etKey);
-        //Some GUI changes
-        seekPower.setProgress(embeddingPower);
-        percentageText.setText(String.format(Locale.ITALIAN, "%d%%", embeddingPower));
+
 
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but it is not known generally
         if (savedInstanceState != null) {
             fileNameOriginal = savedInstanceState.getString(bundleNameOriginal);
-            embeddingPower = savedInstanceState.getInt(bundleEmbedPow);
             fileNameText = savedInstanceState.getString(bundleNameText);
             wasTaskRunning = savedInstanceState.getBoolean(bundleWasTaskRunning);
 
@@ -189,20 +178,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         });
 
 
-        //Updates the embedding power value
-        seekPower.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onStopTrackingTouch(SeekBar bar) {
-                embeddingPower = bar.getProgress(); // the value of the seekBar progress
-            }
 
-            public void onStartTrackingTouch(SeekBar bar) {
-                //Man...
-            }
-
-            public void onProgressChanged(SeekBar bar, int paramInt, boolean paramBoolean) {
-                percentageText.setText(String.format(Locale.ITALIAN, "%d%%", paramInt)); // here in textView the percent will be shown
-            }
-        });
 
         //Starts the Async task that encodes the message
         encode.setOnClickListener(new View.OnClickListener() {
@@ -232,6 +208,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 StartActivity activity = (StartActivity) getActivity();
                 int blockSizeSaved = Objects.requireNonNull(activity).BlockSize;
                 int cropSizeSaved = activity.CropSize;
+                int embeddingPower = activity.EmbeddingPower;
                 String inputString = inputText.getText().toString();
 
                 // Basically compressing the charset into 8 bits
@@ -260,7 +237,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
     public void onSaveInstanceState(@NonNull Bundle outState) {
 
         outState.putString(bundleNameOriginal, fileNameOriginal);
-        outState.putInt(bundleEmbedPow, embeddingPower);
         outState.putString(bundleNameText, fileNameText);
         outState.putBoolean(bundleWasTaskRunning, wasTaskRunning);
 

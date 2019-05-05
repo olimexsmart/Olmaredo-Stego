@@ -1,25 +1,25 @@
 package com.olmaredo.gliol.olmaredostego;
 
+import android.annotation.SuppressLint;
 import android.os.Environment;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
+import java.util.Objects;
 
-/*
-    TODO WHEN EVERYTHING IS COMPLETED: clean up this file from useless code
- */
 
-public class StartActivity extends AppCompatActivity implements SettingsFragment.OnSettingsUpdated{
+public class StartActivity extends AppCompatActivity implements OnSettingsUpdated {
     private static final String TAG = "StartActivity";
 
     private static final String bundleCropSize = "bCS";
     private static final String bundleBlockSize = "bBS";
-    private static final String bundleInColor = "bIC";
 
 	//Objects that manage the Tab GUI
     TabLayout tabLayout;
@@ -29,52 +29,58 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
 	//This data is used to communicate between tabs
     public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
     public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
+    public int EmbeddingPower = SettingsFragment.DEFAULT_EMBEDDING_POWER;
 
 
+    @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-        getSupportActionBar().hide(); //Hide the bar with the title, take up space and it's useless
-		
-		//Create and connects the Java objects to the XML design
-        tabLayout = (TabLayout) findViewById(R.id.tablayout); 
+        Objects.requireNonNull(getSupportActionBar()).hide(); //Hide the bar with the title, take up space and it's useless
+
+        //Create and connects the Java objects to the XML design
+        tabLayout = findViewById(R.id.tablayout);
         final TabLayout.Tab encode = tabLayout.newTab();
         final TabLayout.Tab decode = tabLayout.newTab();
-        final TabLayout.Tab info = tabLayout.newTab();
         final TabLayout.Tab settings = tabLayout.newTab();
         encode.setText("Encode");
         decode.setText("Decode");
-        info.setText("Info");
         settings.setText("Settings");
-		//Position of tabs
-        tabLayout.addTab(info, 0);
-        tabLayout.addTab(encode, 1);
-        tabLayout.addTab(decode, 2);
-        tabLayout.addTab(settings, 3);
-		//No idea, just woks
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
+
+        //Position of tabs
+        tabLayout.addTab(encode, 0);
+        tabLayout.addTab(decode, 1);
+        tabLayout.addTab(settings, 2);
+
+        //No idea, just woks
+        viewPager = findViewById(R.id.viewpager);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         viewPager.setAdapter(viewPagerAdapter);
-		//Colors are important
+
+        //Colors are important
         tabLayout.setTabTextColors(ContextCompat.getColorStateList(this, R.drawable.tab_selector));
         tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this, R.color.indicator));
-		//Click on the tab and change view
+
+        //Click on the tab and change view
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         //Create the app directory
         String pathToPictureFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
         File dir = new File(pathToPictureFolder + "/Olmaredo/");
-        dir.mkdir();
-		//As always activity information needs to be saved and restored
-        if (savedInstanceState != null) {
-            BlockSize = savedInstanceState.getInt(bundleBlockSize);
-            CropSize = savedInstanceState.getInt(bundleCropSize);
-            Log.v(TAG, "Start Activity restored.");
-        } else {
-            Log.v(TAG, "Start Activity NOT restored.");
+        if (!dir.mkdir()) {
+            Snackbar.make(tabLayout, "Could not create folder!", Snackbar.LENGTH_INDEFINITE);
         }
+
+        //As always activity information needs to be saved and restored
+//        if (savedInstanceState != null) {
+//            BlockSize = savedInstanceState.getInt(bundleBlockSize);
+//            CropSize = savedInstanceState.getInt(bundleCropSize);
+//            Log.v(TAG, "Start Activity restored.");
+//        } else {
+//            Log.v(TAG, "Start Activity NOT restored.");
+//        }
 
         Log.v(TAG, "OnCreate completed.");
     }
@@ -82,14 +88,15 @@ public class StartActivity extends AppCompatActivity implements SettingsFragment
     //Save data in case activity is killed or restarted
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(bundleBlockSize, BlockSize);
-        outState.putInt(bundleCropSize, CropSize);
+//        outState.putInt(bundleBlockSize, BlockSize);
+//        outState.putInt(bundleCropSize, CropSize);
         super.onSaveInstanceState(outState);
     }
     
 	@Override //Simply nicer than directly reference class objects, TODO maybe some kind of consistency check would be nice
-    public void UpdateSettings(int blockSize, int cropSize, boolean color) {
+    public void UpdateSettings(int blockSize, int cropSize, int embeddingPower) {
         BlockSize = blockSize;
         CropSize = cropSize;
+        EmbeddingPower = embeddingPower;
     }
 }
