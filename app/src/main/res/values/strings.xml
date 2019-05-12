@@ -38,26 +38,16 @@ The work is completely open source, you can find the source code following the l
 <a href="http://htmlpreview.github.io/?https://raw.githubusercontent.com/olimexsmart/Olmaredo-Stego/master/privacy-policy.html">Privacy Policy</a>"
     </string>
 
-    <string name="selectimagehides">Select the image that hide the message.</string>
-    <string name="selectwichsignature">Enter the signature you want ot use.\nThe default signature is generic and suitable for all kind of natural image, but you can use a more specific one.</string>
-
-    <string name="clipboard">Copy key</string>
     <string name="clipboardText">Copy Message</string>
 
-    <string name="result">Result</string>
-    <string name="calorOnOff">Color</string>
-    <string name="colorDescription">Choose whenever or not encode images in color</string>
-    <string name="enterMessage">Enter the message you want to hide.\nYou can write it here:</string>
-    <string name="radioOriginal">Original</string>
     <string name="radioStandard">Generic</string>
     <string name="hintSignature">Password</string>
     <string name="px4">4 pixel</string>
     <string name="px8">8 pixel</string>
     <string name="px16">16 pixel</string>
-    <string name="buttonSaveSetting">Save settings</string>
-    <string name="heightImage">Define the length shorter edge of the image once it has been cropped."</string>
+    <string name="heightImage">Images are reduced in resolution to avoid compression when sharing. Default to 1600 pixels because it is suitable to use with IM apps, like WhatsApp and Telegram.</string>
     <string name="heightImageBig">Image shorter dimension</string>
-    <string name="blockSetting">Define the dimension in pixel of the block used in the steganographic method.</string>
+    <string name="blockSetting">Define the dimension in pixel of the block used in the steganographic method. With bigger blocks it is possible to reduce the encoding power but the maximum amount of text is reduced.</string>
     <string name="blockSettingBig">Block dimension</string>
     <string name="encSelect">Select the image.\nYou can choose an existing file or make a new photograph.</string>
     <string name="encSelectBig">Image</string>
@@ -72,5 +62,7 @@ The work is completely open source, you can find the source code following the l
     <string name="tvKeyHint">Create a key</string>
     <string name="tvMessageHint">Enter text to hide</string>
     <string name="imageContext">image picker choose image from gallery or take a photo</string>
+    <string name="croppedSettingsHint">1600</string>
+    <string name="restoreSettingsButton">Restore Default</string>
 
 </resources>

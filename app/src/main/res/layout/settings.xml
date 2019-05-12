@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -31,13 +32,14 @@
             android:layout_marginEnd="10dp"
             android:layout_toStartOf="@+id/rgSignatureSource"
             android:text="@string/blockSetting"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/greyText" />
 
         <View
             android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@+id/rgSignatureSource"
+            android:layout_below="@+id/tvBlockDescription"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="10dp"
@@ -69,39 +71,32 @@
 
         <TextView
             android:id="@+id/tvCroppedDescription"
-            android:layout_width="wrap_content"
+            android:layout_width="288dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvCropped"
+            android:layout_alignEnd="@+id/tvBlockDescription"
             android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:text="@string/heightImage"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
-            android:id="@+id/tvCroppedDescription2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvCropped"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="0dp"
             android:text="@string/heightImage"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <EditText
             android:id="@+id/etCropped"
-            android:layout_width="50dp"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/tvCropped"
+            android:layout_alignBottom="@+id/tvCroppedDescription"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="10dp"
+            android:layout_marginBottom="0dp"
             android:ems="10"
-            android:inputType="number" />
+            android:gravity="end"
+            android:hint="@string/croppedSettingsHint"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:selectAllOnFocus="true"
+            tools:targetApi="o" />
 
         <View
             android:id="@+id/view2"
@@ -115,14 +110,26 @@
             android:layout_marginEnd="10dp"
             android:background="@android:color/darker_gray" />
 
+        <View
+            android:id="@+id/view3"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/sbEmbeddingPower"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="13dp"
+            android:background="@android:color/darker_gray" />
+
         <RadioGroup
             android:id="@id/rgSignatureSource"
-            android:layout_width="100dp"
+            android:layout_width="90dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            android:layout_above="@+id/view"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp">
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="0dp">
 
             <RadioButton
                 android:id="@+id/block4px"
@@ -175,7 +182,18 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
-            android:text="@string/encIntensitySettings" />
+            android:text="@string/encIntensitySettings"
+            android:textColor="@color/greyText" />
+
+        <Button
+            android:id="@+id/btRestore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/view3"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/restoreSettingsButton" />
 
     </RelativeLayout>
 </ScrollView>

@@ -18,10 +18,7 @@ import java.util.Objects;
 public class StartActivity extends AppCompatActivity implements OnSettingsUpdated {
     private static final String TAG = "StartActivity";
 
-    private static final String bundleCropSize = "bCS";
-    private static final String bundleBlockSize = "bBS";
-
-	//Objects that manage the Tab GUI
+    //Objects that manage the Tab GUI
     TabLayout tabLayout;
     ViewPager viewPager;
     ViewPagerAdapter viewPagerAdapter;
@@ -73,27 +70,12 @@ public class StartActivity extends AppCompatActivity implements OnSettingsUpdate
             Snackbar.make(tabLayout, "Could not create folder!", Snackbar.LENGTH_INDEFINITE);
         }
 
-        //As always activity information needs to be saved and restored
-//        if (savedInstanceState != null) {
-//            BlockSize = savedInstanceState.getInt(bundleBlockSize);
-//            CropSize = savedInstanceState.getInt(bundleCropSize);
-//            Log.v(TAG, "Start Activity restored.");
-//        } else {
-//            Log.v(TAG, "Start Activity NOT restored.");
-//        }
-
         Log.v(TAG, "OnCreate completed.");
     }
 
-    //Save data in case activity is killed or restarted
+
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-//        outState.putInt(bundleBlockSize, BlockSize);
-//        outState.putInt(bundleCropSize, CropSize);
-        super.onSaveInstanceState(outState);
-    }
-    
-	@Override //Simply nicer than directly reference class objects, TODO maybe some kind of consistency check would be nice
+    //Simply nicer than directly reference class objects
     public void UpdateSettings(int blockSize, int cropSize, int embeddingPower) {
         BlockSize = blockSize;
         CropSize = cropSize;

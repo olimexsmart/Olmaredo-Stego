@@ -36,7 +36,7 @@
             android:src="@drawable/image_pick"
             app:siRadius="4dp"
             app:siBorderWidth="0.5dp"
-            app:siBorderColor="#9e9e9e"
+            app:siBorderColor="@color/thatGrey"
             app:siSquare="true" />
 
 
