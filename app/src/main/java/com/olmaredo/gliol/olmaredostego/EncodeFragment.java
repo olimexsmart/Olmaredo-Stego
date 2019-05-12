@@ -248,6 +248,14 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
 
         super.onSaveInstanceState(outState);
+
+        // Avoiding transactionTooLargeException
+        if (Objects.requireNonNull(inputText.getText()).toString().length() > 10000) {
+            inputText.setText(inputText.getText().toString().substring(0, 10000));
+            Log.v(TAG, "inputText too large, truncated");
+        }
+
+        Log.v(TAG, "Fragment Saved");
     }
 
 

@@ -23,7 +23,7 @@
             android:focusable="true"
             app:srcCompat="@android:drawable/stat_sys_download" />
 
-        <ImageView
+        <com.github.siyamed.shapeimageview.RoundedImageView
             android:id="@+id/ivPreview"
             android:layout_width="175dp"
             android:layout_height="175dp"
@@ -33,7 +33,11 @@
             android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/imageContext"
-            android:src="@drawable/image_pick" />
+            android:src="@drawable/image_pick"
+            app:siRadius="4dp"
+            app:siBorderWidth="0.5dp"
+            app:siBorderColor="#9e9e9e"
+            app:siSquare="true" />
 
 
         <com.google.android.material.textfield.TextInputLayout
@@ -44,7 +48,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="6dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
             android:layout_toEndOf="@+id/ivPreview"
@@ -55,8 +59,8 @@
                 android:id="@+id/etKey"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
                 android:imeOptions="actionNext"
+                android:inputType="text"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
