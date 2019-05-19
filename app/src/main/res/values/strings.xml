@@ -64,5 +64,6 @@ The work is completely open source, you can find the source code following the l
     <string name="imageContext">image picker choose image from gallery or take a photo</string>
     <string name="croppedSettingsHint">1600</string>
     <string name="restoreSettingsButton">Restore Default</string>
+    <string name="shareButton">Share</string>
 
 </resources>

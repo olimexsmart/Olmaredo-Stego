@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 
 public class EncodeFragment extends Fragment implements TaskManager {
     private final String TAG = "EncodeFragment";
@@ -48,14 +50,16 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private static final String bundleTaskType = "bTT";
 
 
-    private FloatingActionButton encode;  //Encode button
-    private ImageView preview;  //Preview the image selected
-    private TextInputEditText inputText; //Box to type the hidden text manually
+    private FloatingActionButton encode;  // Encode button
+    private Button share; // Share button
+    private ImageView preview;  // Preview the image selected
+    private TextInputEditText inputText; // Box to type the hidden text manually
     private TextInputEditText keyField; // Enter encoding key
 
-    private String fileNameOriginal;    //Name of the original photo file
-    private String fileNameText;    //Hold the path of the input text file
-    private Uri outputFileUri = null; //Camera output file path, stupid URI thing
+    private String fileNameOriginal;    // Name of the original photo file
+    private String fileNameText;    // Holds the path of the input text file
+    private String fileNameResult; // Holds the output file name for sharing
+    private Uri outputFileUri = null; // Camera output file path, stupid URI thing
 
     //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
     private EncodeFragment thisThis;
@@ -98,6 +102,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
         inputText = view.findViewById(R.id.etMessage);
         //Cursor that selects the embedding power
         keyField = view.findViewById(R.id.etKey);
+        share = view.findViewById(R.id.btShare);
 
 
         //All this if statement basically takes the saved instance and resumes the activity status
@@ -178,8 +183,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         });
 
 
-
-
         //Starts the Async task that encodes the message
         encode.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -220,6 +223,21 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 // Starting the background task
                 MessageEncodingColor messageEncodingColor = new MessageEncodingColor(thisThis, getContext(), inputString, key.toCharArray(), (byte) blockSizeSaved, cropSizeSaved, (double) embeddingPower);
                 messageEncodingColor.execute(OlmaredoUtil.ReadImage(getActivity(), fileNameOriginal, outputFileUri));
+            }
+        });
+
+        share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (new File(fileNameResult).exists()) {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("image/*");// You Can set source type here like video, image text, etc.
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileNameResult));
+                    shareIntent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(Intent.createChooser(shareIntent, "Share File Using!"));
+                } else {
+                    Snackbar.make(encode, "First, encode an image!", Snackbar.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -327,15 +345,9 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
 
-    //This takes the modified photo and saves it
-    @Override //COLOR
+    // This takes the modified photo and saves it
+    @Override
     public void onTaskCompleted(Bitmap bm) {
-
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
-        wasTaskRunning = false;
-        setRetainInstance(false);
 
         if (OlmaredoUtil.CheckPermissions(thisThis, getContext(), PERMISSION_CODE)) {
 
@@ -344,7 +356,7 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
             String pathToPictureFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
 
-            String fileNameResult = pathToPictureFolder + "/Olmaredo/" + timeStamp + "-Encoded.png";
+            fileNameResult = pathToPictureFolder + "/Olmaredo/" + timeStamp + "-Encoded.png";
             Log.v(TAG, "Writing image file: " + fileNameResult);
 
             try {
@@ -369,9 +381,17 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     e.printStackTrace();
                 }
             }
-        } /*else {
+        } else {
             Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-        }*/
+        }
+
+        // GUI changes
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        wasTaskRunning = false;
+        setRetainInstance(false);
+        share.setEnabled(true);
     }
 
     @Override
