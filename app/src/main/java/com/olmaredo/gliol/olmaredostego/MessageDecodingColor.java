@@ -38,22 +38,21 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         //Getting X matrices
         int H = params[0].getHeight();
         int W = params[0].getWidth();
-        int Wmax = W / N; //Number of blocks per row
-        int Hmax = H / N; //Number of blocks per row
-        int NBlocks = Hmax * Wmax;
-        int Nsqr = N * N;
-        char[][] Xr = new char[NBlocks][Nsqr]; // char because we don't want a signed number
-        char[][] Xg = new char[NBlocks][Nsqr];
-        char[][] Xb = new char[NBlocks][Nsqr];
+        int wMax = W / N; //Number of blocks per row
+        int hMax = H / N; //Number of blocks per row
+        int NBlocks = hMax * wMax;
+        int NSqr = N * N;
+        char[] Xr = new char[NSqr]; // char because we don't want a signed number
+        char[] Xg = new char[NSqr];
+        char[] Xb = new char[NSqr];
 
-        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
-        // TODO publish progress here
+        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, NSqr * 8);
+        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, NSqr * 8);
+        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, NSqr * 8);
 
-        double[] signatureR = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureRf);
-        double[] signatureG = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureGf);
-        double[] signatureB = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureBf);
+        double[] signatureR = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureRf);
+        double[] signatureG = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureGf);
+        double[] signatureB = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureBf);
         //Log.v(TAG, "Decoding Gaussian: " + signatureR[0] + signatureG[12] + signatureB[20]);
 
 
@@ -64,25 +63,19 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         int hR, hG, hB;
 
 
-        for (int posInd = 0; posInd < NBlocks; posInd++) {
-            wR = posR[posInd] % Wmax;
-            wG = posG[posInd] % Wmax;
-            wB = posB[posInd] % Wmax;
+        wR = posR[0] % wMax;
+        wG = posG[0] % wMax;
+        wB = posB[0] % wMax;
+        hR = posR[0] / wMax;
+        hG = posG[0] / wMax;
+        hB = posB[0] / wMax;
 
-            hR = posR[posInd] / Wmax;
-            hG = posG[posInd] / Wmax;
-            hB = posB[posInd] / Wmax;
-
-            for (int a = 0; a < N; a++) //Loop on block's rows
-            {
-                for (int b = 0; b < N; b++) //Loop on block's columns
-                {
-                    Xr[posInd][(a * N) + b] = (char) Color.red(params[0].getPixel((wR * N) + b, (hR * N) + a));
-                    Xg[posInd][(a * N) + b] = (char) Color.green(params[0].getPixel((wG * N) + b, (hG * N) + a));
-                    Xb[posInd][(a * N) + b] = (char) Color.blue(params[0].getPixel((wB * N) + b, (hB * N) + a));
-                }
+        for (int a = 0; a < N; a++) { //Loop on block's rows
+            for (int b = 0; b < N; b++) { //Loop on block's columns
+                Xr[(a * N) + b] = (char) Color.red(params[0].getPixel((wR * N) + b, (hR * N) + a));
+                Xg[(a * N) + b] = (char) Color.green(params[0].getPixel((wG * N) + b, (hG * N) + a));
+                Xb[(a * N) + b] = (char) Color.blue(params[0].getPixel((wB * N) + b, (hB * N) + a));
             }
-            publishProgress((int) ((posInd / (double) posR.length) * 70));
         }
 
         Log.v(TAG, "Created Y matrices.");
@@ -90,6 +83,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
         int NBlocksRGB = NBlocks * 3;
         char c = 0;
         char terminators = 0;
+        int posInd = 0;
         StringBuilder result = new StringBuilder(NBlocksRGB / 8);
 
         for (int p = 0; p < NBlocksRGB; p++) {
@@ -103,22 +97,37 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
             }
             //Same logic as in the encoding
             if (p % 3 == 0) {
-                if (GetSign(signatureR, Xr[p / 3])) //If true set the bit to one
+                if (GetSign(signatureR, Xr)) //If true set the bit to one
                     c |= (1 << (p % 8));
             } else if (p % 3 == 1) {
-                if (GetSign(signatureG, Xg[p / 3])) //If true set the bit to one
+                if (GetSign(signatureG, Xg)) //If true set the bit to one
                     c |= (1 << (p % 8));
             } else {
-                if (GetSign(signatureB, Xb[p / 3])) //If true set the bit to one
+                if (GetSign(signatureB, Xb)) //If true set the bit to one
                     c |= (1 << (p % 8));
+
+                posInd++;
+                wR = posR[posInd] % wMax;
+                wG = posG[posInd] % wMax;
+                wB = posB[posInd] % wMax;
+                hR = posR[posInd] / wMax;
+                hG = posG[posInd] / wMax;
+                hB = posB[posInd] / wMax;
+
+                for (int a = 0; a < N; a++) { //Loop on block's rows
+                    for (int b = 0; b < N; b++) { //Loop on block's columns
+                        Xr[(a * N) + b] = (char) Color.red(params[0].getPixel((wR * N) + b, (hR * N) + a));
+                        Xg[(a * N) + b] = (char) Color.green(params[0].getPixel((wG * N) + b, (hG * N) + a));
+                        Xb[(a * N) + b] = (char) Color.blue(params[0].getPixel((wB * N) + b, (hB * N) + a));
+                    }
+                }
             }
-            publishProgress((int) ((p / (double) NBlocksRGB) * 30) + 70);
+            publishProgress((int) ((p / (double) NBlocksRGB) * 100));
         }
 
         publishProgress(100);
         Log.v(TAG, "Giving back the result string");
         return result.toString();
-
     }
 
     @Override
@@ -137,7 +146,7 @@ public class MessageDecodingColor extends AsyncTask<Bitmap, Integer, String> {
 
     ////////////////////////////////////////////////////////////////////////////////////////
     /*
-        Gets the key vector and a envelopped block
+        Gets the key vector and a enveloped block
         Returns the value of the bit assigned to the
         block.
      */
