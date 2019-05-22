@@ -18,7 +18,10 @@
         android:theme="@style/AppTheme"
         android:windowSoftInputMode="stateHidden"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.olmaredo.gliol.olmaredostego.StartActivity">
+        <!--adjustPan to keep bottom bar down when keyboard is up-->
+        <activity
+            android:name="com.olmaredo.gliol.olmaredostego.StartActivity"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

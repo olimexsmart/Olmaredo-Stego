@@ -1,116 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <RelativeLayout
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/main_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true">
+
+
+            <com.github.siyamed.shapeimageview.RoundedImageView
+                android:id="@+id/imPreview"
+                android:layout_width="175dp"
+                android:layout_height="175dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/imageContext"
+                android:maxWidth="200dp"
+                android:maxHeight="200dp"
+                android:minWidth="50dp"
+                android:minHeight="50dp"
+                android:src="@drawable/image_pick"
+                app:siBorderColor="@color/thatGrey"
+                app:siBorderWidth="0.5dp"
+                app:siRadius="4dp"
+                app:siSquare="true" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/etMessageLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_below="@+id/imPreview"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="10dp"
+                android:ems="10"
+                android:hint="@string/tvMessageHint"
+                android:inputType="textMultiLine"
+                android:lines="8">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="top" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btPickFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/etMessageLayout"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="6dp"
+                android:drawableStart="@drawable/browse"
+                android:text="@string/pickFile" />
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="191dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toEndOf="@+id/imPreview"
+                android:hint="@string/hintSignature">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etKey"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/etMessageLayout"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:enabled="false"
+                android:text="@string/shareButton" />
+
+
+        </RelativeLayout>
+
+
+    </ScrollView>
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/barEncode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:backgroundTint="@color/colorPrimary" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btEncode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:descendantFocusability="beforeDescendants"
-        android:focusableInTouchMode="true">
-
-
-        <com.github.siyamed.shapeimageview.RoundedImageView
-            android:id="@+id/imPreview"
-            android:layout_width="175dp"
-            android:layout_height="175dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/imageContext"
-            android:maxWidth="200dp"
-            android:maxHeight="200dp"
-            android:minWidth="50dp"
-            android:minHeight="50dp"
-            android:src="@drawable/image_pick"
-            app:siRadius="4dp"
-            app:siBorderWidth="0.5dp"
-            app:siBorderColor="@color/thatGrey"
-            app:siSquare="true" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/etMessageLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_below="@+id/imPreview"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginEnd="10dp"
-            android:ems="10"
-            android:hint="@string/tvMessageHint"
-            android:inputType="textMultiLine"
-            android:lines="8">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etMessage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="top" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/btPickFile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/etMessageLayout"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="6dp"
-            android:drawableStart="@drawable/browse"
-            android:text="@string/pickFile" />
-
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btEncode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/etMessageLayout"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_toStartOf="@+id/btShare"
-            android:clickable="false"
-            app:srcCompat="@android:drawable/stat_sys_download" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="191dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginEnd="10dp"
-            android:layout_toEndOf="@+id/imPreview"
-            android:hint="@string/hintSignature">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etKey"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/btShare"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/etMessageLayout"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:enabled="false"
-            android:text="@string/shareButton" />
-
-
-    </RelativeLayout>
-</ScrollView>
+        android:clickable="false"
+        app:backgroundTint="@color/colorPrimaryDark"
+        app:layout_anchor="@id/barEncode"
+        app:srcCompat="@android:drawable/stat_sys_download" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

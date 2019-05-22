@@ -34,7 +34,7 @@ public class StartActivity extends AppCompatActivity implements OnSettingsUpdate
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-        Objects.requireNonNull(getSupportActionBar()).hide(); //Hide the bar with the title, take up space and it's useless
+
 
         //Create and connects the Java objects to the XML design
         tabLayout = findViewById(R.id.tablayout);

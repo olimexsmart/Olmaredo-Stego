@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,8 +19,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -70,6 +74,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
     private String taskType; // Saving the title of the progressDialog
     private boolean wasTaskRunning = false;
 
+    private BottomAppBar bottomAppBar;
+
     //In order to have smoothest transition possible, immediately create the new Dialog
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -86,6 +92,8 @@ public class EncodeFragment extends Fragment implements TaskManager {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.encoding, container, false);
+
+
     }
 
     @Override
@@ -103,6 +111,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
         //Cursor that selects the embedding power
         keyField = view.findViewById(R.id.etKey);
         share = view.findViewById(R.id.btShare);
+
+        bottomAppBar = view.findViewById(R.id.barEncode);
+        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+        setHasOptionsMenu(true);
 
 
         //All this if statement basically takes the saved instance and resumes the activity status
@@ -249,6 +261,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
       :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
       `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
      */
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.navigation, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     //Saves the state of the activity before is destroyed, orientation change and such
     @Override
