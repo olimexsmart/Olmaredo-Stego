@@ -10,18 +10,23 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -30,9 +35,6 @@ import java.io.File;
 import java.util.Objects;
 
 
-/*
-    Tab that manages message decoding
- */
 public class DecodeFragment extends Fragment implements TaskManager {
     private final String TAG = "DecodeFragment";
     //Random numbers to match requests
@@ -49,7 +51,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private TextInputEditText keySignature;
     private FloatingActionButton decode;
     private TextView result;
-    private Button toClipboard;
 
     private DecodeFragment thisThis; //Holds reference of this fragment where "this" keyword isn't enough
     private String fileNameOriginal; //Holds the absolute path of the photo opened
@@ -61,6 +62,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
     private int taskProgress;
     private String taskType;
     private boolean wasTaskRunning = false;
+
+    private BottomAppBar bottomAppBar;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -89,7 +92,12 @@ public class DecodeFragment extends Fragment implements TaskManager {
         keySignature = view.findViewById(R.id.etKey);
         decode = view.findViewById(R.id.btDecode);
         result = view.findViewById(R.id.twShowResult);
-        toClipboard = view.findViewById(R.id.btClipboardText);
+
+
+        bottomAppBar = view.findViewById(R.id.barDecode);
+        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+
+        setHasOptionsMenu(true);
 
         //All this if statement basically takes the saved instance and resumes the activity status
         //Generally after a screen rotation, but doesn't know generally
@@ -110,8 +118,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
             if (savedInstanceState.containsKey(bundleResultText)) {
                 resultText = savedInstanceState.getString(bundleResultText);
                 result.setText(resultText);
-                if (resultText.length() > 0)
-                    toClipboard.setEnabled(true);
             }
             Log.v(TAG, "Activity restored.");
         } else {
@@ -125,11 +131,25 @@ public class DecodeFragment extends Fragment implements TaskManager {
             public void onClick(View v) {
                 if (OlmaredoUtil.CheckPermissions(thisThis, getContext(), REQ_CODE_GALLERY)) {
                     Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(i, REQ_CODE_GALLERY); //Actually opens te gallery
+                    startActivityForResult(i, REQ_CODE_GALLERY); //Actually opens the gallery
                 } else {
                     //Com'on
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        keySignature.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // If the event is a key-down event on the "enter" button
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    // Perform action on key press
+                    Log.v(TAG, "Starting decoding from keyboard");
+                    decode.callOnClick();
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -139,14 +159,19 @@ public class DecodeFragment extends Fragment implements TaskManager {
             public void onClick(View v) {
                 // Checking consistency of input data
                 if (!new File(fileNameOriginal).exists()) {
-                    Snackbar.make(decode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
-                    preview.callOnClick();
+                    Snackbar.make(decode, "Open an image first", Snackbar.LENGTH_LONG).show();
+                    new android.os.Handler().postDelayed(
+                            new Runnable() {
+                                public void run() {
+                                    preview.callOnClick();
+                                }
+                            }, 2000);
                     return;
                 }
                 // Reading key and trimming whitespaces
                 String key = Objects.requireNonNull(keySignature.getText()).toString().trim(); //Get the signature from the GUI
                 if (key.length() < 4) {
-                    Snackbar.make(decode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(decode, "Enter key at least 4 characters long", Snackbar.LENGTH_LONG).show();
                     keySignature.requestFocus();
                     return;
                 }
@@ -155,22 +180,8 @@ public class DecodeFragment extends Fragment implements TaskManager {
                 StartActivity activity = (StartActivity) getActivity();
                 MessageDecodingColor messageDecodingColor = new MessageDecodingColor(thisThis, key.toCharArray(), (byte) Objects.requireNonNull(activity).BlockSize);
                 messageDecodingColor.execute(OlmaredoUtil.ReadImage(getActivity(), fileNameOriginal, outputFileUri));
-
-                toClipboard.setEnabled(true); //Make possible copying the text elsewhere
             }
         });
-
-        //Handy button that pastes the result into the clipboard
-        toClipboard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) Objects.requireNonNull(getActivity()).getSystemService(Activity.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("nothing", result.getText().toString());
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(getContext(), "Message copied in the clipboard", Toast.LENGTH_SHORT).show();
-            }
-        });
-
     }
 
 
@@ -179,6 +190,35 @@ public class DecodeFragment extends Fragment implements TaskManager {
       :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
       `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `--'
      */
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+
+        // Making sure that our bar is the one of the activity, otherwise the menu is inflated on the other one
+        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+
+        inflater.inflate(R.menu.menu_decode, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        if (item.getItemId() == R.id.menu_copy) {
+            if (result.getText().toString().length() > 0) {
+                ClipboardManager clipboard = (ClipboardManager) Objects.requireNonNull(getActivity()).getSystemService(Activity.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("nothing", result.getText().toString());
+                clipboard.setPrimaryClip(clip);
+                Snackbar.make(decode, "Message copied in the clipboard", Snackbar.LENGTH_SHORT).show();
+            } else {
+                Snackbar.make(decode, "Nothing to copy", Snackbar.LENGTH_LONG).show();
+            }
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override //Save the state of the fragment prior to destruction
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -257,7 +297,6 @@ public class DecodeFragment extends Fragment implements TaskManager {
     @Override
     public void onTaskCompleted(String message) {
         result.setText(message);
-        toClipboard.setEnabled(true);
         resultText = message;
 
         if (progressDialog != null) {

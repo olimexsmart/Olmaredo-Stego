@@ -11,9 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -55,14 +55,13 @@ public class EncodeFragment extends Fragment implements TaskManager {
 
 
     private FloatingActionButton encode;  // Encode button
-    private Button share; // Share button
     private ImageView preview;  // Preview the image selected
     private TextInputEditText inputText; // Box to type the hidden text manually
     private TextInputEditText keyField; // Enter encoding key
 
-    private String fileNameOriginal;    // Name of the original photo file
-    private String fileNameText;    // Holds the path of the input text file
-    private String fileNameResult; // Holds the output file name for sharing
+    private String fileNameOriginal = "";    // Name of the original photo file
+    private String fileNameText = "";    // Holds the path of the input text file
+    private String fileNameResult = ""; // Holds the output file name for sharing
     private Uri outputFileUri = null; // Camera output file path, stupid URI thing
 
     //Used to pass a reference to the asyncTask, because in the button handler "this" doesn't work as they should
@@ -92,8 +91,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.encoding, container, false);
-
-
     }
 
     @Override
@@ -106,11 +103,10 @@ public class EncodeFragment extends Fragment implements TaskManager {
         encode = view.findViewById(R.id.btEncode);
         preview = view.findViewById(R.id.imPreview);
         //To open text file from file manager
-        Button pickFile = view.findViewById(R.id.btPickFile);
         inputText = view.findViewById(R.id.etMessage);
         //Cursor that selects the embedding power
         keyField = view.findViewById(R.id.etKey);
-        share = view.findViewById(R.id.btShare);
+
 
         bottomAppBar = view.findViewById(R.id.barEncode);
         ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
@@ -168,32 +164,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
         });
 
-        //Opens a dialog that selects a txt file and loads it
-        pickFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (OlmaredoUtil.CheckPermissions(thisThis, getContext(), PERMISSION_CODE)) {
-                    FileChooser fileChooser = new FileChooser(getActivity());
-                    fileChooser.setExtension(".txt");  //Only plain text files for now
-
-                    fileChooser.setFileListener(new FileChooser.FileSelectedListener() {
-                        @Override
-                        public void fileSelected(final File file) {
-                            //Read text from file
-                            fileNameText = file.getAbsolutePath();
-                            Log.v(TAG, "Opened text file: " + fileNameText);
-
-                            inputText.setText(OlmaredoUtil.ReadTextFile(getContext(), fileNameText));
-                        }
-                    });
-                    fileChooser.showDialog();
-                } else {
-                    //I hate those smart ass motherfuckers
-                    Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
 
         //Starts the Async task that encodes the message
         encode.setOnClickListener(new View.OnClickListener() {
@@ -201,20 +171,26 @@ public class EncodeFragment extends Fragment implements TaskManager {
             public void onClick(View v) {
                 // Checking consistency of input data
                 if (!new File(fileNameOriginal).exists()) {
-                    Snackbar.make(encode, "Open a valid image!", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(encode, "Open an image first", Snackbar.LENGTH_LONG).show();
                     // Open dialog as if user user clicked on it
-                    preview.callOnClick();
+                    new android.os.Handler().postDelayed(
+                            new Runnable() {
+                                public void run() {
+                                    preview.callOnClick();
+                                }
+                            }, 2000);
+
                     return;
                 }
                 // Reading key and trimming whitespaces
                 String key = Objects.requireNonNull(keyField.getText()).toString().trim();
                 if (key.length() < 4) {
-                    Snackbar.make(encode, "Enter key at least 4 characters long!", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(encode, "Enter key at least 4 characters long", Snackbar.LENGTH_LONG).show();
                     keyField.requestFocus();
                     return;
                 }
                 if (Objects.requireNonNull(inputText.getText()).length() < 1) {
-                    Snackbar.make(encode, "Enter some text to hide!", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(encode, "Enter some text to hide", Snackbar.LENGTH_LONG).show();
                     inputText.requestFocus();
                     return;
                 }
@@ -238,20 +214,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
             }
         });
 
-        share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (new File(fileNameResult).exists()) {
-                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    shareIntent.setType("image/*");// You Can set source type here like video, image text, etc.
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileNameResult));
-                    shareIntent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(Intent.createChooser(shareIntent, "Share File Using!"));
-                } else {
-                    Snackbar.make(encode, "First, encode an image!", Snackbar.LENGTH_LONG).show();
-                }
-            }
-        });
 
         Log.v(TAG, "OnView ended");
     }
@@ -263,10 +225,66 @@ public class EncodeFragment extends Fragment implements TaskManager {
      */
 
     @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        inflater.inflate(R.menu.navigation, menu);
+
+        // Making sure that our bar is the one of the activity, otherwise the menu is inflated on the other one
+        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+
+        inflater.inflate(R.menu.menu_encode, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.menu_share:
+                if (new File(fileNameResult).exists()) {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("image/*");// You Can set source type here like video, image text, etc.
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileNameResult));
+                    shareIntent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(Intent.createChooser(shareIntent, "Share File using:"));
+                } else {
+                    Snackbar.make(encode, "Encode an image first", Snackbar.LENGTH_LONG).show();
+                }
+                Log.v(TAG, "Share menu clicked");
+                return true;
+            case R.id.menu_file:
+                if (OlmaredoUtil.CheckPermissions(thisThis, getContext(), PERMISSION_CODE)) {
+                    FileChooser fileChooser = new FileChooser(getActivity());
+                    fileChooser.setExtension(".txt");  //Only plain text files for now
+
+                    fileChooser.setFileListener(new FileChooser.FileSelectedListener() {
+                        @Override
+                        public void fileSelected(final File file) {
+                            //Read text from file
+                            fileNameText = file.getAbsolutePath();
+                            Log.v(TAG, "Opened text file: " + fileNameText);
+
+                            inputText.setText(OlmaredoUtil.ReadTextFile(getContext(), fileNameText));
+                        }
+                    });
+                    fileChooser.showDialog();
+                } else {
+                    //I hate those smart ass motherfuckers
+                    Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     //Saves the state of the activity before is destroyed, orientation change and such
@@ -410,7 +428,6 @@ public class EncodeFragment extends Fragment implements TaskManager {
         }
         wasTaskRunning = false;
         setRetainInstance(false);
-        share.setEnabled(true);
     }
 
     @Override
