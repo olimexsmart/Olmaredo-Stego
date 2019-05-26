@@ -57,10 +57,10 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         //Checking how much information can contain the image
         int H = params[0].getHeight();
         int W = params[0].getWidth();
-        int Nsqr = N * N;
-        int Wmax = W / N; //Number of blocks per row
-        int Hmax = H / N; //Number of blocks per row
-        int NBlocks = Hmax * Wmax;
+        int NSqr = N * N;
+        int WMax = W / N; //Number of blocks per row
+        int HMax = H / N; //Number of blocks per row
+        int NBlocks = HMax * WMax;
 
         int maxLength = ((NBlocks * 3) / 8) - 3; // Safe from border conditions
         if (message.length() >= maxLength) {
@@ -70,16 +70,14 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
         message += "\0\0\0\0\0"; // Hopefully one of these will make it through
 
-        // TODO This takes some time, try to reduce number of iterations
-        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, Nsqr * 8);
-        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, Nsqr * 8);
-        // TODO publish progress here
+        byte[] signatureRf = OlmaredoUtil.HashKey(key, "4444".getBytes(), ITERATIONS, NSqr * 8);
+        byte[] signatureGf = OlmaredoUtil.HashKey(key, "7777".getBytes(), ITERATIONS, NSqr * 8);
+        byte[] signatureBf = OlmaredoUtil.HashKey(key, "9999".getBytes(), ITERATIONS, NSqr * 8);
 
         // Generating gaussian-noise signatures, which seems to have better performance
-        double[] signatureR = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureRf);
-        double[] signatureG = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureGf);
-        double[] signatureB = OlmaredoUtil.gaussianNoise(Nsqr, VARIANCE, 0, signatureBf);
+        double[] signatureR = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureRf);
+        double[] signatureG = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureGf);
+        double[] signatureB = OlmaredoUtil.gaussianNoise(NSqr, VARIANCE, 0, signatureBf);
         //Log.v(TAG, "Encoding Gaussian: " + signatureR[0] + signatureG[12] + signatureB[20]);
 
         int ML = message.length();
@@ -92,12 +90,12 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
         int[] posG = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureGf);
         int[] posB = OlmaredoUtil.RandomArrayNoRepetitions(NBlocksNeededRGB, NBlocks, signatureBf);
         int posInd = 0;
-        int wR = posR[0] % Wmax;
-        int wG = posG[0] % Wmax;
-        int wB = posB[0] % Wmax;
-        int hR = posR[0] / Wmax;
-        int hG = posG[0] / Wmax;
-        int hB = posB[0] / Wmax;
+        int wR = posR[0] % WMax;
+        int wG = posG[0] % WMax;
+        int wB = posB[0] % WMax;
+        int hR = posR[0] / WMax;
+        int hG = posG[0] / WMax;
+        int hB = posB[0] / WMax;
 
 
         //Because immutable, you know
@@ -170,13 +168,13 @@ public class MessageEncodingColor extends AsyncTask<Bitmap, Integer, Bitmap> {
 
                 //At the next p increment we will be again in the first if statement, we need to be in the next block
                 posInd++;
-                wR = posR[posInd] % Wmax;
-                wG = posG[posInd] % Wmax;
-                wB = posB[posInd] % Wmax;
+                wR = posR[posInd] % WMax;
+                wG = posG[posInd] % WMax;
+                wB = posB[posInd] % WMax;
 
-                hR = posR[posInd] / Wmax;
-                hG = posG[posInd] / Wmax;
-                hB = posB[posInd] / Wmax;
+                hR = posR[posInd] / WMax;
+                hG = posG[posInd] / WMax;
+                hB = posB[posInd] / WMax;
             }
 
             publishProgress((int) ((p / (double) NBlocksNeeded) * 100));

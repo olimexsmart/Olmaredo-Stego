@@ -1,6 +1,7 @@
 package com.olmaredo.gliol.olmaredostego;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
@@ -14,19 +15,30 @@ import com.google.android.material.tabs.TabLayout;
 import java.io.File;
 import java.util.Objects;
 
+import static com.olmaredo.gliol.olmaredostego.SettingsFragment.DEFAULT_BLOCK_SIZE;
+import static com.olmaredo.gliol.olmaredostego.SettingsFragment.DEFAULT_CROP_SIZE;
+import static com.olmaredo.gliol.olmaredostego.SettingsFragment.DEFAULT_EMBEDDING_POWER;
+
 
 public class StartActivity extends AppCompatActivity implements OnSettingsUpdated {
     private static final String TAG = "StartActivity";
+    private static final String TAG_SETTINGS = "SettingApp";
+
+    private static final String bundleEmbedPow = "bEP";
+    private static final String bundleCropSize = "bCS";
+    private static final String bundleBlockSize = "bBS";
 
     //Objects that manage the Tab GUI
     TabLayout tabLayout;
     ViewPager viewPager;
     ViewPagerAdapter viewPagerAdapter;
 
+    public int Tab = -1;
+
 	//This data is used to communicate between tabs
-    public int BlockSize = SettingsFragment.DEFAULT_BLOCK_SIZE;
-    public int CropSize = SettingsFragment.DEFAULT_CROP_SIZE;
-    public int EmbeddingPower = SettingsFragment.DEFAULT_EMBEDDING_POWER;
+    public int BlockSize = DEFAULT_BLOCK_SIZE;
+    public int CropSize = DEFAULT_CROP_SIZE;
+    public int EmbeddingPower = DEFAULT_EMBEDDING_POWER;
 
 
     @SuppressLint("ResourceType")
@@ -35,6 +47,7 @@ public class StartActivity extends AppCompatActivity implements OnSettingsUpdate
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
+        restoreSavedSettings();
 
         //Create and connects the Java objects to the XML design
         tabLayout = findViewById(R.id.tablayout);
@@ -80,5 +93,13 @@ public class StartActivity extends AppCompatActivity implements OnSettingsUpdate
         BlockSize = blockSize;
         CropSize = cropSize;
         EmbeddingPower = embeddingPower;
+    }
+
+    private void restoreSavedSettings() {
+        SharedPreferences sp = Objects.requireNonNull(getSharedPreferences(TAG_SETTINGS, 0));
+
+        CropSize = sp.getInt(bundleCropSize, DEFAULT_CROP_SIZE);
+        BlockSize = sp.getInt(bundleBlockSize, DEFAULT_BLOCK_SIZE);
+        EmbeddingPower = sp.getInt(bundleEmbedPow, DEFAULT_EMBEDDING_POWER);
     }
 }

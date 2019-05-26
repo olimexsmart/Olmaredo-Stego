@@ -48,22 +48,20 @@ The work is completely open source, you can find the source code following the l
     <string name="heightImage">Images are reduced in resolution to avoid compression when sharing. Default to 1600 pixels because it is suitable to use with IM apps, like WhatsApp and Telegram.</string>
     <string name="heightImageBig">Image shorter dimension</string>
     <string name="blockSetting">Define the dimension in pixel of the block used in the steganographic method. With bigger blocks it is possible to reduce the encoding power but the maximum amount of text is reduced.</string>
-    <string name="blockSettingBig">Block dimension</string>
-    <string name="encSelect">Select the image.\nYou can choose an existing file or make a new photograph.</string>
+    <string name="blockSettingBig">Block size</string>
     <string name="encSelectBig">Image</string>
     <string name="encMessageBig">Message</string>
-    <string name="encOpenFile">… or open a text file</string>
     <string name="encIntensity">Intensity</string>
     <string name="encIntensitySettings">A higher encoding intensity ensures less errors, but the encoding artifacts become noticeable</string>
     <string name="encPercentage">0%</string>
-    <string name="decSignatureBig">Signature</string>
-    <string name="decSelect">Select image</string>
-    <string name="decSelectBig">Image</string>
     <string name="tvKeyHint">Create a key</string>
     <string name="tvMessageHint">Enter text to hide</string>
     <string name="imageContext">image picker choose image from gallery or take a photo</string>
     <string name="croppedSettingsHint">1600</string>
     <string name="restoreSettingsButton">Restore Default</string>
     <string name="shareButton">Share</string>
+    <string name="placeHolder">--</string>
+    <string name="heightImageSmall">Final height</string>
+    <string name="escape">/</string>
 
 </resources>

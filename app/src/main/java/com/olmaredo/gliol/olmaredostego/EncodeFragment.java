@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -94,14 +97,14 @@ public class EncodeFragment extends Fragment implements TaskManager {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         thisThis = this; //this
         //Interface link to XML
         //Pick photo button handler
         encode = view.findViewById(R.id.btEncode);
-        preview = view.findViewById(R.id.imPreview);
+        preview = view.findViewById(R.id.ivPreview);
         //To open text file from file manager
         inputText = view.findViewById(R.id.etMessage);
         //Cursor that selects the embedding power
@@ -161,6 +164,23 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     //If some tin-foil-hat didn't give the permissions
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        // Live char counter
+        inputText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                TextView space = view.findViewById(R.id.tvSpace);
+                space.setText(String.format(Locale.ITALIAN, "%d", s.length()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
             }
         });
 
@@ -225,24 +245,38 @@ public class EncodeFragment extends Fragment implements TaskManager {
      */
 
     @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-
         // Making sure that our bar is the one of the activity, otherwise the menu is inflated on the other one
-        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+        StartActivity activity = (StartActivity) getActivity();
 
+        if (Objects.requireNonNull(activity).Tab != 0) {
+            ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+            activity.Tab = 0;
+        }
+
+        // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.menu_encode, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        // This is stupid, it should not be here, but it is convenient because this method is called on tab change
+        // Update textViews with setting retrieving the encoding settings
+        TextView bd = Objects.requireNonNull(getView()).findViewById(R.id.tvMiniBD);
+        bd.setText(String.format(Locale.ITALIAN, "%d px", activity.BlockSize));
+
+        TextView fh = getView().findViewById(R.id.tvMiniFH);
+        fh.setText(String.format(Locale.ITALIAN, "%d px", activity.CropSize));
+
+        TextView ep = getView().findViewById(R.id.tvMiniI);
+        ep.setText(String.format(Locale.ITALIAN, "%d%%", activity.EmbeddingPower));
+
+        if (new File(fileNameOriginal).exists()) {
+            UpdateMaxSize();
+        }
     }
 
     @Override
@@ -350,11 +384,44 @@ public class EncodeFragment extends Fragment implements TaskManager {
                 preview.setImageBitmap(im);
                 keyField.requestFocus();
 
+                UpdateMaxSize();
+
                 Log.v(TAG, "Chosen photo.");
             } else {
                 Log.v(TAG, "Image is null");
             }
         }
+    }
+
+    // Updates textView with image capacity
+    private void UpdateMaxSize() {
+        // This may look rather ugly
+        // But it is
+        // The goal is to quickly return to the caller as possible
+        // Otherwise the GUI cannot proceed in rendering, since this is called in callbacks
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        // Setting max character embeddable in image
+                        StartActivity activity = (StartActivity) getActivity();
+                        int N = Objects.requireNonNull(activity).BlockSize;
+                        int finHeight = activity.CropSize;
+
+                        Bitmap temp = OlmaredoUtil.ResizeNCrop(Objects.requireNonNull(OlmaredoUtil.ReadImage(getActivity(), fileNameOriginal, outputFileUri)), N, finHeight);
+
+                        //Checking how much information can contain the image
+                        int H = temp.getHeight();
+                        int W = temp.getWidth();
+                        int WMax = W / N; //Number of blocks per row
+                        int HMax = H / N; //Number of blocks per row
+                        int NBlocks = HMax * WMax;
+
+                        int maxLength = ((NBlocks * 3) / 8) - 3; // Safe from border conditions
+
+                        TextView ml = Objects.requireNonNull(getView()).findViewById(R.id.tvSpaceTot);
+                        ml.setText(String.format(Locale.ITALIAN, "%d", maxLength));
+                    }
+                }, 500);
     }
 
 

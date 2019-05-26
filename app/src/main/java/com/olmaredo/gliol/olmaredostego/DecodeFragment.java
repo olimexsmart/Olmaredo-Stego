@@ -32,6 +32,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Objects;
 
 
@@ -195,11 +196,26 @@ public class DecodeFragment extends Fragment implements TaskManager {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
 
+        StartActivity activity = (StartActivity) getActivity();
         // Making sure that our bar is the one of the activity, otherwise the menu is inflated on the other one
-        ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+        if (Objects.requireNonNull(activity).Tab != 1) {
+            ((AppCompatActivity) Objects.requireNonNull(getActivity())).setSupportActionBar(bottomAppBar);
+            activity.Tab = 1;
+        }
 
         inflater.inflate(R.menu.menu_decode, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        // This is stupid, it should not be here, but it is convenient because this method is called on tab change
+        // Update textViews with setting retrieving the encoding settings
+        TextView bd = Objects.requireNonNull(getView()).findViewById(R.id.tvMiniBD);
+        bd.setText(String.format(Locale.ITALIAN, "%d px", activity.BlockSize));
+
+        TextView fh = getView().findViewById(R.id.tvMiniFH);
+        fh.setText(String.format(Locale.ITALIAN, "%d px", activity.CropSize));
+
+        TextView ep = getView().findViewById(R.id.tvMiniI);
+        ep.setText(String.format(Locale.ITALIAN, "%d%%", activity.EmbeddingPower));
     }
 
     @Override

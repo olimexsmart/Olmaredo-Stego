@@ -24,6 +24,7 @@ import java.util.Objects;
 
 public class SettingsFragment extends Fragment {
     private static final String TAG = "SettingFragment";
+    private static final String TAG_SETTINGS = "SettingApp";
     //These should be written in the startActivity maybe
     static int DEFAULT_BLOCK_SIZE = 8;
     static int DEFAULT_CROP_SIZE = 1600;
@@ -169,7 +170,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void restoreSavedSettings() {
-        SharedPreferences sp = Objects.requireNonNull(getActivity()).getSharedPreferences(TAG, 0);
+        SharedPreferences sp = Objects.requireNonNull(getActivity()).getSharedPreferences(TAG_SETTINGS, 0);
 
         cropSize = sp.getInt(bundleCropSize, DEFAULT_CROP_SIZE);
         blockSize = sp.getInt(bundleBlockSize, DEFAULT_BLOCK_SIZE);
@@ -177,7 +178,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void saveSettings() {
-        SharedPreferences.Editor editor = Objects.requireNonNull(getActivity()).getSharedPreferences(TAG, 0).edit();
+        SharedPreferences.Editor editor = Objects.requireNonNull(getActivity()).getSharedPreferences(TAG_SETTINGS, 0).edit();
 
         editor.putInt(bundleCropSize, cropSize);
         editor.putInt(bundleBlockSize, blockSize);

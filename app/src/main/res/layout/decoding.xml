@@ -68,6 +68,66 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp" />
 
+            <TextView
+                android:id="@+id/tvMiniBlock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/etCustom"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/ivPreview"
+                android:text="@string/blockSettingBig" />
+
+            <TextView
+                android:id="@+id/tvMiniHeight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvMiniBlock"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/ivPreview"
+                android:text="@string/heightImageSmall" />
+
+            <TextView
+                android:id="@+id/tvMiniIntensity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvMiniHeight"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/ivPreview"
+                android:text="@string/encIntensity" />
+
+            <TextView
+                android:id="@+id/tvMiniBD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/tvMiniBlock"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="0dp"
+                android:layout_toEndOf="@+id/tvMiniBlock"
+                android:text="@string/placeHolder" />
+
+            <TextView
+                android:id="@+id/tvMiniFH"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/tvMiniHeight"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="0dp"
+                android:layout_toEndOf="@+id/tvMiniBlock"
+                android:text="@string/placeHolder" />
+
+            <TextView
+                android:id="@+id/tvMiniI"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/tvMiniIntensity"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="0dp"
+                android:layout_toEndOf="@+id/tvMiniBlock"
+                android:text="@string/placeHolder" />
+
         </RelativeLayout>
     </ScrollView>
 
