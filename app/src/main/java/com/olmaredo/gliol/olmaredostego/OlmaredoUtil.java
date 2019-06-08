@@ -246,35 +246,5 @@ class OlmaredoUtil {
         return text.toString();
     }
 
-    //Display a dialog box that let you choose between an already existing image o taking a new one
-    static void openImageIntent(Fragment fragment, Activity activity, String fileNameOriginal, Uri outputFileUri, int CAMERA_REQUEST_CODE) {
-        // Determine Uri of camera image to save.
-        File fromCamera = new File(fileNameOriginal);
-        outputFileUri = Uri.fromFile(fromCamera);
 
-        // Camera.
-        final List<Intent> cameraIntents = new ArrayList<>();
-        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        final PackageManager packageManager = Objects.requireNonNull(activity).getPackageManager();
-        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
-        for (ResolveInfo res : listCam) {
-            final String packageName = res.activityInfo.packageName;
-            final Intent intent = new Intent(captureIntent);
-            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-            intent.setPackage(packageName);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-            cameraIntents.add(intent);
-        }
-
-        // Filesystem.
-        Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-        // Chooser of filesystem options.
-        final Intent chooserIntent = Intent.createChooser(pickIntent, "Select Source");
-
-        // Add the camera options.
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[0]));
-
-        fragment.startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
-    }
 }

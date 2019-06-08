@@ -2,11 +2,16 @@ package com.olmaredo.gliol.olmaredostego;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -23,6 +28,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
@@ -36,7 +42,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -157,9 +165,42 @@ public class EncodeFragment extends Fragment implements TaskManager {
                     //Timestamp to avoid an already existing file name
                     String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ITALIAN).format(new Date());
                     Log.v(TAG, timeStamp);
-                    fileNameOriginal = Environment.getExternalStorageDirectory() + "/PicturesTest/" + timeStamp + "-original.jpg";
+
+                    String pathToPictureFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+
+                    fileNameResult = pathToPictureFolder + "/Olmaredo/" + timeStamp + "-Encoded.png";
+                    fileNameOriginal = pathToPictureFolder + "/Olmaredo/" + timeStamp + "-Taken.jpg";
                     //Opens a dialog that let you choose if open the gallery or the camera app
-                    OlmaredoUtil.openImageIntent(thisThis, getActivity(), fileNameOriginal, outputFileUri, CAMERA_REQUEST_CODE);
+                    //OlmaredoUtil.openImageIntent(thisThis, getActivity(), fileNameOriginal, outputFileUri, CAMERA_REQUEST_CODE);
+                    // Determine Uri of camera image to save.
+                    File fromCamera = new File(fileNameOriginal);
+                    //outputFileUri = Uri.fromFile(fromCamera);
+                    outputFileUri = FileProvider.getUriForFile(Objects.requireNonNull(getContext()), BuildConfig.APPLICATION_ID, fromCamera);
+
+                    // Camera.
+                    final List<Intent> cameraIntents = new ArrayList<>();
+                    final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    final PackageManager packageManager = Objects.requireNonNull(getActivity()).getPackageManager();
+                    final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+                    for (ResolveInfo res : listCam) {
+                        final String packageName = res.activityInfo.packageName;
+                        final Intent intent = new Intent(captureIntent);
+                        intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+                        intent.setPackage(packageName);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+                        cameraIntents.add(intent);
+                    }
+
+                    // Filesystem.
+                    Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    // Chooser of filesystem options.
+                    final Intent chooserIntent = Intent.createChooser(pickIntent, "Select Source");
+
+                    // Add the camera options.
+                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[0]));
+
+                    startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
                 } else {
                     //If some tin-foil-hat didn't give the permissions
                     Toast.makeText(getContext(), "This app doesn't have permission to do what it has to do.", Toast.LENGTH_LONG).show();
